@@ -49,6 +49,7 @@ CLIENTS = {
     "Dr. Vinicius": {
         "account_id": "act_10205578707965893",
         "spreadsheet_id": "1hajaZpK-2cGY4TEpVGTfM7DljZk0M9fiLO6qylC29Gw",
+        "agendamentos_id": "1cOD2Sa9fp8TPJrBia7RY3br_Htg5pCJc5squzmLY4Dk",
     },
 }
 
@@ -185,6 +186,7 @@ with st.sidebar:
 client_cfg = CLIENTS[client_name]
 account_id = client_cfg["account_id"]
 spreadsheet_id = client_cfg["spreadsheet_id"]
+agendamentos_id = client_cfg.get("agendamentos_id")
 
 # ── filtros de data ────────────────────────────────────────────────────────────
 
@@ -203,9 +205,53 @@ if date_start > date_end:
 
 # ── carrega dados ──────────────────────────────────────────────────────────────
 
+@st.cache_data(ttl=7200)
+def fetch_agendamentos(spreadsheet_id: str, date_start: str, date_end: str) -> pd.DataFrame:
+    """Lê planilha de agendamentos filtrando pelo período selecionado."""
+    try:
+        rows = _read_sheets_range(spreadsheet_id, "'Planilha agendamento'!A2:G400")
+    except Exception:
+        return pd.DataFrame(columns=["data","consultas","valor_consulta","total_consultas","cirurgias","valor_cirurgia","total_cirurgias"])
+
+    records = []
+    for row in rows:
+        if not row or not row[0]:
+            continue
+        def parse_brl(val):
+            if not val or val in ("", None):
+                return 0.0
+            return float(str(val).replace("R$","").replace(".","").replace(",",".").strip() or 0)
+        def parse_num(val):
+            if not val or val in ("", None):
+                return 0
+            return int(float(str(val).replace(",",".")))
+        records.append({
+            "data":           row[0] if len(row) > 0 else "",
+            "consultas":      parse_num(row[1]) if len(row) > 1 else 0,
+            "valor_consulta": parse_brl(row[2]) if len(row) > 2 else 0.0,
+            "total_consultas":parse_brl(row[3]) if len(row) > 3 else 0.0,
+            "cirurgias":      parse_num(row[4]) if len(row) > 4 else 0,
+            "valor_cirurgia": parse_brl(row[5]) if len(row) > 5 else 0.0,
+            "total_cirurgias":parse_brl(row[6]) if len(row) > 6 else 0.0,
+        })
+
+    df = pd.DataFrame(records)
+    if df.empty:
+        return df
+
+    # Filtra pelo período selecionado (formato dd/mm na planilha)
+    ds = pd.to_datetime(date_start)
+    de = pd.to_datetime(date_end)
+    current_year = ds.year
+    df["dt"] = pd.to_datetime(df["data"] + f"/{current_year}", format="%d/%m/%Y", errors="coerce")
+    df = df.dropna(subset=["dt"])
+    df = df[(df["dt"] >= ds) & (df["dt"] <= de)]
+    return df
+
 with st.spinner("Buscando dados..."):
     df = fetch_campaign_insights(str(date_start), str(date_end), account_id)
     df_sheets = fetch_sheets_seguidores(spreadsheet_id, date_start.month)
+    df_agend = fetch_agendamentos(agendamentos_id, str(date_start), str(date_end)) if agendamentos_id else pd.DataFrame()
 
 st.caption(f"Última atualização: {datetime.now().strftime('%d/%m/%Y às %H:%M')} · Cache renova a cada 2h")
 
@@ -221,7 +267,7 @@ df_msg = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=F
 
 TAX_MULTIPLIER = 1.1385
 
-tab1, tab2 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST"])
+tab1, tab2, tab3 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo"])
 
 # ══ TAB 1 — MENSAGENS ═════════════════════════════════════════════════════════
 
@@ -436,4 +482,97 @@ with tab2:
         camp_seg["CPM"] = camp_seg["CPM"].apply(fmt_brl)
         camp_seg["CTR"] = camp_seg["CTR"].apply(fmt_pct)
         st.dataframe(camp_seg.set_index("Campanha"), use_container_width=True)
+
+# ══ TAB 3 — FUNIL COMPLETO ════════════════════════════════════════════════════
+
+with tab3:
+    if df_agend is None or df_agend.empty:
+        st.info("Nenhum dado de agendamentos encontrado para o período.")
+    else:
+        # Totais da planilha de agendamentos
+        total_consultas   = int(df_agend["consultas"].sum())
+        total_cirurgias   = int(df_agend["cirurgias"].sum())
+        fat_consultas     = df_agend["total_consultas"].sum()
+        fat_cirurgias     = df_agend["total_cirurgias"].sum()
+        fat_total         = fat_consultas + fat_cirurgias
+
+        ticket_consulta   = (fat_consultas / total_consultas) if total_consultas > 0 else 0
+        ticket_cirurgia   = (fat_cirurgias / total_cirurgias) if total_cirurgias > 0 else 0
+
+        # Totais das campanhas de mensagem (E2-CAP)
+        invest_liq        = df_msg["spend"].sum() if not df_msg.empty else 0
+        invest_imp        = invest_liq * TAX_MULTIPLIER
+        total_msgs        = int(df_msg["messaging_contacts"].sum()) if not df_msg.empty else 0
+        total_cliques     = int(df_msg["clicks"].sum()) if not df_msg.empty else 0
+        total_impressoes  = int(df_msg["impressions"].sum()) if not df_msg.empty else 0
+        reach_total_f     = int(df_msg["reach"].sum()) if not df_msg.empty and "reach" in df_msg.columns else 0
+
+        # ROAS
+        roas              = (fat_total / invest_liq) if invest_liq > 0 else 0
+        roas_imp          = (fat_total / invest_imp) if invest_imp > 0 else 0
+
+        # Taxas
+        tx_passagem       = (total_msgs / total_cliques * 100) if total_cliques > 0 else 0
+        tx_agend          = (total_consultas / total_msgs * 100) if total_msgs > 0 else 0
+        tx_fech           = (total_cirurgias / total_consultas * 100) if total_consultas > 0 else 0
+        tx_conv           = (total_cirurgias / total_cliques * 100) if total_cliques > 0 else 0
+
+        # Custos
+        cpm_f             = (invest_liq / total_impressoes * 1000) if total_impressoes > 0 else 0
+        ctr_f             = (total_cliques / total_impressoes * 100) if total_impressoes > 0 else 0
+        cpc_f             = (invest_liq / total_cliques) if total_cliques > 0 else 0
+        cpl_f             = (invest_liq / total_msgs) if total_msgs > 0 else 0
+        custo_consulta    = (invest_imp / total_consultas) if total_consultas > 0 else 0
+        custo_cirurgia    = (invest_imp / total_cirurgias) if total_cirurgias > 0 else 0
+
+        # ── Linha 1: Investimento + ROAS ──────────────────────────────────────
+        st.subheader("Visão Geral")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Investimento Líquido", fmt_brl(invest_liq))
+        c2.metric("Investimento + Impostos", fmt_brl(invest_imp))
+        c3.metric("ROAS", f"{roas:.1f}x")
+        c4.metric("ROAS c/ Impostos", f"{roas_imp:.1f}x")
+
+        st.divider()
+
+        # ── Linha 2: Funil ────────────────────────────────────────────────────
+        col_funil, col_metricas = st.columns([1, 1])
+
+        with col_funil:
+            st.markdown("**Funil de Captação**")
+            funil_labels_f = ["Impressões", "Cliques", "Mensagens", "Consultas", "Cirurgias"]
+            funil_values_f = [total_impressoes, total_cliques, total_msgs, total_consultas, total_cirurgias]
+            funil_colors_f = ["#5B4FCF", "#6A5ACD", "#4C9BE8", "#FFA726", "#43A047"]
+
+            funil_svg_f = build_funnel_svg(funil_labels_f, funil_values_f, funil_colors_f)
+            st.markdown(funil_svg_f, unsafe_allow_html=True)
+
+        with col_metricas:
+            st.markdown("**Taxas de Conversão**")
+            m1, m2 = st.columns(2)
+            m1.metric("Tx. Passagem (CLI→MSG)", fmt_pct(tx_passagem))
+            m2.metric("Tx. Agendamento (MSG→CON)", fmt_pct(tx_agend))
+            m1.metric("Tx. Fechamento (CON→CIR)", fmt_pct(tx_fech))
+            m2.metric("Tx. Conversão (CLI→CIR)", fmt_pct(tx_conv))
+
+            st.markdown("**Custos**")
+            m1.metric("CPM", fmt_brl(cpm_f))
+            m2.metric("CTR", fmt_pct(ctr_f))
+            m1.metric("CPC", fmt_brl(cpc_f))
+            m2.metric("CPL (por MSG)", fmt_brl(cpl_f))
+            m1.metric("Custo por Consulta", fmt_brl(custo_consulta))
+            m2.metric("Custo por Cirurgia", fmt_brl(custo_cirurgia))
+
+        st.divider()
+
+        # ── Linha 3: Faturamento ──────────────────────────────────────────────
+        st.subheader("Faturamento")
+        f1, f2, f3, f4, f5 = st.columns(5)
+        f1.metric("Consultas", fmt_num(total_consultas))
+        f2.metric("Ticket Médio Consulta", fmt_brl(ticket_consulta))
+        f3.metric("Faturamento Consultas", fmt_brl(fat_consultas))
+        f4.metric("Cirurgias", fmt_num(total_cirurgias))
+        f5.metric("Ticket Médio Cirurgia", fmt_brl(ticket_cirurgia))
+
+        st.metric("Faturamento Total", fmt_brl(fat_total))
 
