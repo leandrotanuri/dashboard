@@ -115,14 +115,32 @@ def fetch_campaign_insights(date_start: str, date_end: str, account_id: str) -> 
     return df
 
 
+GWS_CMD   = r"C:\Users\leand\AppData\Roaming\npm\gws.cmd"
+NODE_PATH = r"C:\Program Files\nodejs"
+
+def _read_sheets_range(spreadsheet_id: str, range_: str) -> list:
+    """Lê range via gws (local) ou sheets_client (cloud)."""
+    import json, subprocess
+    if os.path.exists(GWS_CMD):
+        env = os.environ.copy()
+        env["PATH"] = NODE_PATH + os.pathsep + env.get("PATH", "")
+        result = subprocess.run(
+            [GWS_CMD, "sheets", "spreadsheets", "values", "get",
+             "--params", json.dumps({"spreadsheetId": spreadsheet_id, "range": range_})],
+            capture_output=True, text=True, env=env, shell=True,
+        )
+        return json.loads(result.stdout).get("values", [])
+    else:
+        from sheets_client import read_range
+        return read_range(spreadsheet_id, range_)
+
 @st.cache_data(ttl=7200)
 def fetch_sheets_seguidores(spreadsheet_id: str, month: int) -> pd.DataFrame:
-    """Lê colunas M (investido E1-DIST) e N (seguidores) via sheets_client."""
-    from sheets_client import read_range
+    """Lê colunas M (investido E1-DIST) e N (seguidores)."""
     tab = MONTH_TAB[month]
     range_ = f"'{tab}'!M5:N35"
     try:
-        rows = read_range(spreadsheet_id, range_)
+        rows = _read_sheets_range(spreadsheet_id, range_)
     except Exception:
         return pd.DataFrame(columns=["dia", "investido_seg", "seguidores"])
 
