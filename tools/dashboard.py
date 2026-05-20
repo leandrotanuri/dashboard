@@ -210,7 +210,8 @@ def fetch_agendamentos(spreadsheet_id: str, date_start: str, date_end: str) -> p
     """Lê planilha de agendamentos filtrando pelo período selecionado."""
     try:
         rows = _read_sheets_range(spreadsheet_id, "'Planilha agendamento'!A2:G400")
-    except Exception:
+    except Exception as e:
+        st.error(f"Erro ao ler agendamentos: {e}")
         return pd.DataFrame(columns=["data","consultas","valor_consulta","total_consultas","cirurgias","valor_cirurgia","total_cirurgias"])
 
     records = []
