@@ -221,12 +221,15 @@ with tab1:
         avg_ctr_m = (total_clicks_m / total_impressions_m * 100) if total_impressions_m > 0 else 0
         custo_contato = (total_spend_m * TAX_MULTIPLIER / total_contacts) if total_contacts > 0 else None
 
-        c1, c2, c3, c4, c5 = st.columns(5)
+        avg_cpc_m = (total_spend_m / total_clicks_m) if total_clicks_m > 0 else None
+
+        c1, c2, c3, c4, c5, c6 = st.columns(6)
         c1.metric("Valor Total Investido + Impostos", fmt_brl(total_investido_impostos_m))
         c2.metric("Novos Contatos (MSG)", fmt_num(total_contacts) if total_contacts > 0 else "—")
         c3.metric("Custo por Contato + Impostos", fmt_brl(custo_contato) if custo_contato is not None else "—")
         c4.metric("CPM", fmt_brl(avg_cpm_m))
         c5.metric("CTR", fmt_pct(avg_ctr_m))
+        c6.metric("CPC", fmt_brl(avg_cpc_m) if avg_cpc_m is not None else "—")
 
         st.divider()
 
@@ -354,12 +357,15 @@ with tab2:
         total_follows = int(sheets_period["seguidores"].sum())
         custo_seg = (total_investido_seg * TAX_MULTIPLIER / total_follows) if total_follows > 0 else None
 
-        c1, c2, c3, c4, c5 = st.columns(5)
+        avg_cpc = (total_spend_api / total_clicks) if total_clicks > 0 else None
+
+        c1, c2, c3, c4, c5, c6 = st.columns(6)
         c1.metric("Valor Total Investido + Impostos", fmt_brl(total_investido_impostos))
         c2.metric("Seguidores Ganhos", fmt_num(total_follows) if total_follows > 0 else "—")
         c3.metric("Custo por Seguidor + Impostos", fmt_brl(custo_seg) if custo_seg else "—")
         c4.metric("CPM", fmt_brl(avg_cpm))
         c5.metric("CTR", fmt_pct(avg_ctr))
+        c6.metric("CPC", fmt_brl(avg_cpc) if avg_cpc is not None else "—")
 
         st.divider()
 
