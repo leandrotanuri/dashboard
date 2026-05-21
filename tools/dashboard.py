@@ -173,10 +173,14 @@ st.markdown("""
         padding: 12px 16px;
     }
     div[data-testid="metric-container"] label {
-        font-size: 0.78rem !important;
+        font-size: 0.75rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    div[data-testid="metric-container"] [data-testid="stMetricValue"] {
-        font-size: 1.4rem !important;
+    div[data-testid="metric-container"] [data-testid="stMetricValue"] > div {
+        font-size: 1.15rem !important;
+        white-space: nowrap;
     }
 </style>
 """, unsafe_allow_html=True)
