@@ -172,6 +172,12 @@ st.markdown("""
         border-radius: 10px;
         padding: 12px 16px;
     }
+    div[data-testid="metric-container"] label {
+        font-size: 0.78rem !important;
+    }
+    div[data-testid="metric-container"] [data-testid="stMetricValue"] {
+        font-size: 1.4rem !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
