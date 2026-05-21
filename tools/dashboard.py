@@ -36,7 +36,7 @@ BASE_URL = f"https://graph.facebook.com/{API_VERSION}"
 
 FOLLOWER_KEYWORD = "E1-DIST"
 MESSAGING_KEYWORD = "E2-CAP"
-FIELDS_CAMPAIGN = "campaign_name,impressions,clicks,spend,reach,ctr,cpm,actions"
+FIELDS_CAMPAIGN = "campaign_name,impressions,clicks,inline_link_clicks,spend,reach,ctr,cpm,actions"
 
 # ── config por cliente ─────────────────────────────────────────────────────────
 MONTH_TAB = {
@@ -104,7 +104,7 @@ def fetch_campaign_insights(date_start: str, date_end: str, account_id: str) -> 
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)
-    for col in ["impressions", "clicks", "spend", "reach", "ctr", "cpm"]:
+    for col in ["impressions", "clicks", "inline_link_clicks", "spend", "reach", "ctr", "cpm"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
@@ -292,7 +292,8 @@ with tab1:
         avg_ctr_m = (total_clicks_m / total_impressions_m * 100) if total_impressions_m > 0 else 0
         custo_contato = (total_spend_m * TAX_MULTIPLIER / total_contacts) if total_contacts > 0 else None
 
-        avg_cpc_m = (total_spend_m / total_clicks_m) if total_clicks_m > 0 else None
+        total_link_clicks_m = df_msg["inline_link_clicks"].sum() if "inline_link_clicks" in df_msg.columns else total_clicks_m
+        avg_cpc_m = (total_spend_m / total_link_clicks_m) if total_link_clicks_m > 0 else None
 
         c1, c2, c3, c4, c5, c6 = st.columns(6)
         c1.metric("Valor Total Investido + Impostos", fmt_brl(total_investido_impostos_m))
@@ -391,13 +392,14 @@ with tab1:
                 Investido=("spend", "sum"),
                 Impressões=("impressions", "sum"),
                 Cliques=("clicks", "sum"),
+                LinkCliques=("inline_link_clicks", "sum"),
                 Contatos=("messaging_contacts", "sum"),
             )
             .reset_index()
         )
         camp_msg["CPM"]           = camp_msg["Investido"] / camp_msg["Impressões"] * 1000
         camp_msg["CTR"]           = camp_msg["Cliques"] / camp_msg["Impressões"] * 100
-        camp_msg["CPC"]           = camp_msg.apply(lambda r: r["Investido"] / r["Cliques"] if r["Cliques"] > 0 else None, axis=1)
+        camp_msg["CPC"]           = camp_msg.apply(lambda r: r["Investido"] / r["LinkCliques"] if r["LinkCliques"] > 0 else None, axis=1)
         camp_msg["Custo/Contato"] = camp_msg.apply(lambda r: r["Investido"] / r["Contatos"] if r["Contatos"] > 0 else None, axis=1)
         camp_msg = camp_msg.rename(columns={"campaign_name": "Campanha"})
         # Formata e reordena colunas
@@ -433,7 +435,8 @@ with tab2:
         total_follows = int(sheets_period["seguidores"].sum())
         custo_seg = (total_investido_seg * TAX_MULTIPLIER / total_follows) if total_follows > 0 else None
 
-        avg_cpc = (total_spend_api / total_clicks) if total_clicks > 0 else None
+        total_link_clicks = df_seg["inline_link_clicks"].sum() if "inline_link_clicks" in df_seg.columns else total_clicks
+        avg_cpc = (total_spend_api / total_link_clicks) if total_link_clicks > 0 else None
 
         c1, c2, c3, c4, c5, c6 = st.columns(6)
         c1.metric("Valor Total Investido + Impostos", fmt_brl(total_investido_impostos))
