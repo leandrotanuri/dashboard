@@ -402,6 +402,64 @@ with tab1:
         camp_out["CPC"]            = camp_msg["CPC"].apply(lambda v: fmt_brl(v) if v is not None else "—")
         st.dataframe(camp_out.set_index("Campanha"), use_container_width=True)
 
+        # ── Tabela por dia ────────────────────────────────────────────────────
+        st.subheader("Por Dia")
+
+        daily_tab = (
+            df_msg.groupby("date_start")
+            .agg(
+                spend=("spend", "sum"),
+                impressions=("impressions", "sum"),
+                link_clicks=("inline_link_clicks", "sum"),
+                leads=("messaging_contacts", "sum"),
+            )
+            .reset_index()
+        )
+        daily_tab["invest_imp"] = daily_tab["spend"] * TAX_MULTIPLIER
+        daily_tab["CPM"]        = daily_tab.apply(lambda r: r["spend"] / r["impressions"] * 1000 if r["impressions"] > 0 else None, axis=1)
+        daily_tab["CPC"]        = daily_tab.apply(lambda r: r["spend"] / r["link_clicks"] if r["link_clicks"] > 0 else None, axis=1)
+        daily_tab["CTR"]        = daily_tab.apply(lambda r: r["link_clicks"] / r["impressions"] * 100 if r["impressions"] > 0 else None, axis=1)
+        daily_tab["CPL"]        = daily_tab.apply(lambda r: r["invest_imp"] / r["leads"] if r["leads"] > 0 else None, axis=1)
+        daily_tab["Tx Passagem"]= daily_tab.apply(lambda r: r["leads"] / r["link_clicks"] * 100 if r["link_clicks"] > 0 else None, axis=1)
+
+        # Cruza com agendamentos por dia
+        if not df_agend.empty and "dt" in df_agend.columns:
+            agend_day = (
+                df_agend.groupby("dt")
+                .agg(consultas=("consultas","sum"), cirurgias=("cirurgias","sum"),
+                     fat_consultas=("total_consultas","sum"), fat_cirurgias=("total_cirurgias","sum"))
+                .reset_index()
+            )
+            agend_day = agend_day.rename(columns={"dt": "date_start"})
+            daily_tab = daily_tab.merge(agend_day, on="date_start", how="left")
+        else:
+            daily_tab["consultas"]     = None
+            daily_tab["cirurgias"]     = None
+            daily_tab["fat_consultas"] = None
+            daily_tab["fat_cirurgias"] = None
+
+        daily_tab["custo_consulta"] = daily_tab.apply(
+            lambda r: r["invest_imp"] / r["consultas"] if pd.notna(r.get("consultas")) and r.get("consultas", 0) > 0 else None, axis=1)
+        daily_tab["custo_cirurgia"] = daily_tab.apply(
+            lambda r: r["invest_imp"] / r["cirurgias"] if pd.notna(r.get("cirurgias")) and r.get("cirurgias", 0) > 0 else None, axis=1)
+
+        # Monta tabela formatada
+        dt_out = pd.DataFrame()
+        dt_out["Dia"]                  = daily_tab["date_start"].dt.strftime("%d/%m/%Y")
+        dt_out["Invest. c/ Imposto"]   = daily_tab["invest_imp"].apply(fmt_brl)
+        dt_out["CPM"]                  = daily_tab["CPM"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+        dt_out["CPC"]                  = daily_tab["CPC"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+        dt_out["CTR"]                  = daily_tab["CTR"].apply(lambda v: fmt_pct(v) if v is not None else "—")
+        dt_out["Tx Passagem"]          = daily_tab["Tx Passagem"].apply(lambda v: fmt_pct(v) if v is not None else "—")
+        dt_out["Leads"]                = daily_tab["leads"].apply(fmt_num)
+        dt_out["CPL"]                  = daily_tab["CPL"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+        dt_out["Consultas"]            = daily_tab["consultas"].apply(lambda v: fmt_num(v) if pd.notna(v) else "—")
+        dt_out["Custo por Consulta"]   = daily_tab["custo_consulta"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+        dt_out["Cirurgias Confirmadas"]= daily_tab["cirurgias"].apply(lambda v: fmt_num(v) if pd.notna(v) else "—")
+        dt_out["Custo por Cirurgia"]   = daily_tab["custo_cirurgia"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+
+        st.dataframe(dt_out.set_index("Dia"), use_container_width=True)
+
 # ══ TAB 2 — SEGUIDORES ════════════════════════════════════════════════════════
 
 with tab2:
