@@ -382,10 +382,8 @@ with tab1:
 
         col_g1, col_g2 = st.columns(2)
         with col_g1:
-            st.markdown("**Funil de Conversão**")
-            st.markdown(funnel_svg, unsafe_allow_html=True)
-        with col_g2:
             st.plotly_chart(fig_contatos, use_container_width=True)
+        with col_g2:
             st.plotly_chart(fig_custo, use_container_width=True)
 
         # Tabela por campanha
