@@ -300,21 +300,14 @@ with tab1:
         avg_cpc_m = (total_spend_m / total_link_clicks_m) if total_link_clicks_m > 0 else None
 
         c1, c2, c3, c4, c5, c6 = st.columns(6)
-        c1.metric("Valor Total Investido + Impostos", fmt_brl(total_investido_impostos_m))
+        c1.metric("Investido c/ Impostos", fmt_brl(total_investido_impostos_m))
         c2.metric("Novos Contatos (MSG)", fmt_num(total_contacts) if total_contacts > 0 else "—")
-        c3.metric("Custo por Contato + Impostos", fmt_brl(custo_contato) if custo_contato is not None else "—")
+        c3.metric("Custo por Contato c/ Imp.", fmt_brl(custo_contato) if custo_contato is not None else "—")
         c4.metric("CPM", fmt_brl(avg_cpm_m))
         c5.metric("CTR", fmt_pct(avg_ctr_m))
         c6.metric("CPC", fmt_brl(avg_cpc_m) if avg_cpc_m is not None else "—")
 
         st.divider()
-
-        # Inputs manuais para o funil
-        col_inp1, col_inp2, _ = st.columns([1, 1, 3])
-        with col_inp1:
-            consultas = st.number_input("Consultas agendadas", min_value=0, value=0, step=1)
-        with col_inp2:
-            cirurgias = st.number_input("Cirurgias realizadas", min_value=0, value=0, step=1)
 
         # Dados diários
         daily_msg = (
@@ -331,11 +324,7 @@ with tab1:
             lambda r: r["spend"] * TAX_MULTIPLIER / r["Contatos"] if r["Contatos"] > 0 else None, axis=1
         )
 
-        # Funil SVG customizado
-        reach_total = int(df_msg["reach"].sum()) if "reach" in df_msg.columns else 0
-        funnel_labels = ["Alcance", "Impressões", "Cliques", "Mensagens", "Consultas", "Cirurgias"]
-        funnel_values = [reach_total, int(total_impressions_m), int(total_clicks_m), int(total_contacts), consultas, cirurgias]
-        funnel_colors = ["#5B4FCF", "#6A5ACD", "#7B68EE", "#4C9BE8", "#FFA726", "#43A047"]
+        # Funil SVG customizado (removido da tab1 — mantido só no Funil Completo)
 
         def build_funnel_svg(labels, values, colors):
             W, H_stage, GAP = 300, 55, 3
@@ -358,8 +347,6 @@ with tab1:
                 parts.append(f'<text x="{W/2}" y="{cy+11}" text-anchor="middle" fill="white" font-family="sans-serif" font-size="15" font-weight="bold">{val_str}</text>')
             parts.append('</svg>')
             return "".join(parts)
-
-        funnel_svg = build_funnel_svg(funnel_labels, funnel_values, funnel_colors)
 
         # Gráfico contatos por dia
         fig_contatos = px.bar(
