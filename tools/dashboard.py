@@ -278,7 +278,7 @@ df_msg = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=F
 
 TAX_MULTIPLIER = 1.1385
 
-tab1, tab2, tab3 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo"])
+tab1, tab2, tab3, tab4 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo", "🎯 Metas"])
 
 # ══ TAB 1 — MENSAGENS ═════════════════════════════════════════════════════════
 
@@ -595,3 +595,83 @@ with tab3:
 
         st.metric("Faturamento Total", fmt_brl(fat_total))
 
+# ══ TAB 4 — METAS ════════════════════════════════════════════════════════════
+
+META_CONSULTAS = 40
+META_CIRURGIAS = 16
+
+with tab4:
+    import calendar
+    from datetime import date as _date
+
+    # Pega dados do mês atual completo
+    hoje         = _date.today()
+    primeiro_dia = hoje.replace(day=1).strftime("%Y-%m-%d")
+    ultimo_dia   = hoje.replace(day=calendar.monthrange(hoje.year, hoje.month)[1]).strftime("%Y-%m-%d")
+    dias_no_mes  = calendar.monthrange(hoje.year, hoje.month)[1]
+    dias_passados = hoje.day
+    dias_restantes = dias_no_mes - dias_passados
+
+    # Busca agendamentos do mês inteiro
+    df_metas = fetch_agendamentos(agendamentos_id, primeiro_dia, ultimo_dia) if agendamentos_id else pd.DataFrame()
+
+    if df_metas is None or df_metas.empty:
+        st.info("Nenhum dado de agendamentos encontrado para este mês.")
+    else:
+        consultas_atual  = int(df_metas["consultas"].sum())
+        cirurgias_atual  = int(df_metas["cirurgias"].sum())
+
+        # Ritmo diário e projeção
+        ritmo_consultas  = consultas_atual / dias_passados if dias_passados > 0 else 0
+        ritmo_cirurgias  = cirurgias_atual / dias_passados if dias_passados > 0 else 0
+        proj_consultas   = round(ritmo_consultas * dias_no_mes)
+        proj_cirurgias   = round(ritmo_cirurgias * dias_no_mes)
+
+        # Percentuais
+        pct_consultas    = min(consultas_atual / META_CONSULTAS * 100, 100)
+        pct_cirurgias    = min(cirurgias_atual / META_CIRURGIAS * 100, 100)
+
+        st.subheader(f"Metas de {hoje.strftime('%B de %Y').capitalize()}")
+        st.caption(f"Dia {dias_passados} de {dias_no_mes} · {dias_restantes} dias restantes")
+
+        st.divider()
+
+        # ── Consultas ─────────────────────────────────────────────────────────
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown("### 📅 Agendamentos (Consultas)")
+            st.markdown(f"**{consultas_atual}** de **{META_CONSULTAS}** · faltam **{max(META_CONSULTAS - consultas_atual, 0)}**")
+            st.progress(pct_consultas / 100)
+
+            if proj_consultas >= META_CONSULTAS:
+                st.success(f"No ritmo atual ({ritmo_consultas:.1f}/dia) você vai bater a meta — projeção: **{proj_consultas}** consultas no mês.")
+            else:
+                necessario = (META_CONSULTAS - consultas_atual) / dias_restantes if dias_restantes > 0 else 0
+                st.warning(f"Projeção atual: **{proj_consultas}** consultas. Precisa de **{necessario:.1f}/dia** nos próximos {dias_restantes} dias para bater a meta.")
+
+        with col2:
+            st.metric("Realizado", f"{consultas_atual}/{META_CONSULTAS}")
+            st.metric("Projeção fim do mês", str(proj_consultas))
+            st.metric("Ritmo atual", f"{ritmo_consultas:.1f}/dia")
+
+        st.divider()
+
+        # ── Cirurgias ─────────────────────────────────────────────────────────
+        col3, col4 = st.columns([2, 1])
+        with col3:
+            st.markdown("### 🔬 Cirurgias")
+            st.markdown(f"**{cirurgias_atual}** de **{META_CIRURGIAS}** · faltam **{max(META_CIRURGIAS - cirurgias_atual, 0)}**")
+            st.progress(pct_cirurgias / 100)
+
+            if proj_cirurgias >= META_CIRURGIAS:
+                st.success(f"No ritmo atual ({ritmo_cirurgias:.1f}/dia) você vai bater a meta — projeção: **{proj_cirurgias}** cirurgias no mês.")
+            elif cirurgias_atual == 0:
+                st.warning(f"Nenhuma cirurgia registrada ainda. Meta: {META_CIRURGIAS} cirurgias.")
+            else:
+                necessario_cir = (META_CIRURGIAS - cirurgias_atual) / dias_restantes if dias_restantes > 0 else 0
+                st.warning(f"Projeção atual: **{proj_cirurgias}** cirurgias. Precisa de **{necessario_cir:.1f}/dia** nos próximos {dias_restantes} dias para bater a meta.")
+
+        with col4:
+            st.metric("Realizado", f"{cirurgias_atual}/{META_CIRURGIAS}")
+            st.metric("Projeção fim do mês", str(proj_cirurgias))
+            st.metric("Ritmo atual", f"{ritmo_cirurgias:.1f}/dia")
