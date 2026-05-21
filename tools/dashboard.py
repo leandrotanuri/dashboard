@@ -395,16 +395,21 @@ with tab1:
             )
             .reset_index()
         )
-        camp_msg["CPM"] = camp_msg["Investido"] / camp_msg["Impressões"] * 1000
-        camp_msg["CTR"] = camp_msg["Cliques"] / camp_msg["Impressões"] * 100
-        camp_msg["Custo/Contato"] = camp_msg.apply(
-            lambda r: fmt_brl(r["Investido"] / r["Contatos"]) if r["Contatos"] > 0 else "—", axis=1
-        )
+        camp_msg["CPM"]           = camp_msg["Investido"] / camp_msg["Impressões"] * 1000
+        camp_msg["CTR"]           = camp_msg["Cliques"] / camp_msg["Impressões"] * 100
+        camp_msg["CPC"]           = camp_msg.apply(lambda r: r["Investido"] / r["Cliques"] if r["Cliques"] > 0 else None, axis=1)
+        camp_msg["Custo/Contato"] = camp_msg.apply(lambda r: r["Investido"] / r["Contatos"] if r["Contatos"] > 0 else None, axis=1)
         camp_msg = camp_msg.rename(columns={"campaign_name": "Campanha"})
-        camp_msg["Investido"] = camp_msg["Investido"].apply(fmt_brl)
-        camp_msg["CPM"] = camp_msg["CPM"].apply(fmt_brl)
-        camp_msg["CTR"] = camp_msg["CTR"].apply(fmt_pct)
-        st.dataframe(camp_msg.set_index("Campanha"), use_container_width=True)
+        # Formata e reordena colunas
+        camp_out = camp_msg[["Campanha"]].copy()
+        camp_out["Investido"]      = camp_msg["Investido"].apply(fmt_brl)
+        camp_out["Contatos"]       = camp_msg["Contatos"].apply(fmt_num)
+        camp_out["Custo/Contato"]  = camp_msg["Custo/Contato"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+        camp_out["Impressões"]     = camp_msg["Impressões"].apply(fmt_num)
+        camp_out["CPM"]            = camp_msg["CPM"].apply(fmt_brl)
+        camp_out["CTR"]            = camp_msg["CTR"].apply(fmt_pct)
+        camp_out["CPC"]            = camp_msg["CPC"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+        st.dataframe(camp_out.set_index("Campanha"), use_container_width=True)
 
 # ══ TAB 2 — SEGUIDORES ════════════════════════════════════════════════════════
 
