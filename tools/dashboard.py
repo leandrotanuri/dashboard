@@ -31,6 +31,57 @@ except Exception:
 sys.path.insert(0, str(Path(__file__).parent))
 
 ACCESS_TOKEN = os.getenv("META_ACCESS_TOKEN")
+
+# ── autenticação ───────────────────────────────────────────────────────────────
+def _load_passwords() -> dict:
+    """Retorna {senha: cliente} lendo de st.secrets ou .env."""
+    try:
+        pw = st.secrets.get("passwords", {})
+        return {v: k for k, v in pw.items()}  # inverte: senha → nome_chave
+    except Exception:
+        return {}
+
+def _check_auth():
+    """Gerencia login. Retorna (cliente_forçado_ou_None, is_admin)."""
+    passwords_raw = {}
+    try:
+        passwords_raw = dict(st.secrets.get("passwords", {}))
+    except Exception:
+        pass
+
+    admin_pass   = passwords_raw.pop("admin", None)
+    # cliente_key → senha  (ex: "Dr. Vinicius" → "abc123")
+    client_passes = {v: k for k, v in passwords_raw.items()}  # senha → client_key
+
+    if "auth_client" not in st.session_state:
+        st.session_state.auth_client = None
+        st.session_state.auth_admin  = False
+
+    if st.session_state.auth_client or st.session_state.auth_admin:
+        return st.session_state.auth_client, st.session_state.auth_admin
+
+    # Tela de login
+    st.set_page_config(page_title="Dashboard de Campanhas", page_icon="📊", layout="wide")
+    st.title("📊 Dashboard de Campanhas")
+    st.markdown("---")
+    col = st.columns([1, 2, 1])[1]
+    with col:
+        st.subheader("Acesso restrito")
+        senha = st.text_input("Senha", type="password")
+        if st.button("Entrar", use_container_width=True):
+            if admin_pass and senha == admin_pass:
+                st.session_state.auth_admin  = True
+                st.session_state.auth_client = None
+                st.rerun()
+            elif senha in client_passes:
+                st.session_state.auth_client = client_passes[senha]
+                st.session_state.auth_admin  = False
+                st.rerun()
+            else:
+                st.error("Senha incorreta.")
+    st.stop()
+
+_forced_client, _is_admin = _check_auth()
 API_VERSION = "v19.0"
 BASE_URL = f"https://graph.facebook.com/{API_VERSION}"
 
@@ -201,7 +252,15 @@ st.title("📊 Dashboard de Campanhas")
 
 with st.sidebar:
     st.header("Configurações")
-    client_name = st.selectbox("Cliente", list(CLIENTS.keys()), index=list(CLIENTS.keys()).index(DEFAULT_CLIENT))
+    if _is_admin:
+        client_name = st.selectbox("Cliente", list(CLIENTS.keys()), index=list(CLIENTS.keys()).index(DEFAULT_CLIENT))
+    else:
+        client_name = _forced_client
+        st.markdown(f"**{client_name}**")
+    if st.button("Sair", use_container_width=True):
+        st.session_state.auth_client = None
+        st.session_state.auth_admin  = False
+        st.rerun()
 
 client_cfg = CLIENTS[client_name]
 account_id = client_cfg["account_id"]
