@@ -454,6 +454,7 @@ with tab1:
             lambda r: r["invest_imp"] / r["cirurgias"] if pd.notna(r.get("cirurgias")) and r.get("cirurgias", 0) > 0 else None, axis=1)
 
         # Monta tabela formatada
+        tipo_cli = client_cfg.get("tipo", "clinica_geral")
         dt_out = pd.DataFrame()
         dt_out["Dia"]                  = daily_tab["date_start"].dt.strftime("%d/%m/%Y")
         dt_out["Invest. c/ Imposto"]   = daily_tab["invest_imp"].apply(fmt_brl)
@@ -465,8 +466,9 @@ with tab1:
         dt_out["CPL"]                  = daily_tab["CPL"].apply(lambda v: fmt_brl(v) if v is not None else "—")
         dt_out["Consultas"]            = daily_tab["consultas"].apply(lambda v: fmt_num(v) if pd.notna(v) else "—")
         dt_out["Custo por Consulta"]   = daily_tab["custo_consulta"].apply(lambda v: fmt_brl(v) if v is not None else "—")
-        dt_out["Cirurgias Confirmadas"]= daily_tab["cirurgias"].apply(lambda v: fmt_num(v) if pd.notna(v) else "—")
-        dt_out["Custo por Cirurgia"]   = daily_tab["custo_cirurgia"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+        if tipo_cli == "clinica_geral":
+            dt_out["Cirurgias Confirmadas"] = daily_tab["cirurgias"].apply(lambda v: fmt_num(v) if pd.notna(v) else "—")
+            dt_out["Custo por Cirurgia"]    = daily_tab["custo_cirurgia"].apply(lambda v: fmt_brl(v) if v is not None else "—")
 
         st.dataframe(dt_out.set_index("Dia"), use_container_width=True)
 
