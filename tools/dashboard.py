@@ -531,6 +531,21 @@ with tab1:
 
         st.dataframe(dt_out.set_index("Dia"), use_container_width=True)
 
+        # ── Gráfico de pizza — Mensagens por dia ──────────────────────────────
+        pie_data = daily_tab[daily_tab["leads"] > 0].copy()
+        if not pie_data.empty:
+            pie_data["label"] = pie_data["date_start"].dt.strftime("%d/%m")
+            fig_pie = px.pie(
+                pie_data,
+                names="label",
+                values="leads",
+                title="Distribuição de Mensagens por Dia",
+                hole=0.3,
+            )
+            fig_pie.update_traces(textposition="inside", textinfo="percent+label")
+            fig_pie.update_layout(showlegend=False)
+            st.plotly_chart(fig_pie, use_container_width=True)
+
 # ══ TAB 2 — SEGUIDORES ════════════════════════════════════════════════════════
 
 with tab2:
