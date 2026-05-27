@@ -494,6 +494,24 @@ def _metric_rows_html(rows: list) -> str:
         )
     return '<div class="metrics-col">' + "".join(items) + "</div>"
 
+def build_funnel_html(labels, values, colors, pcts=None) -> str:
+    """Funil com blocos retangulares de bordas arredondadas e borda esquerda colorida."""
+    items = []
+    for i, (label, val, color) in enumerate(zip(labels, values, colors)):
+        pct_str = f"{pcts[i]:.1f}%" if pcts and i < len(pcts) and pcts[i] is not None else ""
+        val_str = f"{val:,}".replace(",", ".")
+        items.append(
+            f'<div style="background:{color}11;border:1px solid #1e2235;border-left:3px solid {color};'
+            f'border-radius:8px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">'
+            f'<div>'
+            f'<div style="font-size:10px;font-weight:700;color:{color};text-transform:uppercase;letter-spacing:1px">{label}</div>'
+            f'<div style="font-size:10px;color:#3d4466;margin-top:3px">{pct_str}</div>'
+            f'</div>'
+            f'<div style="font-size:24px;font-weight:900;color:#fff">{val_str}</div>'
+            f'</div>'
+        )
+    return '<div style="display:flex;flex-direction:column;gap:6px;padding:4px 0">' + "".join(items) + "</div>"
+
 def _vg_html(cards: list) -> str:
     """Renderiza cards de visão geral (ROAS, investimento)."""
     items = []
@@ -637,7 +655,7 @@ with tab1:
 
         st.markdown(_kpi_html([
             {"label": "Investimento c/ Impostos", "value": fmt_brl(total_investido_impostos_m),
-             "color": "cyan",   "badge": "E2-CAP + E1-DIST", "badge_cls": "ok"},
+             "color": "cyan",   "badge": "E2-CAP", "badge_cls": "ok"},
             {"label": "Novos Contatos",            "value": fmt_num(total_contacts) if total_contacts > 0 else "—",
              "color": "green"},
             {"label": "CPL Real",                  "value": fmt_brl(custo_contato) if custo_contato else "—",
@@ -666,57 +684,44 @@ with tab1:
 
         # Funil SVG customizado (removido da tab1 — mantido só no Funil Completo)
 
-        def build_funnel_svg(labels, values, colors):
-            W, H_stage, GAP = 300, 55, 4
-            n = len(labels)
-            stage_widths = [W * (1.0 - 0.82 * i / (n - 1)) for i in range(n)]
-            total_h = n * H_stage + (n - 1) * GAP
-            parts = [f'<svg viewBox="0 0 {W} {total_h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin:10px auto 0">']
-            for i, (label, val, color) in enumerate(zip(labels, values, colors)):
-                y = i * (H_stage + GAP)
-                top_w = stage_widths[i - 1] if i > 0 else W
-                bot_w = stage_widths[i]
-                xl_t, xr_t = (W - top_w) / 2, (W + top_w) / 2
-                xl_b, xr_b = (W - bot_w) / 2, (W + bot_w) / 2
-                pts = f"{xl_t:.1f},{y} {xr_t:.1f},{y} {xr_b:.1f},{y+H_stage} {xl_b:.1f},{y+H_stage}"
-                fill = color + "1a"  # fundo semi-transparente (~10%)
-                parts.append(f'<polygon points="{pts}" fill="{fill}" stroke="{color}" stroke-width="1.5"/>')
-                cy = y + H_stage / 2
-                # label na cor do estágio, uppercase
-                parts.append(f'<text x="{W/2}" y="{cy-8}" text-anchor="middle" fill="{color}" font-family="Inter,sans-serif" font-size="9" font-weight="700" letter-spacing="1">{label.upper()}</text>')
-                # valor em branco, destaque
-                val_str = f"{val:,}".replace(",", ".")
-                parts.append(f'<text x="{W/2}" y="{cy+13}" text-anchor="middle" fill="#ffffff" font-family="Inter,sans-serif" font-size="18" font-weight="900">{val_str}</text>')
-            parts.append('</svg>')
-            return "".join(parts)
+        # (build_funnel_svg movida para módulo — não usada aqui)
 
-        # Gráfico contatos por dia
+        # Gráficos
         fig_contatos = px.bar(
             daily_msg, x="date_start", y="Contatos",
-            title="Novos Contatos por Dia",
-            labels={"date_start": "Data"},
+            labels={"date_start": ""},
             color_discrete_sequence=["#00e676"],
         )
-        fig_contatos.update_layout(showlegend=False, xaxis_title="", yaxis_title="Contatos", **_PD)
+        fig_contatos.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
 
-        # Gráfico custo por contato por dia
         fig_custo = px.line(
             daily_msg.dropna(subset=["Custo/Contato"]),
             x="date_start", y="Custo/Contato",
-            title="Custo por Contato + Impostos por Dia (R$)",
-            labels={"date_start": "Data", "Custo/Contato": "R$"},
+            labels={"date_start": "", "Custo/Contato": ""},
             color_discrete_sequence=["#ffd600"],
         )
-        fig_custo.update_layout(xaxis_title="", yaxis_title="R$", **_PD)
+        fig_custo.update_layout(xaxis_title="", yaxis_title="", **_PD)
 
         col_g1, col_g2 = st.columns(2)
         with col_g1:
+            st.markdown("""
+            <div style="background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:18px 20px 4px">
+            <div style="font-size:13px;font-weight:700;color:#c8cce8">Novos Contatos por Dia</div>
+            <div style="font-size:11px;color:#3d4466;margin-top:2px;margin-bottom:8px">Mensagens iniciadas no período</div>
+            """, unsafe_allow_html=True)
             st.plotly_chart(fig_contatos, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
         with col_g2:
+            st.markdown("""
+            <div style="background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:18px 20px 4px">
+            <div style="font-size:13px;font-weight:700;color:#c8cce8">CPL por Dia (R$)</div>
+            <div style="font-size:11px;color:#3d4466;margin-top:2px;margin-bottom:8px">Custo por contato com imposto</div>
+            """, unsafe_allow_html=True)
             st.plotly_chart(fig_custo, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
         # Tabela por campanha
-        st.subheader("Por Campanha")
+        st.markdown('<div style="font-size:18px;font-weight:800;color:#e0e4f0;margin:16px 0 8px">Por Campanha</div>', unsafe_allow_html=True)
         camp_msg = (
             df_msg.groupby("campaign_name")
             .agg(
@@ -745,7 +750,7 @@ with tab1:
         st.dataframe(camp_out.set_index("Campanha"), use_container_width=True)
 
         # ── Tabela por dia ────────────────────────────────────────────────────
-        st.subheader("Por Dia")
+        st.markdown('<div style="font-size:18px;font-weight:800;color:#e0e4f0;margin:16px 0 8px">Por Dia</div>', unsafe_allow_html=True)
 
         daily_tab = (
             df_msg.groupby("date_start")
@@ -797,10 +802,10 @@ with tab1:
         dt_out["Leads"]                = daily_tab["leads"].apply(fmt_num)
         dt_out["CPL"]                  = daily_tab["CPL"].apply(lambda v: fmt_brl(v) if v is not None else "—")
         dt_out["Consultas"]            = daily_tab["consultas"].apply(lambda v: fmt_num(v) if pd.notna(v) else "—")
-        dt_out["Custo por Consulta"]   = daily_tab["custo_consulta"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+        dt_out["Custo por Consulta"]   = daily_tab["custo_consulta"].apply(lambda v: fmt_brl(v) if pd.notna(v) else "—")
         if tipo_cli == "clinica_geral":
             dt_out["Cirurgias Confirmadas"] = daily_tab["cirurgias"].apply(lambda v: fmt_num(v) if pd.notna(v) else "—")
-            dt_out["Custo por Cirurgia"]    = daily_tab["custo_cirurgia"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+            dt_out["Custo por Cirurgia"]    = daily_tab["custo_cirurgia"].apply(lambda v: fmt_brl(v) if pd.notna(v) else "—")
 
         st.dataframe(dt_out.set_index("Dia"), use_container_width=True)
 
@@ -857,29 +862,34 @@ with tab2:
         )
         daily_seg["Seguidores"] = daily_seg["Seguidores"].fillna(0)
 
+        fig1 = px.bar(daily_seg, x="date_start", y="Seguidores",
+                      labels={"date_start": ""}, color_discrete_sequence=["#00d4ff"])
+        fig1.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+
+        fig2 = px.line(daily_seg, x="date_start", y="CPM",
+                       labels={"date_start": "", "CPM": ""}, color_discrete_sequence=["#a78bfa"])
+        fig2.update_layout(xaxis_title="", yaxis_title="", **_PD)
+
         col_g1, col_g2 = st.columns(2)
         with col_g1:
-            fig1 = px.bar(
-                daily_seg, x="date_start", y="Seguidores",
-                title="Seguidores por Dia",
-                labels={"date_start": "Data"},
-                color_discrete_sequence=["#00d4ff"],
-            )
-            fig1.update_layout(showlegend=False, xaxis_title="", yaxis_title="Seguidores", **_PD)
+            st.markdown("""
+            <div style="background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:18px 20px 4px">
+            <div style="font-size:13px;font-weight:700;color:#c8cce8">Seguidores por Dia</div>
+            <div style="font-size:11px;color:#3d4466;margin-top:2px;margin-bottom:8px">Novos seguidores no período</div>
+            """, unsafe_allow_html=True)
             st.plotly_chart(fig1, use_container_width=True)
-
+            st.markdown("</div>", unsafe_allow_html=True)
         with col_g2:
-            fig2 = px.line(
-                daily_seg, x="date_start", y="CPM",
-                title="CPM por Dia (R$)",
-                labels={"date_start": "Data", "CPM": "CPM (R$)"},
-                color_discrete_sequence=["#a78bfa"],
-            )
-            fig2.update_layout(xaxis_title="", yaxis_title="CPM (R$)", **_PD)
+            st.markdown("""
+            <div style="background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:18px 20px 4px">
+            <div style="font-size:13px;font-weight:700;color:#c8cce8">CPM por Dia (R$)</div>
+            <div style="font-size:11px;color:#3d4466;margin-top:2px;margin-bottom:8px">Custo por mil impressões</div>
+            """, unsafe_allow_html=True)
             st.plotly_chart(fig2, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
         # Tabela por campanha
-        st.subheader("Por Campanha")
+        st.markdown('<div style="font-size:18px;font-weight:800;color:#e0e4f0;margin:16px 0 8px">Por Campanha</div>', unsafe_allow_html=True)
         camp_seg = (
             df_seg.groupby("campaign_name")
             .agg(Investido=("spend", "sum"), Impressões=("impressions", "sum"), Cliques=("clicks", "sum"))
@@ -952,18 +962,23 @@ with tab3:
         col_funil, col_metricas = st.columns([1, 1])
 
         with col_funil:
-            st.markdown("**Funil de Captação**")
+            st.markdown('<div style="font-size:13px;font-weight:700;color:#c8cce8;margin-bottom:4px">Funil de Captação</div>', unsafe_allow_html=True)
             if tipo_funil == "tricologia":
                 funil_labels_f = ["Impressões", "Cliques", "Mensagens", "Consultas"]
                 funil_values_f = [total_impressoes, total_cliques, total_msgs, total_consultas]
                 funil_colors_f = ["#00d4ff", "#7B6CF6", "#00e676", "#ffd600"]
+                funil_pcts_f   = [100.0,
+                                  ctr_f,
+                                  tx_passagem,
+                                  tx_agend]
             else:
                 funil_labels_f = ["Impressões", "Cliques", "Mensagens", "Consultas", "Cirurgias"]
                 funil_values_f = [total_impressoes, total_cliques, total_msgs, total_consultas, total_cirurgias]
                 funil_colors_f = ["#00d4ff", "#7B6CF6", "#00e676", "#ffd600", "#ff6b6b"]
+                funil_pcts_f   = [100.0, ctr_f, tx_passagem, tx_agend, tx_fech]
 
-            funil_svg_f = build_funnel_svg(funil_labels_f, funil_values_f, funil_colors_f)
-            st.markdown(funil_svg_f, unsafe_allow_html=True)
+            st.markdown(build_funnel_html(funil_labels_f, funil_values_f, funil_colors_f, funil_pcts_f),
+                        unsafe_allow_html=True)
 
         with col_metricas:
             _rows_metricas = [
@@ -1020,58 +1035,59 @@ with tab4:
 
     df_metas = fetch_agendamentos(agendamentos_id, primeiro_dia, ultimo_dia) if agendamentos_id else pd.DataFrame()
 
-    st.subheader(f"Metas de {hoje.strftime('%B de %Y').capitalize()}")
-    st.caption(f"Dia {dias_passados} de {dias_no_mes} · {dias_restantes} dias restantes")
-    st.divider()
+    st.markdown(
+        f'<div style="font-size:20px;font-weight:900;color:#e0e4f0;margin-bottom:2px">'
+        f'Metas de {hoje.strftime("%B de %Y").capitalize()}</div>'
+        f'<div style="font-size:11px;color:#3d4466;margin-bottom:16px">'
+        f'Dia {dias_passados} de {dias_no_mes} · {dias_restantes} dias restantes</div>',
+        unsafe_allow_html=True
+    )
+
+    def _meta_block(titulo, atual, meta, ritmo, proj, dias_rest, unidade="pacientes"):
+        faltam  = max(meta - atual, 0)
+        pct     = min(atual / meta * 100, 100) if meta > 0 else 0
+        nec     = faltam / dias_rest if dias_rest > 0 else 0
+        bater   = proj >= meta
+        cor_txt = "#00e676" if bater else "#ffd600"
+        status  = (f"✅ No ritmo atual ({ritmo:.1f}/dia) vai bater a meta — projeção: <b>{proj}</b> {unidade}."
+                   if bater else
+                   f"⚠️ Projeção: <b>{proj}</b> {unidade}. Precisa de <b>{nec:.1f}/dia</b> para bater a meta.")
+        pct_bar = round(pct)
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown(
+                f'<div style="background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:20px 24px">'
+                f'<div style="font-size:12px;font-weight:700;color:#3d4466;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">{titulo}</div>'
+                f'<div style="font-size:28px;font-weight:900;color:#e0e4f0;margin-bottom:4px">{atual} <span style="font-size:16px;color:#5a607a">/ {meta}</span></div>'
+                f'<div style="font-size:11px;color:#3d4466;margin-bottom:12px">faltam <b style="color:{cor_txt}">{faltam}</b> {unidade}</div>'
+                f'<div style="background:#161829;border-radius:4px;height:6px;margin-bottom:12px">'
+                f'<div style="background:linear-gradient(90deg,#00d4ff,#00e676);height:100%;border-radius:4px;width:{pct_bar}%"></div></div>'
+                f'<div style="font-size:12px;color:#8892b0">{status}</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+        with col2:
+            st.markdown(_kpi_html([
+                {"label": "Realizado",          "value": f"{atual}/{meta}",    "color": "cyan"},
+                {"label": "Projeção no mês",    "value": str(proj),            "color": "green" if bater else "yellow"},
+                {"label": "Ritmo atual",        "value": f"{ritmo:.1f}/dia",   "color": "white"},
+            ], cols=1), unsafe_allow_html=True)
 
     if tipo_cliente == "tricologia":
-        # ── Clínica PRC: só pacientes ─────────────────────────────────────────
         META_PACIENTES = client_cfg.get("meta_pacientes", 20)
 
         if df_metas is None or df_metas.empty:
-            # Sem planilha ainda — mostra apenas meta de leads da campanha
-            total_msgs = int(df_msg["messaging_contacts"].sum()) if not df_msg.empty else 0
-            pct = min(total_msgs / META_PACIENTES * 100, 100)
-            ritmo = total_msgs / dias_passados if dias_passados > 0 else 0
+            total_msgs_m = int(df_msg["messaging_contacts"].sum()) if not df_msg.empty else 0
+            ritmo = total_msgs_m / dias_passados if dias_passados > 0 else 0
             proj  = round(ritmo * dias_no_mes)
-
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                st.markdown("### 👤 Pacientes (Novos Contatos)")
-                st.markdown(f"**{total_msgs}** de **{META_PACIENTES}** · faltam **{max(META_PACIENTES - total_msgs, 0)}**")
-                st.progress(pct / 100)
-                if proj >= META_PACIENTES:
-                    st.success(f"No ritmo atual ({ritmo:.1f}/dia) vai bater a meta — projeção: **{proj}** pacientes.")
-                else:
-                    nec = (META_PACIENTES - total_msgs) / dias_restantes if dias_restantes > 0 else 0
-                    st.warning(f"Projeção atual: **{proj}** pacientes. Precisa de **{nec:.1f}/dia** para bater a meta.")
-            with col2:
-                st.metric("Realizado", f"{total_msgs}/{META_PACIENTES}")
-                st.metric("Projeção fim do mês", str(proj))
-                st.metric("Ritmo atual", f"{ritmo:.1f}/dia")
+            _meta_block("👤 Pacientes (Novos Contatos)", total_msgs_m, META_PACIENTES, ritmo, proj, dias_restantes, "pacientes")
         else:
             pacientes_atual = int(df_metas["consultas"].sum())
-            pct   = min(pacientes_atual / META_PACIENTES * 100, 100)
             ritmo = pacientes_atual / dias_passados if dias_passados > 0 else 0
             proj  = round(ritmo * dias_no_mes)
-
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                st.markdown("### 👤 Pacientes Atendidos")
-                st.markdown(f"**{pacientes_atual}** de **{META_PACIENTES}** · faltam **{max(META_PACIENTES - pacientes_atual, 0)}**")
-                st.progress(pct / 100)
-                if proj >= META_PACIENTES:
-                    st.success(f"No ritmo atual ({ritmo:.1f}/dia) vai bater a meta — projeção: **{proj}** pacientes.")
-                else:
-                    nec = (META_PACIENTES - pacientes_atual) / dias_restantes if dias_restantes > 0 else 0
-                    st.warning(f"Projeção atual: **{proj}** pacientes. Precisa de **{nec:.1f}/dia** para bater a meta.")
-            with col2:
-                st.metric("Realizado", f"{pacientes_atual}/{META_PACIENTES}")
-                st.metric("Projeção fim do mês", str(proj))
-                st.metric("Ritmo atual", f"{ritmo:.1f}/dia")
+            _meta_block("👤 Pacientes Atendidos", pacientes_atual, META_PACIENTES, ritmo, proj, dias_restantes, "pacientes")
 
     else:
-        # ── Clínica geral: consultas + cirurgias (Dr. Vinicius) ───────────────
         META_CONSULTAS = client_cfg.get("meta_consultas", 40)
         META_CIRURGIAS = client_cfg.get("meta_cirurgias", 16)
 
@@ -1086,41 +1102,8 @@ with tab4:
             proj_consultas  = round(ritmo_consultas * dias_no_mes)
             proj_cirurgias  = round(ritmo_cirurgias * dias_no_mes)
 
-            pct_consultas = min(consultas_atual / META_CONSULTAS * 100, 100)
-            pct_cirurgias = min(cirurgias_atual / META_CIRURGIAS * 100, 100)
-
-            # ── Consultas ─────────────────────────────────────────────────────
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                st.markdown("### 📅 Agendamentos (Consultas)")
-                st.markdown(f"**{consultas_atual}** de **{META_CONSULTAS}** · faltam **{max(META_CONSULTAS - consultas_atual, 0)}**")
-                st.progress(pct_consultas / 100)
-                if proj_consultas >= META_CONSULTAS:
-                    st.success(f"No ritmo atual ({ritmo_consultas:.1f}/dia) você vai bater a meta — projeção: **{proj_consultas}** consultas no mês.")
-                else:
-                    necessario = (META_CONSULTAS - consultas_atual) / dias_restantes if dias_restantes > 0 else 0
-                    st.warning(f"Projeção atual: **{proj_consultas}** consultas. Precisa de **{necessario:.1f}/dia** nos próximos {dias_restantes} dias para bater a meta.")
-            with col2:
-                st.metric("Realizado", f"{consultas_atual}/{META_CONSULTAS}")
-                st.metric("Projeção fim do mês", str(proj_consultas))
-                st.metric("Ritmo atual", f"{ritmo_consultas:.1f}/dia")
-
-            st.divider()
-
-            # ── Cirurgias ─────────────────────────────────────────────────────
-            col3, col4 = st.columns([2, 1])
-            with col3:
-                st.markdown("### 🔬 Cirurgias")
-                st.markdown(f"**{cirurgias_atual}** de **{META_CIRURGIAS}** · faltam **{max(META_CIRURGIAS - cirurgias_atual, 0)}**")
-                st.progress(pct_cirurgias / 100)
-                if proj_cirurgias >= META_CIRURGIAS:
-                    st.success(f"No ritmo atual ({ritmo_cirurgias:.1f}/dia) você vai bater a meta — projeção: **{proj_cirurgias}** cirurgias no mês.")
-                elif cirurgias_atual == 0:
-                    st.warning(f"Nenhuma cirurgia registrada ainda. Meta: {META_CIRURGIAS} cirurgias.")
-                else:
-                    necessario_cir = (META_CIRURGIAS - cirurgias_atual) / dias_restantes if dias_restantes > 0 else 0
-                    st.warning(f"Projeção atual: **{proj_cirurgias}** cirurgias. Precisa de **{necessario_cir:.1f}/dia** nos próximos {dias_restantes} dias para bater a meta.")
-            with col4:
-                st.metric("Realizado", f"{cirurgias_atual}/{META_CIRURGIAS}")
-                st.metric("Projeção fim do mês", str(proj_cirurgias))
-                st.metric("Ritmo atual", f"{ritmo_cirurgias:.1f}/dia")
+            _meta_block("📅 Agendamentos (Consultas)", consultas_atual, META_CONSULTAS,
+                        ritmo_consultas, proj_consultas, dias_restantes, "consultas")
+            st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+            _meta_block("🔬 Cirurgias", cirurgias_atual, META_CIRURGIAS,
+                        ritmo_cirurgias, proj_cirurgias, dias_restantes, "cirurgias")
