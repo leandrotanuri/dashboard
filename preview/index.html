@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard Meta Ads — Preview</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0b0d17;color:#fff;display:flex;min-height:100vh}
+
+/* ── Sidebar ── */
+.sidebar{width:220px;min-height:100vh;background:#0f1120;border-right:1px solid #1e2235;
+  display:flex;flex-direction:column;padding:24px 14px;gap:6px;flex-shrink:0}
+.logo{color:#fff;font-size:16px;font-weight:800;padding:4px 10px 20px;display:flex;align-items:center;gap:8px}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,#00d4ff,#7B6CF6);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:15px}
+.sb-label{color:#3d4466;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  padding:4px 10px;margin-top:10px}
+.sb-select{background:#161829;border:1px solid #1e2235;color:#c8cce8;padding:9px 10px;
+  border-radius:8px;font-size:13px;width:100%;cursor:pointer;outline:none;font-family:inherit}
+.nav{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;
+  color:#5a607a;font-size:13px;cursor:pointer;transition:.15s;font-weight:500}
+.nav:hover{background:#161829;color:#c8cce8}
+.nav.active{background:linear-gradient(135deg,#00d4ff18,#7B6CF618);color:#00d4ff;font-weight:700;border:1px solid #00d4ff33}
+.sb-footer{margin-top:auto;padding-top:14px;border-top:1px solid #1e2235}
+.avatar-row{display:flex;align-items:center;gap:9px;padding:9px 10px}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#7B6CF6);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px}
+.uname{color:#c8cce8;font-size:12px;font-weight:700}
+.urole{color:#3d4466;font-size:10px}
+
+/* ── Main ── */
+.main{flex:1;padding:24px;display:flex;flex-direction:column;gap:18px;overflow:auto}
+.topbar{display:flex;align-items:center;justify-content:space-between}
+.topbar h1{font-size:20px;font-weight:800;color:#fff;letter-spacing:.3px}
+.topbar .sub{color:#3d4466;font-size:12px;margin-top:3px}
+.date-btn{background:#161829;border:1px solid #1e2235;color:#c8cce8;padding:8px 14px;
+  border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;border-bottom:1px solid #1e2235;padding-bottom:0}
+.tab{padding:8px 16px;font-size:12px;font-weight:600;color:#5a607a;cursor:pointer;
+  border-bottom:2px solid transparent;transition:.15s}
+.tab.active{color:#00d4ff;border-color:#00d4ff}
+
+/* ── KPI Grid ── */
+.kpi-grid{display:grid;gap:12px}
+.kpi-card{background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:18px 20px;
+  display:flex;flex-direction:column;gap:8px;transition:.2s;overflow:hidden}
+.kpi-card:hover{border-color:#2a2f50;transform:translateY(-1px)}
+.kpi-label{font-size:10px;font-weight:700;color:#3d4466;text-transform:uppercase;letter-spacing:1.2px}
+.kpi-value{font-size:28px;font-weight:900;line-height:1;letter-spacing:-1px}
+.cyan{color:#00d4ff}.green{color:#00e676}.yellow{color:#ffd600}.white{color:#fff}.purple{color:#a78bfa}
+.kpi-bar{height:2px;border-radius:2px;margin-top:2px}
+
+/* ── Charts ── */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chart-header{margin-bottom:12px}
+.chart-title{font-size:13px;font-weight:700;color:#c8cce8}
+.chart-sub{font-size:11px;color:#3d4466;margin-top:2px}
+
+/* ── Tables ── */
+.tbl-section{display:flex;flex-direction:column;gap:6px}
+.tbl-title{font-size:18px;font-weight:800;color:#e0e4f0}
+.tbl-sub{font-size:11px;color:#3d4466}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:#3d4466;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+  padding:9px 12px;text-align:left;border-bottom:1px solid #1e2235;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #161829;color:#8892b0;white-space:nowrap}
+tr:hover td{background:#161829}
+td.bold{color:#fff;font-weight:700}
+td.tgreen{color:#00e676;font-weight:700}
+td.tday{color:#c8cfe0;font-weight:600}
+.pill{display:inline-block;padding:4px 13px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:.4px;min-width:64px;text-align:center}
+.pill.ok  {background:rgba(0,230,118,.18);color:#00e676;border:1px solid rgba(0,230,118,.4)}
+.pill.warn{background:rgba(255,214,0,.18);color:#ffd600;border:1px solid rgba(255,214,0,.4)}
+.pill.bad {background:rgba(255,68,68,.18);color:#ff4444;border:1px solid rgba(255,68,68,.4)}
+
+/* ── Funnel Blocks ── */
+.funnel-col{display:flex;flex-direction:column;gap:6px}
+.fblock{border-radius:8px;padding:14px 20px;display:flex;align-items:center;
+  justify-content:space-between;border-left:3px solid transparent}
+.fblock-left{display:flex;flex-direction:column;gap:3px}
+.fblock-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.85}
+.fblock-pct{font-size:10px;color:#3d4466}
+.fblock-val{font-size:24px;font-weight:900;color:#fff}
+.f1{background:#00d4ff11;border-color:#00d4ff}.f1 .fblock-name{color:#00d4ff}
+.f2{background:#7B6CF611;border-color:#7B6CF6}.f2 .fblock-name{color:#7B6CF6}
+.f3{background:#00e67611;border-color:#00e676}.f3 .fblock-name{color:#00e676}
+.f4{background:#ffd60011;border-color:#ffd600}.f4 .fblock-name{color:#ffd600}
+
+/* ── Metric Rows ── */
+.metrics-col{display:flex;flex-direction:column;gap:7px}
+.mrow{background:#161829;border-radius:8px;padding:12px 14px;
+  display:flex;justify-content:space-between;align-items:center;border:1px solid #1e2235}
+.mrow-label{font-size:10px;color:#3d4466;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.mrow-val{font-size:16px;font-weight:800}
+
+/* ── ROAS cards ── */
+.roas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.roas-card{background:#0f1120;border:1px solid #1e2235;border-radius:10px;padding:14px 18px}
+.roas-label{font-size:10px;font-weight:700;color:#3d4466;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.roas-val{font-size:22px;font-weight:900;color:#e0e4f0}
+
+/* ── Fat cards ── */
+.fat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+
+/* ── Meta block ── */
+.meta-card{background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:20px 24px}
+.meta-label{font-size:12px;font-weight:700;color:#3d4466;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.meta-val{font-size:28px;font-weight:900;color:#e0e4f0;margin-bottom:4px}
+.meta-faltam{font-size:11px;color:#3d4466;margin-bottom:12px}
+.meta-bar-bg{background:#161829;border-radius:4px;height:6px;margin-bottom:12px}
+.meta-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#00d4ff,#00e676)}
+.meta-status{font-size:12px;color:#8892b0}
+
+/* ── Two col layout ── */
+.two-col{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.funnel-metrics-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+
+/* ── Section divider ── */
+.divider{border:none;border-top:1px solid #1e2235;margin:4px 0}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#0b0d17}
+::-webkit-scrollbar-thumb{background:#1e2235;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo"><div class="logo-icon">📊</div>META ADS</div>
+  <div class="sb-label">Cliente</div>
+  <select class="sb-select"><option>Clínica PRC</option><option>Dr. Vinicius</option></select>
+  <div class="sb-label" style="margin-top:18px">Navegação</div>
+  <div class="nav active" onclick="showTab('msg')">💬 Mensagens</div>
+  <div class="nav" onclick="showTab('seg')">👥 Seguidores</div>
+  <div class="nav" onclick="showTab('funil')">📊 Funil Completo</div>
+  <div class="nav" onclick="showTab('meta')">🎯 Metas</div>
+  <div class="sb-footer">
+    <div class="avatar-row">
+      <div class="avatar">LT</div>
+      <div><div class="uname">Leandro Tanuri</div><div class="urole">Gestor de Tráfego</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="topbar">
+    <div>
+      <h1>Clínica PRC — Maio 2026</h1>
+      <div class="sub">Atualizado 27/05/2026 às 14:32 · Cache 2h</div>
+    </div>
+    <button class="date-btn">📅 01/05 → 27/05/2026 ▾</button>
+  </div>
+
+  <!-- ══ TAB: MENSAGENS ══ -->
+  <div id="tab-msg">
+    <!-- KPI 6 cards -->
+    <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)">
+      <div class="kpi-card">
+        <div class="kpi-label">Investimento c/ Impostos</div>
+        <div class="kpi-value cyan">R$ 1.878,53</div>
+        <div class="kpi-bar" style="background:linear-gradient(90deg,#00d4ff,#7B6CF6)"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Novos Contatos</div>
+        <div class="kpi-value green">450</div>
+        <div class="kpi-bar" style="background:linear-gradient(90deg,#00e676,#00b248)"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">CPL Real</div>
+        <div class="kpi-value yellow">R$ 4,17</div>
+        <div class="kpi-bar" style="background:linear-gradient(90deg,#ffd600,#ff8f00)"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">CPM</div>
+        <div class="kpi-value white">R$ 26,71</div>
+        <div class="kpi-bar" style="background:linear-gradient(90deg,#7B6CF6,#a855f7)"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">CTR</div>
+        <div class="kpi-value white">3,46%</div>
+        <div class="kpi-bar" style="background:linear-gradient(90deg,#7B6CF6,#a855f7)"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">CPC</div>
+        <div class="kpi-value white">R$ 1,12</div>
+        <div class="kpi-bar" style="background:linear-gradient(90deg,#7B6CF6,#a855f7)"></div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div>
+        <div class="chart-header">
+          <div class="chart-title">Novos Contatos por Dia</div>
+          <div class="chart-sub">Mensagens iniciadas no período</div>
+        </div>
+        <canvas id="chartContatos" height="90"></canvas>
+      </div>
+      <div>
+        <div class="chart-header">
+          <div class="chart-title">CPL por Dia (R$)</div>
+          <div class="chart-sub">Custo por contato com imposto</div>
+        </div>
+        <canvas id="chartCPL" height="90"></canvas>
+      </div>
+    </div>
+
+    <!-- Por Campanha -->
+    <div class="tbl-section">
+      <div>
+        <div class="tbl-title">Por Campanha</div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>CAMPANHA</th><th>INVESTIDO</th><th>CONTATOS</th><th>CUSTO/CONTATO</th><th>IMPRESSÕES</th><th>CPM</th><th>CTR</th><th>CPC</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="color:#c8cfe0;font-weight:600;max-width:320px;overflow:hidden;text-overflow:ellipsis">PRC | E2-CAP | P1-QUENTE | LEAD | ABO | 2026-03-19 | WhatsApp / Dr João</td>
+              <td>R$ 1.034,31</td><td class="bold">332</td><td class="yellow">R$ 3,12</td>
+              <td>43.747</td><td>R$ 23,64</td><td>3,71%</td><td>R$ 1,64</td>
+            </tr>
+            <tr>
+              <td style="color:#c8cfe0;font-weight:600">PRC | E2-CAP | P1-QUENTE | LEAD | ABO | 2026-04-02 | WhatsApp</td>
+              <td>R$ 615,24</td><td class="bold">118</td><td class="yellow">R$ 5,21</td>
+              <td>17.985</td><td>R$ 34,21</td><td>2,83%</td><td>R$ 3,17</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Por Dia -->
+    <div class="tbl-section">
+      <div>
+        <div class="tbl-title">Por Dia</div>
+        <div class="tbl-sub">Detalhamento diário</div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>DIA</th><th>INVEST.</th><th>CPM</th><th>CPC</th><th>CTR</th><th>TX. PASSAGEM</th><th>LEADS</th><th>CPL</th><th>CONSULTAS</th><th>CUSTO/CONS.</th></tr></thead>
+          <tbody id="tbody-dia"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: SEGUIDORES ══ -->
+  <div id="tab-seg" style="display:none">
+    <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)">
+      <div class="kpi-card"><div class="kpi-label">Investimento c/ Impostos</div><div class="kpi-value cyan">R$ 226,14</div><div class="kpi-bar" style="background:linear-gradient(90deg,#00d4ff,#7B6CF6)"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Seguidores Ganhos</div><div class="kpi-value green">342</div><div class="kpi-bar" style="background:linear-gradient(90deg,#00e676,#00b248)"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Custo por Seguidor</div><div class="kpi-value yellow">R$ 0,66</div><div class="kpi-bar" style="background:linear-gradient(90deg,#ffd600,#ff8f00)"></div></div>
+      <div class="kpi-card"><div class="kpi-label">CPM</div><div class="kpi-value white">R$ 38,85</div><div class="kpi-bar" style="background:linear-gradient(90deg,#7B6CF6,#a855f7)"></div></div>
+      <div class="kpi-card"><div class="kpi-label">CTR</div><div class="kpi-value white">1,24%</div><div class="kpi-bar" style="background:linear-gradient(90deg,#7B6CF6,#a855f7)"></div></div>
+      <div class="kpi-card"><div class="kpi-label">CPC</div><div class="kpi-value white">R$ 3,14</div><div class="kpi-bar" style="background:linear-gradient(90deg,#7B6CF6,#a855f7)"></div></div>
+    </div>
+    <div class="charts-row">
+      <div>
+        <div class="chart-header"><div class="chart-title">Seguidores por Dia</div><div class="chart-sub">Novos seguidores no período</div></div>
+        <canvas id="chartSeg" height="90"></canvas>
+      </div>
+      <div>
+        <div class="chart-header"><div class="chart-title">CPM por Dia (R$)</div><div class="chart-sub">Custo por mil impressões</div></div>
+        <canvas id="chartCPM" height="90"></canvas>
+      </div>
+    </div>
+    <div class="tbl-section">
+      <div><div class="tbl-title">Por Dia</div><div class="tbl-sub">Seguidores ganhos por dia</div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>DIA</th><th>INVESTIDO</th><th>SEGUIDORES</th><th>CUSTO/SEG</th></tr></thead>
+          <tbody>
+            <tr><td class="tday">01/05/2026</td><td>R$ 8,42</td><td class="tgreen">12</td><td style="color:#ffd600;font-weight:700">R$ 0,80</td></tr>
+            <tr><td class="tday">02/05/2026</td><td>R$ 7,89</td><td class="tgreen">9</td><td style="color:#ffd600;font-weight:700">R$ 1,00</td></tr>
+            <tr><td class="tday">03/05/2026</td><td>R$ 9,21</td><td class="tgreen">14</td><td style="color:#ffd600;font-weight:700">R$ 0,75</td></tr>
+            <tr><td class="tday">04/05/2026</td><td>R$ 8,55</td><td class="tgreen">11</td><td style="color:#ffd600;font-weight:700">R$ 0,89</td></tr>
+            <tr><td class="tday">05/05/2026</td><td>R$ 9,87</td><td class="tgreen">15</td><td style="color:#ffd600;font-weight:700">R$ 0,75</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: FUNIL COMPLETO ══ -->
+  <div id="tab-funil" style="display:none">
+    <!-- ROAS / Investimento -->
+    <div class="roas-grid">
+      <div class="roas-card"><div class="roas-label">Investimento Líquido</div><div class="roas-val cyan" style="font-size:24px">R$ 1.648,80</div></div>
+      <div class="roas-card"><div class="roas-label">Investimento + Impostos</div><div class="roas-val cyan" style="font-size:24px">R$ 1.878,53</div></div>
+      <div class="roas-card"><div class="roas-label">ROAS</div><div class="roas-val green" style="font-size:24px">3,1x</div></div>
+      <div class="roas-card"><div class="roas-label">ROAS c/ Impostos</div><div class="roas-val green" style="font-size:24px">2,7x</div></div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- Funil + Métricas -->
+    <div class="funnel-metrics-row">
+      <div>
+        <div class="chart-title" style="margin-bottom:10px">Funil de Captação</div>
+        <div class="funnel-col" style="gap:2px;padding:6px 0">
+          <!-- IMPRESSÕES — 100% width -->
+          <div class="fblock f1" style="width:100%">
+            <div class="fblock-left"><div class="fblock-name">Impressões</div><div class="fblock-pct">100% do alcance</div></div>
+            <div class="fblock-val">61.732</div>
+          </div>
+          <!-- connector -->
+          <div style="width:82%;margin:0 auto;text-align:center;color:#3d4466;font-size:10px;padding:2px 0;letter-spacing:.5px">▼ 3,5%</div>
+          <!-- CLIQUES — 82% width -->
+          <div class="fblock f2" style="width:82%;margin:0 auto">
+            <div class="fblock-left"><div class="fblock-name">Cliques</div><div class="fblock-pct">3,46% do anterior</div></div>
+            <div class="fblock-val">2.133</div>
+          </div>
+          <!-- connector -->
+          <div style="width:66%;margin:0 auto;text-align:center;color:#3d4466;font-size:10px;padding:2px 0;letter-spacing:.5px">▼ 21,1%</div>
+          <!-- MENSAGENS — 66% width -->
+          <div class="fblock f3" style="width:66%;margin:0 auto">
+            <div class="fblock-left"><div class="fblock-name">Mensagens</div><div class="fblock-pct">21,10% do anterior</div></div>
+            <div class="fblock-val">450</div>
+          </div>
+          <!-- connector -->
+          <div style="width:52%;margin:0 auto;text-align:center;color:#3d4466;font-size:10px;padding:2px 0;letter-spacing:.5px">▼ 1,8%</div>
+          <!-- CONSULTAS — 52% width -->
+          <div class="fblock f4" style="width:52%;margin:0 auto">
+            <div class="fblock-left"><div class="fblock-name">Consultas</div><div class="fblock-pct">1,78% do anterior</div></div>
+            <div class="fblock-val">8</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="chart-title" style="margin-bottom:10px">Métricas de Performance</div>
+        <div class="metrics-col">
+          <div class="mrow"><div class="mrow-label">CPM</div><div class="mrow-val cyan">R$ 38,85</div></div>
+          <div class="mrow"><div class="mrow-label">CTR</div><div class="mrow-val green">3,46%</div></div>
+          <div class="mrow"><div class="mrow-label">CPC</div><div class="mrow-val white">R$ 1,12</div></div>
+          <div class="mrow"><div class="mrow-label">CPL (por MSG)</div><div class="mrow-val yellow">R$ 5,33</div></div>
+          <div class="mrow"><div class="mrow-label">Tx. Passagem</div><div class="mrow-val green">21,10%</div></div>
+          <div class="mrow"><div class="mrow-label">Tx. Agendamento</div><div class="mrow-val green">1,78%</div></div>
+          <div class="mrow"><div class="mrow-label">Custo / Consulta</div><div class="mrow-val yellow">R$ 341,35</div></div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- Faturamento -->
+    <div>
+      <div class="chart-title" style="margin-bottom:10px">Faturamento</div>
+      <div class="fat-grid">
+        <div class="roas-card"><div class="roas-label">Consultas</div><div class="roas-val white" style="font-size:28px">8</div></div>
+        <div class="roas-card"><div class="roas-label">Ticket Médio Consulta</div><div class="roas-val yellow" style="font-size:22px">R$ 645,00</div></div>
+        <div class="roas-card"><div class="roas-label">Faturamento Total</div><div class="roas-val green" style="font-size:22px">R$ 5.160,00</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: METAS ══ -->
+  <div id="tab-meta" style="display:none">
+    <div style="font-size:20px;font-weight:900;color:#e0e4f0;margin-bottom:2px">Metas de Maio de 2026</div>
+    <div style="font-size:11px;color:#3d4466;margin-bottom:16px">Dia 27 de 31 · 4 dias restantes</div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
+      <div class="meta-card">
+        <div class="meta-label">👤 Pacientes Atendidos</div>
+        <div class="meta-val">8 <span style="font-size:16px;color:#5a607a">/ 20</span></div>
+        <div class="meta-faltam">faltam <b style="color:#ffd600">12</b> pacientes</div>
+        <div class="meta-bar-bg"><div class="meta-bar-fill" style="width:40%"></div></div>
+        <div class="meta-status">⚠️ Projeção: <b>9</b> pacientes. Precisa de <b>3,0/dia</b> para bater a meta.</div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:1fr">
+        <div class="kpi-card"><div class="kpi-label">Realizado</div><div class="kpi-value cyan" style="font-size:22px">8/20</div></div>
+        <div class="kpi-card"><div class="kpi-label">Projeção no Mês</div><div class="kpi-value yellow" style="font-size:22px">9</div></div>
+        <div class="kpi-card"><div class="kpi-label">Ritmo Atual</div><div class="kpi-value white" style="font-size:22px">0,3/dia</div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// Tab switching
+function showTab(id){
+  ['msg','seg','funil','meta'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = t===id?'':'none';
+  });
+  document.querySelectorAll('.nav').forEach((n,i)=>{
+    n.classList.toggle('active', ['msg','seg','funil','meta'][i]===id);
+  });
+}
+
+// ── Por Dia table data ──
+const dias=[
+  ['01/05','R$ 57,87','R$ 23,00','R$ 1,75','1,31%','44,8%',13,'R$ 4,45','—','—'],
+  ['02/05','R$ 52,22','R$ 22,10','R$ 3,28','0,67%','42,9%',6,'R$ 8,70','—','—'],
+  ['03/05','R$ 66,58','R$ 21,82','R$ 1,77','1,23%','36,4%',12,'R$ 5,55','—','—'],
+  ['04/05','R$ 72,97','R$ 23,47','R$ 1,83','1,28%','48,6%',17,'R$ 4,29',1,'R$ 72,97'],
+  ['05/05','R$ 73,62','R$ 26,14','R$ 2,23','1,17%','51,7%',15,'R$ 4,91','—','—'],
+  ['06/05','R$ 65,43','R$ 27,31','R$ 2,21','1,24%','61,5%',16,'R$ 4,09',3,'R$ 21,81'],
+  ['07/05','R$ 67,54','R$ 29,62','R$ 1,91','1,55%','54,8%',17,'R$ 3,97',1,'R$ 67,54'],
+  ['10/05','R$ 70,46','R$ 23,85','R$ 1,19','2,00%','50,0%',26,'R$ 2,71',3,'R$ 23,49'],
+];
+const tbody = document.getElementById('tbody-dia');
+dias.forEach(r=>{
+  const tx = r[5];
+  const pct = parseFloat(tx);
+  const pillCls = pct>=50?'ok':(pct>=35?'warn':'bad');
+  const consult = r[8];
+  const consultCell = consult==='—'?`<td>—</td>`:`<td class="tgreen">${consult}</td>`;
+  tbody.innerHTML+=`<tr>
+    <td class="tday">${r[0]}/2026</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td>
+    <td><span class="pill ${pillCls}">${tx}</span></td>
+    <td class="bold">${r[6]}</td><td>${r[7]}</td>${consultCell}<td>${r[9]}</td>
+  </tr>`;
+});
+
+// ── Charts config ──
+Chart.defaults.color='#3d4466';
+Chart.defaults.borderColor='#1e2235';
+
+const days=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27'];
+const leads=[13,6,12,17,15,16,17,14,16,26,26,19,16,25,21,22,25,26,24,25,18,4,8,13,9,12,5];
+const cpl=[4.45,8.70,5.55,4.29,4.91,4.09,3.97,4.74,4.00,2.71,2.48,3.46,3.83,2.44,2.95,2.60,2.72,2.85,2.94,2.64,3.44,14.7,6.91,5.06,5.30,6.20,10.50];
+const segData=[12,9,14,11,15,13,10,16,12,11,14,9,13,15,12,11,14,10,13,16,12,8,11,14,9,12,7];
+const cpmData=[40,38.5,36.7,39.2,37.8,41.2,38.9,36.4,39.8,38.1,37.5,40.3,39.1,36.8,38.2,39.5,37.9,40.7,38.4,36.9,39.3,41.8,38.7,37.2,40.1,38.6,41.5];
+
+// Gradient bar colors: cyan → green
+function gradColors(n,r0,g0,b0,r1,g1,b1){
+  return Array.from({length:n},(_,i)=>{
+    const t=n>1?i/(n-1):0;
+    return `rgb(${Math.round(r0+(r1-r0)*t)},${Math.round(g0+(g1-g0)*t)},${Math.round(b0+(b1-b0)*t)})`;
+  });
+}
+const cyanGreen=gradColors(days.length,0,212,255,0,230,118);
+const cyanBlue=gradColors(days.length,0,212,255,100,180,255);
+
+new Chart('chartContatos',{type:'bar',data:{labels:days,datasets:[{data:leads,backgroundColor:cyanGreen,borderRadius:3,borderSkipped:false}]},
+  options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#1e2235'}}},responsive:true}});
+
+new Chart('chartCPL',{type:'line',data:{labels:days,datasets:[{data:cpl,borderColor:'#ffd600',borderWidth:2,
+  backgroundColor:'rgba(255,214,0,0.06)',fill:true,tension:.4,pointRadius:0}]},
+  options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#1e2235'}}},responsive:true}});
+
+new Chart('chartSeg',{type:'bar',data:{labels:days,datasets:[{data:segData,backgroundColor:cyanBlue,borderRadius:3,borderSkipped:false}]},
+  options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#1e2235'}}},responsive:true}});
+
+new Chart('chartCPM',{type:'line',data:{labels:days,datasets:[{data:cpmData,borderColor:'#a78bfa',borderWidth:2,
+  backgroundColor:'rgba(167,139,250,0.06)',fill:true,tension:.4,pointRadius:0}]},
+  options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#1e2235'}}},responsive:true}});
+</script>
+</body>
+</html>

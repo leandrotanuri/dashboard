@@ -439,6 +439,12 @@ footer    { visibility: hidden; }
 .badge.down { background:#ff444422; color:#ff4444; }
 .badge.warn { background:#ffd60022; color:#ffd600; }
 
+/* ── Pills (TX. Passagem) — destaque ── */
+.pill { display:inline-block; padding:4px 13px; border-radius:99px; font-size:12px; font-weight:700; letter-spacing:.4px; min-width:64px; text-align:center; }
+.pill.ok   { background:rgba(0,230,118,.18); color:#00e676; border:1px solid rgba(0,230,118,.4); }
+.pill.warn { background:rgba(255,214,0,.18);  color:#ffd600; border:1px solid rgba(255,214,0,.4); }
+.pill.bad  { background:rgba(255,68,68,.18);  color:#ff4444; border:1px solid rgba(255,68,68,.4); }
+
 /* ── Metric rows customizados ── */
 .metrics-col { display:flex; flex-direction:column; gap:7px; }
 .metric-row {
@@ -572,22 +578,39 @@ def _tabela_campanha_html(camp_out: pd.DataFrame) -> str:
     )
 
 def build_funnel_html(labels, values, colors, pcts=None) -> str:
-    """Funil com blocos retangulares de bordas arredondadas e borda esquerda colorida."""
+    """Funil visual com blocos de largura decrescente — efeito funil real."""
+    _WIDTHS = [100, 82, 66, 52, 40]
     items = []
     for i, (label, val, color) in enumerate(zip(labels, values, colors)):
-        pct_str = f"{pcts[i]:.1f}%" if pcts and i < len(pcts) and pcts[i] is not None else ""
+        w = _WIDTHS[i] if i < len(_WIDTHS) else 36
         val_str = f"{val:,}".replace(",", ".")
+        if i == 0:
+            pct_sub = "100% do alcance"
+        elif pcts and i < len(pcts) and pcts[i] is not None:
+            pct_sub = f"{pcts[i]:.2f}% do anterior"
+        else:
+            pct_sub = ""
+        # seta de conversão entre blocos
+        connector = ""
+        if i > 0 and pcts and i < len(pcts) and pcts[i] is not None:
+            connector = (
+                f'<div style="width:{w}%;margin:0 auto;text-align:center;'
+                f'color:#3d4466;font-size:10px;padding:2px 0;letter-spacing:.5px">▼ {pcts[i]:.1f}%</div>'
+            )
         items.append(
-            f'<div style="background:{color}11;border:1px solid #1e2235;border-left:3px solid {color};'
-            f'border-radius:8px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">'
+            connector +
+            f'<div style="width:{w}%;margin:0 auto;background:{color}15;'
+            f'border:1px solid {color}40;border-left:4px solid {color};'
+            f'border-radius:8px;padding:14px 20px;'
+            f'display:flex;align-items:center;justify-content:space-between">'
             f'<div>'
-            f'<div style="font-size:10px;font-weight:700;color:{color};text-transform:uppercase;letter-spacing:1px">{label}</div>'
-            f'<div style="font-size:10px;color:#3d4466;margin-top:3px">{pct_str}</div>'
+            f'<div style="font-size:10px;font-weight:700;color:{color};text-transform:uppercase;letter-spacing:1.2px">{label}</div>'
+            f'<div style="font-size:10px;color:#3d4466;margin-top:3px">{pct_sub}</div>'
             f'</div>'
             f'<div style="font-size:24px;font-weight:900;color:#fff">{val_str}</div>'
             f'</div>'
         )
-    return '<div style="display:flex;flex-direction:column;gap:6px;padding:4px 0">' + "".join(items) + "</div>"
+    return '<div style="display:flex;flex-direction:column;gap:2px;padding:6px 0">' + "".join(items) + "</div>"
 
 def _vg_html(cards: list) -> str:
     """Renderiza cards de visão geral (ROAS, investimento)."""
@@ -1012,20 +1035,27 @@ with tab2:
         <div style="font-size:11px;color:#3d4466;margin-bottom:10px">Seguidores ganhos por dia</div>
         """, unsafe_allow_html=True)
 
-        seg_tab = daily_seg[["date_start", "spend", "Seguidores", "CPM"]].copy()
+        seg_tab = daily_seg[["date_start", "spend", "Seguidores"]].copy()
         seg_tab["Dia"]       = seg_tab["date_start"].dt.strftime("%d/%m/%Y")
         seg_tab["Investido"] = seg_tab["spend"].apply(fmt_brl)
-        seg_tab["Seg."]      = seg_tab["Seguidores"].apply(lambda v: fmt_num(int(v)) if v > 0 else "—")
-        seg_tab["CPM"]       = seg_tab["CPM"].apply(fmt_brl)
+        seg_tab["Seg."]      = seg_tab["Seguidores"].apply(
+            lambda v: fmt_num(int(v)) if pd.notna(v) and v > 0 else "—"
+        )
+        seg_tab["Custo/Seg"] = seg_tab.apply(
+            lambda r: fmt_brl(r["spend"] * TAX_MULTIPLIER / r["Seguidores"])
+            if pd.notna(r["Seguidores"]) and r["Seguidores"] > 0 else "—",
+            axis=1,
+        )
 
-        seg_thead = "".join(f"<th>{h}</th>" for h in ["DIA", "INVESTIDO", "SEGUIDORES", "CPM"])
+        seg_thead = "".join(f"<th>{h}</th>" for h in ["DIA", "INVESTIDO", "SEGUIDORES", "CUSTO/SEG"])
         seg_rows  = []
         for _, r in seg_tab.iterrows():
             s = r["Seg."]
             seg_cell = f'<td class="green">{s}</td>' if s != "—" else f"<td>{s}</td>"
+            custo_cell = f'<td style="color:#ffd600;font-weight:700">{r["Custo/Seg"]}</td>'
             seg_rows.append(
                 f'<tr><td style="color:#c8cfe0;font-weight:600">{r["Dia"]}</td>'
-                f'<td>{r["Investido"]}</td>{seg_cell}<td>{r["CPM"]}</td></tr>'
+                f'<td>{r["Investido"]}</td>{seg_cell}{custo_cell}</tr>'
             )
         st.markdown(
             f'<div class="tbl-wrap"><table><thead><tr>{seg_thead}</tr></thead>'
