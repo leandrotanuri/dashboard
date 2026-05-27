@@ -300,11 +300,17 @@ def fetch_agendamentos(spreadsheet_id: str, date_start: str, date_end: str) -> p
         def parse_brl(val):
             if not val or val in ("", None):
                 return 0.0
-            return float(str(val).replace("R$","").replace(".","").replace(",",".").strip() or 0)
+            try:
+                return float(str(val).replace("R$","").replace(".","").replace(",",".").strip() or 0)
+            except (ValueError, TypeError):
+                return 0.0
         def parse_num(val):
             if not val or val in ("", None):
                 return 0
-            return int(float(str(val).replace(",",".")))
+            try:
+                return int(float(str(val).replace(",",".")))
+            except (ValueError, TypeError):
+                return 0
         records.append({
             "data":           row[0] if len(row) > 0 else "",
             "consultas":      parse_num(row[1]) if len(row) > 1 else 0,
