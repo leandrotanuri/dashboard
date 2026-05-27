@@ -675,13 +675,19 @@ with tab3:
         st.divider()
 
         # ── Linha 2: Funil ────────────────────────────────────────────────────
+        tipo_funil = client_cfg.get("tipo", "clinica_geral")
         col_funil, col_metricas = st.columns([1, 1])
 
         with col_funil:
             st.markdown("**Funil de Captação**")
-            funil_labels_f = ["Impressões", "Cliques", "Mensagens", "Consultas", "Cirurgias"]
-            funil_values_f = [total_impressoes, total_cliques, total_msgs, total_consultas, total_cirurgias]
-            funil_colors_f = ["#5B4FCF", "#6A5ACD", "#4C9BE8", "#FFA726", "#43A047"]
+            if tipo_funil == "tricologia":
+                funil_labels_f = ["Impressões", "Cliques", "Mensagens", "Consultas"]
+                funil_values_f = [total_impressoes, total_cliques, total_msgs, total_consultas]
+                funil_colors_f = ["#5B4FCF", "#6A5ACD", "#4C9BE8", "#FFA726"]
+            else:
+                funil_labels_f = ["Impressões", "Cliques", "Mensagens", "Consultas", "Cirurgias"]
+                funil_values_f = [total_impressoes, total_cliques, total_msgs, total_consultas, total_cirurgias]
+                funil_colors_f = ["#5B4FCF", "#6A5ACD", "#4C9BE8", "#FFA726", "#43A047"]
 
             funil_svg_f = build_funnel_svg(funil_labels_f, funil_values_f, funil_colors_f)
             st.markdown(funil_svg_f, unsafe_allow_html=True)
@@ -691,8 +697,9 @@ with tab3:
             m1, m2 = st.columns(2)
             m1.metric("Tx. Passagem (CLI→MSG)", fmt_pct(tx_passagem))
             m2.metric("Tx. Agendamento (MSG→CON)", fmt_pct(tx_agend))
-            m1.metric("Tx. Fechamento (CON→CIR)", fmt_pct(tx_fech))
-            m2.metric("Tx. Conversão (CLI→CIR)", fmt_pct(tx_conv))
+            if tipo_funil == "clinica_geral":
+                m1.metric("Tx. Fechamento (CON→CIR)", fmt_pct(tx_fech))
+                m2.metric("Tx. Conversão (CLI→CIR)", fmt_pct(tx_conv))
 
             st.markdown("**Custos**")
             m1.metric("CPM", fmt_brl(cpm_f))
@@ -700,20 +707,26 @@ with tab3:
             m1.metric("CPC", fmt_brl(cpc_f))
             m2.metric("CPL (por MSG)", fmt_brl(cpl_f))
             m1.metric("Custo por Consulta", fmt_brl(custo_consulta))
-            m2.metric("Custo por Cirurgia", fmt_brl(custo_cirurgia))
+            if tipo_funil == "clinica_geral":
+                m2.metric("Custo por Cirurgia", fmt_brl(custo_cirurgia))
 
         st.divider()
 
         # ── Linha 3: Faturamento ──────────────────────────────────────────────
         st.subheader("Faturamento")
-        f1, f2, f3, f4, f5 = st.columns(5)
-        f1.metric("Consultas", fmt_num(total_consultas))
-        f2.metric("Ticket Médio Consulta", fmt_brl(ticket_consulta))
-        f3.metric("Faturamento Consultas", fmt_brl(fat_consultas))
-        f4.metric("Cirurgias", fmt_num(total_cirurgias))
-        f5.metric("Ticket Médio Cirurgia", fmt_brl(ticket_cirurgia))
-
-        st.metric("Faturamento Total", fmt_brl(fat_total))
+        if tipo_funil == "tricologia":
+            f1, f2, f3 = st.columns(3)
+            f1.metric("Consultas", fmt_num(total_consultas))
+            f2.metric("Ticket Médio Consulta", fmt_brl(ticket_consulta))
+            f3.metric("Faturamento Total", fmt_brl(fat_consultas))
+        else:
+            f1, f2, f3, f4, f5 = st.columns(5)
+            f1.metric("Consultas", fmt_num(total_consultas))
+            f2.metric("Ticket Médio Consulta", fmt_brl(ticket_consulta))
+            f3.metric("Faturamento Consultas", fmt_brl(fat_consultas))
+            f4.metric("Cirurgias", fmt_num(total_cirurgias))
+            f5.metric("Ticket Médio Cirurgia", fmt_brl(ticket_cirurgia))
+            st.metric("Faturamento Total", fmt_brl(fat_total))
 
 # ══ TAB 4 — METAS ════════════════════════════════════════════════════════════
 
