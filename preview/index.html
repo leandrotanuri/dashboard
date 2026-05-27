@@ -52,8 +52,15 @@ body{font-family:'Inter',sans-serif;background:#0b0d17;color:#fff;display:flex;m
 .kpi-card:hover{border-color:#2a2f50;transform:translateY(-1px)}
 .kpi-label{font-size:10px;font-weight:700;color:#3d4466;text-transform:uppercase;letter-spacing:1.2px}
 .kpi-value{font-size:28px;font-weight:900;line-height:1;letter-spacing:-1px}
+.kpi-sub{font-size:11px;color:#3d4466}
 .cyan{color:#00d4ff}.green{color:#00e676}.yellow{color:#ffd600}.white{color:#fff}.purple{color:#a78bfa}
 .kpi-bar{height:2px;border-radius:2px;margin-top:2px}
+/* variante pequena — métricas do funil */
+.kpi-card.sm{padding:11px 14px;gap:5px;border-radius:10px}
+.kpi-card.sm .kpi-label{font-size:9px;letter-spacing:1px}
+.kpi-card.sm .kpi-value{letter-spacing:-.5px}
+.kpi-card.sm .kpi-sub{font-size:10px}
+.kpi-card.sm .kpi-bar{margin-top:0}
 
 /* ── Charts ── */
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -337,15 +344,16 @@ td.tday{color:#c8cfe0;font-weight:600}
         </div>
       </div>
       <div>
-        <div class="chart-title" style="margin-bottom:10px">Métricas de Performance</div>
-        <div class="metrics-col">
-          <div class="mrow"><div class="mrow-label">CPM</div><div class="mrow-val cyan">R$ 38,85</div></div>
-          <div class="mrow"><div class="mrow-label">CTR</div><div class="mrow-val green">3,46%</div></div>
-          <div class="mrow"><div class="mrow-label">CPC</div><div class="mrow-val white">R$ 1,12</div></div>
-          <div class="mrow"><div class="mrow-label">CPL (por MSG)</div><div class="mrow-val yellow">R$ 5,33</div></div>
-          <div class="mrow"><div class="mrow-label">Tx. Passagem</div><div class="mrow-val green">21,10%</div></div>
-          <div class="mrow"><div class="mrow-label">Tx. Agendamento</div><div class="mrow-val green">1,78%</div></div>
-          <div class="mrow"><div class="mrow-label">Custo / Consulta</div><div class="mrow-val yellow">R$ 341,35</div></div>
+        <div style="font-size:12px;font-weight:700;color:#3d4466;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Métricas de Performance</div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);gap:8px">
+          <div class="kpi-card sm"><div class="kpi-label">Faturamento Gerado</div><div class="kpi-value yellow" style="font-size:19px">R$ 5.160</div><div class="kpi-sub">▲ 8 pacientes</div><div class="kpi-bar" style="background:linear-gradient(90deg,#ffd600,#ff8f00)"></div></div>
+          <div class="kpi-card sm"><div class="kpi-label">ROI da Operação</div><div class="kpi-value yellow" style="font-size:19px">2,75x</div><div class="kpi-sub">▲ R$ 1.878,53 investido</div><div class="kpi-bar" style="background:linear-gradient(90deg,#ffd600,#ff8f00)"></div></div>
+          <div class="kpi-card sm"><div class="kpi-label">CPM</div><div class="kpi-value cyan" style="font-size:19px">R$ 38,85</div><div class="kpi-sub">Custo/mil impressões</div><div class="kpi-bar" style="background:linear-gradient(90deg,#00d4ff,#7B6CF6)"></div></div>
+          <div class="kpi-card sm"><div class="kpi-label">CTR</div><div class="kpi-value green" style="font-size:19px">3,46%</div><div class="kpi-sub">Taxa de cliques</div><div class="kpi-bar" style="background:linear-gradient(90deg,#00e676,#00b248)"></div></div>
+          <div class="kpi-card sm"><div class="kpi-label">CPL Real</div><div class="kpi-value green" style="font-size:19px">R$ 5,33</div><div class="kpi-sub">▲ 450 mensagens</div><div class="kpi-bar" style="background:linear-gradient(90deg,#00e676,#00b248)"></div></div>
+          <div class="kpi-card sm"><div class="kpi-label">TX. Passagem</div><div class="kpi-value green" style="font-size:19px">21,10%</div><div class="kpi-sub">Msg por clique</div><div class="kpi-bar" style="background:linear-gradient(90deg,#00e676,#00b248)"></div></div>
+          <div class="kpi-card sm"><div class="kpi-label">TX. Agendamento</div><div class="kpi-value green" style="font-size:19px">1,78%</div><div class="kpi-sub">Consultas por msg</div><div class="kpi-bar" style="background:linear-gradient(90deg,#00e676,#00b248)"></div></div>
+          <div class="kpi-card sm"><div class="kpi-label">Custo/Paciente</div><div class="kpi-value yellow" style="font-size:19px">R$ 341,35</div><div class="kpi-sub">▲ 8 pacientes</div><div class="kpi-bar" style="background:linear-gradient(90deg,#ffd600,#ff8f00)"></div></div>
         </div>
       </div>
     </div>

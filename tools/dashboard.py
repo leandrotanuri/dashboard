@@ -433,6 +433,13 @@ footer    { visibility: hidden; }
 .kpi-value { font-size:30px; font-weight:900; line-height:1; letter-spacing:-1px; }
 .kpi-sub { font-size:11px; color:#3d4466; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .kpi-bar { height:2px; border-radius:2px; margin-top:2px; }
+
+/* ── KPI Cards variante pequena (métricas do funil) ── */
+.kpi-card.sm { padding:11px 14px; gap:5px; border-radius:10px; }
+.kpi-card.sm .kpi-label { font-size:9px; letter-spacing:1px; }
+.kpi-card.sm .kpi-value { font-size:19px; letter-spacing:-.5px; }
+.kpi-card.sm .kpi-sub   { font-size:10px; }
+.kpi-card.sm .kpi-bar   { margin-top:0; }
 .badge { padding:2px 8px; border-radius:99px; font-size:10px; font-weight:700; }
 .badge.ok   { background:#00d4ff22; color:#00d4ff; }
 .badge.up   { background:#00e67622; color:#00e676; }
@@ -487,9 +494,10 @@ _BAR = {
     "purple": "linear-gradient(90deg,#a78bfa,#7B6CF6)",
 }
 
-def _kpi_html(cards: list, cols: int = 0) -> str:
+def _kpi_html(cards: list, cols: int = 0, small: bool = False) -> str:
     """Renderiza linha de KPI cards com visual idêntico ao preview."""
-    n = cols if cols > 0 else len(cards)
+    n   = cols if cols > 0 else len(cards)
+    sm  = " sm" if small else ""
     items = []
     for c in cards:
         col    = c.get("color", "cyan")
@@ -497,13 +505,14 @@ def _kpi_html(cards: list, cols: int = 0) -> str:
         bcls   = c.get("badge_cls", "ok")
         sub    = c.get("sub", "")
         badge_html = f'<span class="badge {bcls}">{badge}</span>' if badge else ""
-        items.append(f"""
-        <div class="kpi-card">
-          <div class="kpi-label">{c['label']}</div>
-          <div class="kpi-value" style="color:{_COL.get(col,col)}">{c['value']}</div>
-          <div class="kpi-sub">{badge_html}{sub}</div>
-          <div class="kpi-bar" style="background:{_BAR.get(col,'')}"></div>
-        </div>""")
+        items.append(
+            f'<div class="kpi-card{sm}">'
+            f'<div class="kpi-label">{c["label"]}</div>'
+            f'<div class="kpi-value" style="color:{_COL.get(col,col)}">{c["value"]}</div>'
+            f'<div class="kpi-sub">{badge_html}{sub}</div>'
+            f'<div class="kpi-bar" style="background:{_BAR.get(col,"")}"></div>'
+            f'</div>'
+        )
     return (f'<div class="kpi-grid" style="grid-template-columns:repeat({n},1fr)">'
             + "".join(items) + "</div>")
 
@@ -1141,22 +1150,55 @@ with tab3:
                         unsafe_allow_html=True)
 
         with col_metricas:
-            _rows_metricas = [
-                {"label": "CPM",             "value": fmt_brl(cpm_f),        "color": "cyan"},
-                {"label": "CTR",             "value": fmt_pct(ctr_f),        "color": "green"},
-                {"label": "CPC",             "value": fmt_brl(cpc_f),        "color": "white"},
-                {"label": "CPL (por MSG)",   "value": fmt_brl(cpl_f),        "color": "yellow"},
-                {"label": "Tx. Passagem",    "value": fmt_pct(tx_passagem),  "color": "green"},
-                {"label": "Tx. Agendamento", "value": fmt_pct(tx_agend),     "color": "green"},
-                {"label": "Custo/Consulta",  "value": fmt_brl(custo_consulta),"color": "yellow"},
-            ]
-            if tipo_funil == "clinica_geral":
-                _rows_metricas += [
-                    {"label": "Tx. Fechamento",   "value": fmt_pct(tx_fech),       "color": "green"},
-                    {"label": "Tx. Conversão",    "value": fmt_pct(tx_conv),       "color": "green"},
-                    {"label": "Custo/Cirurgia",   "value": fmt_brl(custo_cirurgia),"color": "yellow"},
+            st.markdown(
+                '<div style="font-size:12px;font-weight:700;color:#3d4466;'
+                'text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">'
+                'Métricas de Performance</div>',
+                unsafe_allow_html=True,
+            )
+            if tipo_funil == "tricologia":
+                _m_cards = [
+                    {"label": "Faturamento Gerado", "value": fmt_brl(fat_consultas), "color": "yellow",
+                     "sub": f"▲ {total_consultas} pacientes"},
+                    {"label": "ROI da Operação",    "value": f"{roas_imp:.2f}x",     "color": "yellow",
+                     "sub": f"▲ {fmt_brl(invest_imp)} investido"},
+                    {"label": "CPM",                "value": fmt_brl(cpm_f),         "color": "cyan",
+                     "sub": "Custo/mil impressões"},
+                    {"label": "CTR",                "value": fmt_pct(ctr_f),         "color": "green",
+                     "sub": "Taxa de cliques"},
+                    {"label": "CPL Real",           "value": fmt_brl(cpl_f),         "color": "green",
+                     "sub": f"▲ {total_msgs} mensagens"},
+                    {"label": "TX. Passagem",       "value": fmt_pct(tx_passagem),   "color": "green",
+                     "sub": "Msg por clique"},
+                    {"label": "TX. Agendamento",    "value": fmt_pct(tx_agend),      "color": "green",
+                     "sub": "Consultas por msg"},
+                    {"label": "Custo/Paciente",     "value": fmt_brl(custo_consulta),"color": "yellow",
+                     "sub": f"▲ {total_consultas} pacientes"},
                 ]
-            st.markdown(_metric_rows_html(_rows_metricas), unsafe_allow_html=True)
+            else:
+                _m_cards = [
+                    {"label": "Faturamento Total",  "value": fmt_brl(fat_total),     "color": "yellow",
+                     "sub": f"▲ {total_cirurgias} cirurgias"},
+                    {"label": "ROI da Operação",    "value": f"{roas_imp:.2f}x",     "color": "yellow",
+                     "sub": f"▲ {fmt_brl(invest_imp)} investido"},
+                    {"label": "CPM",                "value": fmt_brl(cpm_f),         "color": "cyan",
+                     "sub": "Custo/mil impressões"},
+                    {"label": "CTR",                "value": fmt_pct(ctr_f),         "color": "green",
+                     "sub": "Taxa de cliques"},
+                    {"label": "CPL Real",           "value": fmt_brl(cpl_f),         "color": "green",
+                     "sub": f"▲ {total_msgs} mensagens"},
+                    {"label": "TX. Passagem",       "value": fmt_pct(tx_passagem),   "color": "green",
+                     "sub": "Msg por clique"},
+                    {"label": "TX. Agendamento",    "value": fmt_pct(tx_agend),      "color": "green",
+                     "sub": "Consultas por msg"},
+                    {"label": "TX. Fechamento",     "value": fmt_pct(tx_fech),       "color": "green",
+                     "sub": "Cirurgias por consulta"},
+                    {"label": "Custo/Consulta",     "value": fmt_brl(custo_consulta),"color": "yellow",
+                     "sub": ""},
+                    {"label": "Custo/Cirurgia",     "value": fmt_brl(custo_cirurgia),"color": "yellow",
+                     "sub": f"▲ {total_cirurgias} cirurgias"},
+                ]
+            st.markdown(_kpi_html(_m_cards, cols=2, small=True), unsafe_allow_html=True)
 
         st.divider()
 
