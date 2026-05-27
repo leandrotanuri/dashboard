@@ -732,7 +732,7 @@ with tab1:
 
         st.markdown(_kpi_html([
             {"label": "Investimento c/ Impostos", "value": fmt_brl(total_investido_impostos_m),
-             "color": "cyan",   "badge": "E2-CAP", "badge_cls": "ok"},
+             "color": "cyan"},
             {"label": "Novos Contatos",            "value": fmt_num(total_contacts) if total_contacts > 0 else "—",
              "color": "green"},
             {"label": "CPL Real",                  "value": fmt_brl(custo_contato) if custo_contato else "—",
@@ -797,21 +797,15 @@ with tab1:
 
         col_g1, col_g2 = st.columns(2)
         with col_g1:
-            st.markdown("""
-            <div style="background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:18px 20px 4px">
-            <div style="font-size:13px;font-weight:700;color:#c8cce8">Novos Contatos por Dia</div>
-            <div style="font-size:11px;color:#3d4466;margin-top:2px;margin-bottom:8px">Mensagens iniciadas no período</div>
-            """, unsafe_allow_html=True)
+            st.markdown('<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Novos Contatos por Dia</p>'
+                        '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Mensagens iniciadas no período</p>',
+                        unsafe_allow_html=True)
             st.plotly_chart(fig_contatos, use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
         with col_g2:
-            st.markdown("""
-            <div style="background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:18px 20px 4px">
-            <div style="font-size:13px;font-weight:700;color:#c8cce8">CPL por Dia (R$)</div>
-            <div style="font-size:11px;color:#3d4466;margin-top:2px;margin-bottom:8px">Custo por contato com imposto</div>
-            """, unsafe_allow_html=True)
+            st.markdown('<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">CPL por Dia (R$)</p>'
+                        '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Custo por contato com imposto</p>',
+                        unsafe_allow_html=True)
             st.plotly_chart(fig_custo, use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
 
         # Tabela por campanha
         st.markdown('<div style="font-size:18px;font-weight:800;color:#e0e4f0;margin:16px 0 8px">Por Campanha</div>', unsafe_allow_html=True)
@@ -932,7 +926,7 @@ with tab2:
 
         st.markdown(_kpi_html([
             {"label": "Investimento c/ Impostos", "value": fmt_brl(total_investido_impostos),
-             "color": "cyan", "badge": "E1-DIST", "badge_cls": "ok"},
+             "color": "cyan"},
             {"label": "Seguidores Ganhos", "value": fmt_num(total_follows) if total_follows > 0 else "—",
              "color": "green"},
             {"label": "Custo por Seguidor",       "value": fmt_brl(custo_seg) if custo_seg else "—",
@@ -987,21 +981,15 @@ with tab2:
 
         col_g1, col_g2 = st.columns(2)
         with col_g1:
-            st.markdown("""
-            <div style="background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:18px 20px 4px">
-            <div style="font-size:13px;font-weight:700;color:#c8cce8">Seguidores por Dia</div>
-            <div style="font-size:11px;color:#3d4466;margin-top:2px;margin-bottom:8px">Novos seguidores no período</div>
-            """, unsafe_allow_html=True)
+            st.markdown('<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Seguidores por Dia</p>'
+                        '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Novos seguidores no período</p>',
+                        unsafe_allow_html=True)
             st.plotly_chart(fig1, use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
         with col_g2:
-            st.markdown("""
-            <div style="background:#0f1120;border:1px solid #1e2235;border-radius:12px;padding:18px 20px 4px">
-            <div style="font-size:13px;font-weight:700;color:#c8cce8">CPM por Dia (R$)</div>
-            <div style="font-size:11px;color:#3d4466;margin-top:2px;margin-bottom:8px">Custo por mil impressões</div>
-            """, unsafe_allow_html=True)
+            st.markdown('<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">CPM por Dia (R$)</p>'
+                        '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Custo por mil impressões</p>',
+                        unsafe_allow_html=True)
             st.plotly_chart(fig2, use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
 
         # Tabela por campanha
         st.markdown('<div style="font-size:18px;font-weight:800;color:#e0e4f0;margin:16px 0 8px">Por Campanha</div>', unsafe_allow_html=True)
@@ -1017,6 +1005,33 @@ with tab2:
         camp_seg["CPM"] = camp_seg["CPM"].apply(fmt_brl)
         camp_seg["CTR"] = camp_seg["CTR"].apply(fmt_pct)
         st.markdown(_tabela_campanha_html(camp_seg.set_index("Campanha")), unsafe_allow_html=True)
+
+        # ── Por Dia — seguidores ───────────────────────────────────────────────
+        st.markdown("""
+        <div style="font-size:18px;font-weight:800;color:#e0e4f0;margin:24px 0 2px">Por Dia</div>
+        <div style="font-size:11px;color:#3d4466;margin-bottom:10px">Seguidores ganhos por dia</div>
+        """, unsafe_allow_html=True)
+
+        seg_tab = daily_seg[["date_start", "spend", "Seguidores", "CPM"]].copy()
+        seg_tab["Dia"]       = seg_tab["date_start"].dt.strftime("%d/%m/%Y")
+        seg_tab["Investido"] = seg_tab["spend"].apply(fmt_brl)
+        seg_tab["Seg."]      = seg_tab["Seguidores"].apply(lambda v: fmt_num(int(v)) if v > 0 else "—")
+        seg_tab["CPM"]       = seg_tab["CPM"].apply(fmt_brl)
+
+        seg_thead = "".join(f"<th>{h}</th>" for h in ["DIA", "INVESTIDO", "SEGUIDORES", "CPM"])
+        seg_rows  = []
+        for _, r in seg_tab.iterrows():
+            s = r["Seg."]
+            seg_cell = f'<td class="green">{s}</td>' if s != "—" else f"<td>{s}</td>"
+            seg_rows.append(
+                f'<tr><td style="color:#c8cfe0;font-weight:600">{r["Dia"]}</td>'
+                f'<td>{r["Investido"]}</td>{seg_cell}<td>{r["CPM"]}</td></tr>'
+            )
+        st.markdown(
+            f'<div class="tbl-wrap"><table><thead><tr>{seg_thead}</tr></thead>'
+            f'<tbody>{"".join(seg_rows)}</tbody></table></div>',
+            unsafe_allow_html=True
+        )
 
 # ══ TAB 3 — FUNIL COMPLETO ════════════════════════════════════════════════════
 
