@@ -780,7 +780,7 @@ with tab1:
             showlegend=False, xaxis_title="", yaxis_title="",
             bargap=0.25, **_PD
         )
-        fig_contatos.update_xaxes(tickformat="%d/%m", dtick="D3")
+        fig_contatos.update_xaxes(tickformat="%d/%m", nticks=10)
 
         _cpl_data = daily_msg.dropna(subset=["Custo/Contato"])
         fig_custo = go.Figure(data=[go.Scatter(
@@ -793,7 +793,7 @@ with tab1:
             hovertemplate="%{x|%d/%m}<br>R$ %{y:.2f}<extra></extra>",
         )])
         fig_custo.update_layout(xaxis_title="", yaxis_title="", **_PD)
-        fig_custo.update_xaxes(tickformat="%d/%m", dtick="D3")
+        fig_custo.update_xaxes(tickformat="%d/%m", nticks=10)
 
         col_g1, col_g2 = st.columns(2)
         with col_g1:
@@ -965,7 +965,7 @@ with tab2:
             hovertemplate="%{x|%d/%m}<br>%{y} seguidores<extra></extra>",
         )])
         fig1.update_layout(showlegend=False, xaxis_title="", yaxis_title="", bargap=0.25, **_PD)
-        fig1.update_xaxes(tickformat="%d/%m", dtick="D3")
+        fig1.update_xaxes(tickformat="%d/%m", nticks=10)
 
         fig2 = go.Figure(data=[go.Scatter(
             x=daily_seg["date_start"],
@@ -977,7 +977,7 @@ with tab2:
             hovertemplate="%{x|%d/%m}<br>R$ %{y:.2f}<extra></extra>",
         )])
         fig2.update_layout(xaxis_title="", yaxis_title="", **_PD)
-        fig2.update_xaxes(tickformat="%d/%m", dtick="D3")
+        fig2.update_xaxes(tickformat="%d/%m", nticks=10)
 
         col_g1, col_g2 = st.columns(2)
         with col_g1:
