@@ -400,6 +400,43 @@ p { color: #c8cfe0 !important; }
 ::-webkit-scrollbar-track { background: #0b0d17; }
 ::-webkit-scrollbar-thumb { background: #1e2235; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #2a2f4a; }
+
+/* ── KPI Cards customizados ── */
+.kpi-grid { display:grid; gap:12px; margin-bottom:8px; }
+.kpi-card {
+    background:#0f1120; border:1px solid #1e2235; border-radius:12px;
+    padding:18px 20px; display:flex; flex-direction:column; gap:8px;
+    transition:.2s; overflow:hidden;
+}
+.kpi-card:hover { border-color:#2a2f50; transform:translateY(-1px); }
+.kpi-label { font-size:10px; font-weight:700; color:#3d4466; text-transform:uppercase; letter-spacing:1.2px; }
+.kpi-value { font-size:30px; font-weight:900; line-height:1; letter-spacing:-1px; }
+.kpi-sub { font-size:11px; color:#3d4466; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.kpi-bar { height:2px; border-radius:2px; margin-top:2px; }
+.badge { padding:2px 8px; border-radius:99px; font-size:10px; font-weight:700; }
+.badge.ok   { background:#00d4ff22; color:#00d4ff; }
+.badge.up   { background:#00e67622; color:#00e676; }
+.badge.down { background:#ff444422; color:#ff4444; }
+.badge.warn { background:#ffd60022; color:#ffd600; }
+
+/* ── Metric rows customizados ── */
+.metrics-col { display:flex; flex-direction:column; gap:7px; }
+.metric-row {
+    background:#161829; border-radius:8px; padding:12px 14px;
+    display:flex; justify-content:space-between; align-items:center;
+    border:1px solid #1e2235;
+}
+.metric-row .ml { font-size:10px; color:#3d4466; font-weight:700; text-transform:uppercase; letter-spacing:.8px; }
+.metric-row .mv { font-size:16px; font-weight:800; }
+
+/* ── Roas / visão geral cards ── */
+.vg-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:4px; }
+.vg-card {
+    background:#0f1120; border:1px solid #1e2235; border-radius:10px;
+    padding:14px 18px; display:flex; flex-direction:column; gap:4px;
+}
+.vg-label { font-size:10px; font-weight:700; color:#3d4466; text-transform:uppercase; letter-spacing:1px; }
+.vg-value { font-size:22px; font-weight:900; color:#e0e4f0; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -413,6 +450,62 @@ _PD = dict(
     title_font=dict(color="#c8cce8", size=13),
     margin=dict(t=36, l=8, r=8, b=8),
 )
+
+_COL = {"cyan":"#00d4ff","green":"#00e676","yellow":"#ffd600","white":"#ffffff","red":"#ff4444","purple":"#a78bfa"}
+_BAR = {
+    "cyan":   "linear-gradient(90deg,#00d4ff,#7B6CF6)",
+    "green":  "linear-gradient(90deg,#00e676,#00b248)",
+    "yellow": "linear-gradient(90deg,#ffd600,#ff8f00)",
+    "white":  "linear-gradient(90deg,#7B6CF6,#a855f7)",
+    "red":    "linear-gradient(90deg,#ff4444,#c62828)",
+    "purple": "linear-gradient(90deg,#a78bfa,#7B6CF6)",
+}
+
+def _kpi_html(cards: list, cols: int = 0) -> str:
+    """Renderiza linha de KPI cards com visual idêntico ao preview."""
+    n = cols if cols > 0 else len(cards)
+    items = []
+    for c in cards:
+        col    = c.get("color", "cyan")
+        badge  = c.get("badge", "")
+        bcls   = c.get("badge_cls", "ok")
+        sub    = c.get("sub", "")
+        badge_html = f'<span class="badge {bcls}">{badge}</span>' if badge else ""
+        items.append(f"""
+        <div class="kpi-card">
+          <div class="kpi-label">{c['label']}</div>
+          <div class="kpi-value" style="color:{_COL.get(col,col)}">{c['value']}</div>
+          <div class="kpi-sub">{badge_html}{sub}</div>
+          <div class="kpi-bar" style="background:{_BAR.get(col,'')}"></div>
+        </div>""")
+    return (f'<div class="kpi-grid" style="grid-template-columns:repeat({n},1fr)">'
+            + "".join(items) + "</div>")
+
+def _metric_rows_html(rows: list) -> str:
+    """Renderiza coluna de métricas de performance como linhas escuras."""
+    items = []
+    for r in rows:
+        col = _COL.get(r.get("color","white"), r.get("color","#fff"))
+        items.append(
+            f'<div class="metric-row">'
+            f'<div class="ml">{r["label"]}</div>'
+            f'<div class="mv" style="color:{col}">{r["value"]}</div>'
+            f'</div>'
+        )
+    return '<div class="metrics-col">' + "".join(items) + "</div>"
+
+def _vg_html(cards: list) -> str:
+    """Renderiza cards de visão geral (ROAS, investimento)."""
+    items = []
+    for c in cards:
+        col = _COL.get(c.get("color","white"), c.get("color","#e0e4f0"))
+        items.append(
+            f'<div class="vg-card">'
+            f'<div class="vg-label">{c["label"]}</div>'
+            f'<div class="vg-value" style="color:{col}">{c["value"]}</div>'
+            f'</div>'
+        )
+    return '<div class="vg-grid">' + "".join(items) + "</div>"
 
 st.title("📊 Dashboard de Campanhas")
 
@@ -542,13 +635,17 @@ with tab1:
         total_link_clicks_m = df_msg["inline_link_clicks"].sum() if "inline_link_clicks" in df_msg.columns else total_clicks_m
         avg_cpc_m = (total_spend_m / total_link_clicks_m) if total_link_clicks_m > 0 else None
 
-        c1, c2, c3, c4, c5, c6 = st.columns(6)
-        c1.metric("Investido c/ Impostos", fmt_brl(total_investido_impostos_m))
-        c2.metric("Novos Contatos (MSG)", fmt_num(total_contacts) if total_contacts > 0 else "—")
-        c3.metric("Custo por Contato c/ Imp.", fmt_brl(custo_contato) if custo_contato is not None else "—")
-        c4.metric("CPM", fmt_brl(avg_cpm_m))
-        c5.metric("CTR", fmt_pct(avg_ctr_m))
-        c6.metric("CPC", fmt_brl(avg_cpc_m) if avg_cpc_m is not None else "—")
+        st.markdown(_kpi_html([
+            {"label": "Investimento c/ Impostos", "value": fmt_brl(total_investido_impostos_m),
+             "color": "cyan",   "badge": "E2-CAP + E1-DIST", "badge_cls": "ok"},
+            {"label": "Novos Contatos",            "value": fmt_num(total_contacts) if total_contacts > 0 else "—",
+             "color": "green"},
+            {"label": "CPL Real",                  "value": fmt_brl(custo_contato) if custo_contato else "—",
+             "color": "yellow"},
+            {"label": "CPM",  "value": fmt_brl(avg_cpm_m),  "color": "white"},
+            {"label": "CTR",  "value": fmt_pct(avg_ctr_m),  "color": "white"},
+            {"label": "CPC",  "value": fmt_brl(avg_cpc_m) if avg_cpc_m else "—", "color": "white"},
+        ], cols=6), unsafe_allow_html=True)
 
         st.divider()
 
@@ -732,13 +829,17 @@ with tab2:
         total_link_clicks = df_seg["inline_link_clicks"].sum() if "inline_link_clicks" in df_seg.columns else total_clicks
         avg_cpc = (total_spend_api / total_link_clicks) if total_link_clicks > 0 else None
 
-        c1, c2, c3, c4, c5, c6 = st.columns(6)
-        c1.metric("Valor Total Investido + Impostos", fmt_brl(total_investido_impostos))
-        c2.metric("Seguidores Ganhos", fmt_num(total_follows) if total_follows > 0 else "—")
-        c3.metric("Custo por Seguidor + Impostos", fmt_brl(custo_seg) if custo_seg else "—")
-        c4.metric("CPM", fmt_brl(avg_cpm))
-        c5.metric("CTR", fmt_pct(avg_ctr))
-        c6.metric("CPC", fmt_brl(avg_cpc) if avg_cpc is not None else "—")
+        st.markdown(_kpi_html([
+            {"label": "Investimento c/ Impostos", "value": fmt_brl(total_investido_impostos),
+             "color": "cyan", "badge": "E1-DIST", "badge_cls": "ok"},
+            {"label": "Seguidores Ganhos", "value": fmt_num(total_follows) if total_follows > 0 else "—",
+             "color": "green"},
+            {"label": "Custo por Seguidor",       "value": fmt_brl(custo_seg) if custo_seg else "—",
+             "color": "yellow"},
+            {"label": "CPM", "value": fmt_brl(avg_cpm),  "color": "white"},
+            {"label": "CTR", "value": fmt_pct(avg_ctr),  "color": "white"},
+            {"label": "CPC", "value": fmt_brl(avg_cpc) if avg_cpc else "—", "color": "white"},
+        ], cols=6), unsafe_allow_html=True)
 
         st.divider()
 
@@ -837,11 +938,12 @@ with tab3:
 
         # ── Linha 1: Investimento + ROAS ──────────────────────────────────────
         st.subheader("Visão Geral")
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Investimento Líquido", fmt_brl(invest_liq))
-        c2.metric("Investimento + Impostos", fmt_brl(invest_imp))
-        c3.metric("ROAS", f"{roas:.1f}x")
-        c4.metric("ROAS c/ Impostos", f"{roas_imp:.1f}x")
+        st.markdown(_kpi_html([
+            {"label": "Investimento Líquido",    "value": fmt_brl(invest_liq),  "color": "cyan"},
+            {"label": "Investimento + Impostos", "value": fmt_brl(invest_imp),  "color": "cyan"},
+            {"label": "ROAS",                    "value": f"{roas:.1f}x",       "color": "green"},
+            {"label": "ROAS c/ Impostos",        "value": f"{roas_imp:.1f}x",   "color": "green"},
+        ]), unsafe_allow_html=True)
 
         st.divider()
 
@@ -864,40 +966,42 @@ with tab3:
             st.markdown(funil_svg_f, unsafe_allow_html=True)
 
         with col_metricas:
-            st.markdown("**Taxas de Conversão**")
-            m1, m2 = st.columns(2)
-            m1.metric("Tx. Passagem (CLI→MSG)", fmt_pct(tx_passagem))
-            m2.metric("Tx. Agendamento (MSG→CON)", fmt_pct(tx_agend))
+            _rows_metricas = [
+                {"label": "CPM",             "value": fmt_brl(cpm_f),        "color": "cyan"},
+                {"label": "CTR",             "value": fmt_pct(ctr_f),        "color": "green"},
+                {"label": "CPC",             "value": fmt_brl(cpc_f),        "color": "white"},
+                {"label": "CPL (por MSG)",   "value": fmt_brl(cpl_f),        "color": "yellow"},
+                {"label": "Tx. Passagem",    "value": fmt_pct(tx_passagem),  "color": "green"},
+                {"label": "Tx. Agendamento", "value": fmt_pct(tx_agend),     "color": "green"},
+                {"label": "Custo/Consulta",  "value": fmt_brl(custo_consulta),"color": "yellow"},
+            ]
             if tipo_funil == "clinica_geral":
-                m1.metric("Tx. Fechamento (CON→CIR)", fmt_pct(tx_fech))
-                m2.metric("Tx. Conversão (CLI→CIR)", fmt_pct(tx_conv))
-
-            st.markdown("**Custos**")
-            m1.metric("CPM", fmt_brl(cpm_f))
-            m2.metric("CTR", fmt_pct(ctr_f))
-            m1.metric("CPC", fmt_brl(cpc_f))
-            m2.metric("CPL (por MSG)", fmt_brl(cpl_f))
-            m1.metric("Custo por Consulta", fmt_brl(custo_consulta))
-            if tipo_funil == "clinica_geral":
-                m2.metric("Custo por Cirurgia", fmt_brl(custo_cirurgia))
+                _rows_metricas += [
+                    {"label": "Tx. Fechamento",   "value": fmt_pct(tx_fech),       "color": "green"},
+                    {"label": "Tx. Conversão",    "value": fmt_pct(tx_conv),       "color": "green"},
+                    {"label": "Custo/Cirurgia",   "value": fmt_brl(custo_cirurgia),"color": "yellow"},
+                ]
+            st.markdown(_metric_rows_html(_rows_metricas), unsafe_allow_html=True)
 
         st.divider()
 
         # ── Linha 3: Faturamento ──────────────────────────────────────────────
         st.subheader("Faturamento")
         if tipo_funil == "tricologia":
-            f1, f2, f3 = st.columns(3)
-            f1.metric("Consultas", fmt_num(total_consultas))
-            f2.metric("Ticket Médio Consulta", fmt_brl(ticket_consulta))
-            f3.metric("Faturamento Total", fmt_brl(fat_consultas))
+            st.markdown(_kpi_html([
+                {"label": "Consultas",             "value": fmt_num(total_consultas),  "color": "white"},
+                {"label": "Ticket Médio Consulta", "value": fmt_brl(ticket_consulta),  "color": "yellow"},
+                {"label": "Faturamento Total",     "value": fmt_brl(fat_consultas),    "color": "green"},
+            ]), unsafe_allow_html=True)
         else:
-            f1, f2, f3, f4, f5 = st.columns(5)
-            f1.metric("Consultas", fmt_num(total_consultas))
-            f2.metric("Ticket Médio Consulta", fmt_brl(ticket_consulta))
-            f3.metric("Faturamento Consultas", fmt_brl(fat_consultas))
-            f4.metric("Cirurgias", fmt_num(total_cirurgias))
-            f5.metric("Ticket Médio Cirurgia", fmt_brl(ticket_cirurgia))
-            st.metric("Faturamento Total", fmt_brl(fat_total))
+            st.markdown(_kpi_html([
+                {"label": "Consultas",              "value": fmt_num(total_consultas),  "color": "white"},
+                {"label": "Ticket Médio Consulta",  "value": fmt_brl(ticket_consulta),  "color": "yellow"},
+                {"label": "Fat. Consultas",         "value": fmt_brl(fat_consultas),    "color": "green"},
+                {"label": "Cirurgias",              "value": fmt_num(total_cirurgias),  "color": "white"},
+                {"label": "Ticket Médio Cirurgia",  "value": fmt_brl(ticket_cirurgia),  "color": "yellow"},
+                {"label": "Faturamento Total",      "value": fmt_brl(fat_total),        "color": "green"},
+            ]), unsafe_allow_html=True)
 
 # ══ TAB 4 — METAS ════════════════════════════════════════════════════════════
 
