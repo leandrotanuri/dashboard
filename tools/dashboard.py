@@ -395,6 +395,26 @@ p { color: #c8cfe0 !important; }
 /* ── Spinner ── */
 [data-testid="stSpinner"] * { color: #00d4ff !important; }
 
+/* ── Oculta UI padrão Streamlit ── */
+#MainMenu { visibility: hidden; }
+footer    { visibility: hidden; }
+[data-testid="stDecoration"] { display:none; }
+[data-testid="stStatusWidget"] { display:none; }
+[data-testid="collapsedControl"] { display:none; }
+
+/* ── Tabela customizada ── */
+.tbl-wrap { overflow-x:auto; margin-top:4px; }
+.tbl-wrap table { width:100%; border-collapse:collapse; font-size:12px; }
+.tbl-wrap th {
+    color:#3d4466; font-weight:700; font-size:10px; text-transform:uppercase;
+    letter-spacing:.8px; padding:9px 12px; text-align:left;
+    border-bottom:1px solid #1e2235; white-space:nowrap;
+}
+.tbl-wrap td { padding:10px 12px; border-bottom:1px solid #161829; color:#8892b0; white-space:nowrap; }
+.tbl-wrap tr:hover td { background:#161829; }
+.tbl-wrap td.bold { color:#fff; font-weight:700; }
+.tbl-wrap td.green { color:#00e676; font-weight:700; }
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: #0b0d17; }
@@ -493,6 +513,63 @@ def _metric_rows_html(rows: list) -> str:
             f'</div>'
         )
     return '<div class="metrics-col">' + "".join(items) + "</div>"
+
+def _pill(val_str: str) -> str:
+    """Converte 'XX.XX%' num pill colorido (verde/amarelo/vermelho)."""
+    try:
+        v = float(val_str.replace("%", "").replace(",", "."))
+        cls = "ok" if v >= 50 else ("warn" if v >= 35 else "bad")
+    except Exception:
+        cls = "ok"
+    return f'<span class="pill {cls}">{val_str}</span>'
+
+def _tabela_html(dt_out: pd.DataFrame, tipo_cli: str) -> str:
+    """Renderiza tabela Por Dia como HTML customizado com pills e dark style."""
+    base_cols  = ["Dia", "Invest. c/ Imposto", "CPM", "CPC", "CTR", "Tx Passagem", "Leads", "CPL", "Consultas", "Custo por Consulta"]
+    extra_cols = ["Cirurgias Confirmadas", "Custo por Cirurgia"] if tipo_cli == "clinica_geral" else []
+    headers_lbl = ["DIA", "INVEST.", "CPM", "CPC", "CTR", "TX. PASSAGEM", "LEADS", "CPL", "CONSULTAS", "CUSTO/CONS."]
+    if tipo_cli == "clinica_geral":
+        headers_lbl += ["CIRURGIAS", "CUSTO/CIR."]
+    all_cols = base_cols + extra_cols
+
+    thead = "".join(f"<th>{h}</th>" for h in headers_lbl)
+    rows  = []
+    for _, row in dt_out.iterrows():
+        cells = []
+        for col in all_cols:
+            val = str(row.get(col, "—"))
+            if col == "Tx Passagem":
+                cells.append(f"<td>{_pill(val)}</td>")
+            elif col == "Leads":
+                cells.append(f'<td class="bold">{val}</td>')
+            elif col in ("Consultas", "Cirurgias Confirmadas") and val not in ("—", "0"):
+                cells.append(f'<td class="green">{val}</td>')
+            elif col == "Dia":
+                cells.append(f'<td style="color:#c8cfe0;font-weight:600">{val}</td>')
+            else:
+                cells.append(f"<td>{val}</td>")
+        rows.append(f"<tr>{''.join(cells)}</tr>")
+
+    return (
+        '<div class="tbl-wrap">'
+        f'<table><thead><tr>{thead}</tr></thead>'
+        f'<tbody>{"".join(rows)}</tbody></table></div>'
+    )
+
+def _tabela_campanha_html(camp_out: pd.DataFrame) -> str:
+    """Renderiza tabela Por Campanha como HTML customizado."""
+    cols = list(camp_out.columns)
+    thead = "".join(f"<th>{c.upper()}</th>" for c in ["CAMPANHA"] + cols)
+    rows  = []
+    for idx, row in camp_out.iterrows():
+        name_cell = f'<td style="color:#c8cfe0;font-weight:600;max-width:320px;overflow:hidden;text-overflow:ellipsis">{idx}</td>'
+        cells = [name_cell] + [f"<td>{row[c]}</td>" for c in cols]
+        rows.append(f"<tr>{''.join(cells)}</tr>")
+    return (
+        '<div class="tbl-wrap">'
+        f'<table><thead><tr>{thead}</tr></thead>'
+        f'<tbody>{"".join(rows)}</tbody></table></div>'
+    )
 
 def build_funnel_html(labels, values, colors, pcts=None) -> str:
     """Funil com blocos retangulares de bordas arredondadas e borda esquerda colorida."""
@@ -747,10 +824,13 @@ with tab1:
         camp_out["CPM"]            = camp_msg["CPM"].apply(fmt_brl)
         camp_out["CTR"]            = camp_msg["CTR"].apply(fmt_pct)
         camp_out["CPC"]            = camp_msg["CPC"].apply(lambda v: fmt_brl(v) if v is not None else "—")
-        st.dataframe(camp_out.set_index("Campanha"), use_container_width=True)
+        st.markdown(_tabela_campanha_html(camp_out.set_index("Campanha")), unsafe_allow_html=True)
 
         # ── Tabela por dia ────────────────────────────────────────────────────
-        st.markdown('<div style="font-size:18px;font-weight:800;color:#e0e4f0;margin:16px 0 8px">Por Dia</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div style="font-size:18px;font-weight:800;color:#e0e4f0;margin:20px 0 2px">Por Dia</div>
+        <div style="font-size:11px;color:#3d4466;margin-bottom:10px">Detalhamento diário</div>
+        """, unsafe_allow_html=True)
 
         daily_tab = (
             df_msg.groupby("date_start")
@@ -807,7 +887,7 @@ with tab1:
             dt_out["Cirurgias Confirmadas"] = daily_tab["cirurgias"].apply(lambda v: fmt_num(v) if pd.notna(v) else "—")
             dt_out["Custo por Cirurgia"]    = daily_tab["custo_cirurgia"].apply(lambda v: fmt_brl(v) if pd.notna(v) else "—")
 
-        st.dataframe(dt_out.set_index("Dia"), use_container_width=True)
+        st.markdown(_tabela_html(dt_out, tipo_cli), unsafe_allow_html=True)
 
 # ══ TAB 2 — SEGUIDORES ════════════════════════════════════════════════════════
 
@@ -901,7 +981,7 @@ with tab2:
         camp_seg["Investido"] = camp_seg["Investido"].apply(fmt_brl)
         camp_seg["CPM"] = camp_seg["CPM"].apply(fmt_brl)
         camp_seg["CTR"] = camp_seg["CTR"].apply(fmt_pct)
-        st.dataframe(camp_seg.set_index("Campanha"), use_container_width=True)
+        st.markdown(_tabela_campanha_html(camp_seg.set_index("Campanha")), unsafe_allow_html=True)
 
 # ══ TAB 3 — FUNIL COMPLETO ════════════════════════════════════════════════════
 
