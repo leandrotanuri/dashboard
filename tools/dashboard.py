@@ -222,29 +222,197 @@ st.set_page_config(page_title="Dashboard de Campanhas", page_icon="📊", layout
 
 st.markdown("""
 <style>
-    .metric-card {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 16px 20px;
-        border-left: 4px solid #4C9BE8;
-    }
-    div[data-testid="metric-container"] {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 12px 16px;
-    }
-    div[data-testid="metric-container"] label {
-        font-size: 0.75rem !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    div[data-testid="metric-container"] [data-testid="stMetricValue"] > div {
-        font-size: 1.15rem !important;
-        white-space: nowrap;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+/* ── Base ── */
+html, body,
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"], .main,
+[data-testid="block-container"] {
+    background-color: #0b0d17 !important;
+    color: #e0e4f0 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+[data-testid="stHeader"] {
+    background: #0b0d17 !important;
+    border-bottom: 1px solid #1e2235 !important;
+}
+[data-testid="stToolbar"] { background: #0b0d17 !important; }
+
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0f1120 0%, #0b0d17 100%) !important;
+    border-right: 1px solid #1e2235 !important;
+}
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] span {
+    color: #b0b8d0 !important;
+}
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+    color: #e0e4f0 !important;
+}
+[data-testid="stSidebar"] .stButton > button {
+    background: #161829 !important;
+    color: #b0b8d0 !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 8px !important;
+    transition: all .15s !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: #1e2235 !important;
+    border-color: #00d4ff !important;
+    color: #00d4ff !important;
+}
+[data-testid="stSidebar"] div[data-baseweb="select"] > div {
+    background: #161829 !important;
+    color: #c8cce8 !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 8px !important;
+}
+
+/* ── Metric cards ── */
+div[data-testid="metric-container"] {
+    background: #0f1120 !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 10px !important;
+    padding: 16px 20px !important;
+}
+div[data-testid="metric-container"] label,
+div[data-testid="metric-container"] [data-testid="stMetricLabel"] p {
+    color: #3d4466 !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+div[data-testid="metric-container"] [data-testid="stMetricValue"] > div {
+    color: #00d4ff !important;
+    font-size: 1.4rem !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.5px !important;
+    white-space: nowrap;
+}
+
+/* ── Tabs ── */
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    gap: 4px;
+    background: transparent !important;
+    border-bottom: 1px solid #1e2235 !important;
+}
+[data-testid="stTabs"] button[data-baseweb="tab"] {
+    background: transparent !important;
+    color: #5a607a !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    padding: 8px 16px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+}
+[data-testid="stTabs"] button[aria-selected="true"] {
+    color: #00d4ff !important;
+    border-bottom: 2px solid #00d4ff !important;
+    background: transparent !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab-panel"] {
+    background: transparent !important;
+    padding-top: 16px !important;
+}
+
+/* ── Dividers ── */
+hr { border-color: #1e2235 !important; }
+
+/* ── Headings & text ── */
+h1, h2, h3, h4 { color: #e0e4f0 !important; font-family: 'Inter', sans-serif !important; }
+p { color: #c8cfe0 !important; }
+
+/* ── Date inputs ── */
+[data-testid="stDateInput"] input {
+    background: #0f1120 !important;
+    color: #e0e4f0 !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 8px !important;
+}
+[data-testid="stDateInput"] label { color: #3d4466 !important; font-size: 0.72rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
+
+/* ── Selectbox ── */
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+    background: #0f1120 !important;
+    color: #e0e4f0 !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 8px !important;
+}
+[data-testid="stSelectbox"] label { color: #3d4466 !important; font-size: 0.72rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
+
+/* ── Dataframes ── */
+[data-testid="stDataFrame"] {
+    background: #0f1120 !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 10px !important;
+}
+[data-testid="stDataFrame"] * { color: #c8cfe0 !important; }
+
+/* ── Buttons ── */
+.stButton > button {
+    background: #161829 !important;
+    color: #b0b8d0 !important;
+    border: 1px solid #1e2235 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all .15s !important;
+}
+.stButton > button:hover {
+    background: #1e2235 !important;
+    border-color: #00d4ff !important;
+    color: #00d4ff !important;
+}
+
+/* ── Progress bar ── */
+[data-testid="stProgress"] > div {
+    background: #161829 !important;
+    border-radius: 4px !important;
+}
+[data-testid="stProgress"] > div > div {
+    background: linear-gradient(90deg, #00d4ff, #00e676) !important;
+    border-radius: 4px !important;
+}
+
+/* ── Alerts ── */
+[data-testid="stAlert"] {
+    background: #0f1120 !important;
+    border: 1px solid #1e2235 !important;
+}
+[data-testid="stAlert"] p { color: #c8cfe0 !important; }
+
+/* ── Caption ── */
+[data-testid="stCaptionContainer"] p { color: #3d4466 !important; font-size: 0.75rem !important; }
+
+/* ── Spinner ── */
+[data-testid="stSpinner"] * { color: #00d4ff !important; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #0b0d17; }
+::-webkit-scrollbar-thumb { background: #1e2235; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a2f4a; }
 </style>
 """, unsafe_allow_html=True)
+
+# template base para todos os gráficos Plotly
+_PD = dict(
+    paper_bgcolor="#0b0d17",
+    plot_bgcolor="#0f1120",
+    font=dict(color="#c8cfe0", family="Inter, sans-serif"),
+    xaxis=dict(gridcolor="#1e2235", linecolor="#1e2235", tickfont=dict(color="#5a607a")),
+    yaxis=dict(gridcolor="#1e2235", linecolor="#1e2235", tickfont=dict(color="#5a607a")),
+    title_font=dict(color="#c8cce8", size=13),
+    margin=dict(t=36, l=8, r=8, b=8),
+)
 
 st.title("📊 Dashboard de Campanhas")
 
@@ -402,12 +570,11 @@ with tab1:
         # Funil SVG customizado (removido da tab1 — mantido só no Funil Completo)
 
         def build_funnel_svg(labels, values, colors):
-            W, H_stage, GAP = 300, 55, 3
+            W, H_stage, GAP = 300, 55, 4
             n = len(labels)
-            # Taper from full width to ~15% — pronounced funnel shape
-            stage_widths = [W * (1.0 - 0.85 * i / (n - 1)) for i in range(n)]
+            stage_widths = [W * (1.0 - 0.82 * i / (n - 1)) for i in range(n)]
             total_h = n * H_stage + (n - 1) * GAP
-            parts = [f'<svg viewBox="0 0 {W} {total_h}" xmlns="http://www.w3.org/2000/svg" style="height:450px;width:auto;display:block;margin:30px auto 0">']
+            parts = [f'<svg viewBox="0 0 {W} {total_h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin:10px auto 0">']
             for i, (label, val, color) in enumerate(zip(labels, values, colors)):
                 y = i * (H_stage + GAP)
                 top_w = stage_widths[i - 1] if i > 0 else W
@@ -415,11 +582,14 @@ with tab1:
                 xl_t, xr_t = (W - top_w) / 2, (W + top_w) / 2
                 xl_b, xr_b = (W - bot_w) / 2, (W + bot_w) / 2
                 pts = f"{xl_t:.1f},{y} {xr_t:.1f},{y} {xr_b:.1f},{y+H_stage} {xl_b:.1f},{y+H_stage}"
-                parts.append(f'<polygon points="{pts}" fill="{color}"/>')
+                fill = color + "1a"  # fundo semi-transparente (~10%)
+                parts.append(f'<polygon points="{pts}" fill="{fill}" stroke="{color}" stroke-width="1.5"/>')
                 cy = y + H_stage / 2
-                parts.append(f'<text x="{W/2}" y="{cy-9}" text-anchor="middle" fill="white" font-family="sans-serif" font-size="10" font-weight="bold">{label}</text>')
+                # label na cor do estágio, uppercase
+                parts.append(f'<text x="{W/2}" y="{cy-8}" text-anchor="middle" fill="{color}" font-family="Inter,sans-serif" font-size="9" font-weight="700" letter-spacing="1">{label.upper()}</text>')
+                # valor em branco, destaque
                 val_str = f"{val:,}".replace(",", ".")
-                parts.append(f'<text x="{W/2}" y="{cy+11}" text-anchor="middle" fill="white" font-family="sans-serif" font-size="15" font-weight="bold">{val_str}</text>')
+                parts.append(f'<text x="{W/2}" y="{cy+13}" text-anchor="middle" fill="#ffffff" font-family="Inter,sans-serif" font-size="18" font-weight="900">{val_str}</text>')
             parts.append('</svg>')
             return "".join(parts)
 
@@ -428,9 +598,9 @@ with tab1:
             daily_msg, x="date_start", y="Contatos",
             title="Novos Contatos por Dia",
             labels={"date_start": "Data"},
-            color_discrete_sequence=["#4CAF50"],
+            color_discrete_sequence=["#00e676"],
         )
-        fig_contatos.update_layout(showlegend=False, xaxis_title="", yaxis_title="Contatos")
+        fig_contatos.update_layout(showlegend=False, xaxis_title="", yaxis_title="Contatos", **_PD)
 
         # Gráfico custo por contato por dia
         fig_custo = px.line(
@@ -438,9 +608,9 @@ with tab1:
             x="date_start", y="Custo/Contato",
             title="Custo por Contato + Impostos por Dia (R$)",
             labels={"date_start": "Data", "Custo/Contato": "R$"},
-            color_discrete_sequence=["#FF6B6B"],
+            color_discrete_sequence=["#ffd600"],
         )
-        fig_custo.update_layout(xaxis_title="", yaxis_title="R$")
+        fig_custo.update_layout(xaxis_title="", yaxis_title="R$", **_PD)
 
         col_g1, col_g2 = st.columns(2)
         with col_g1:
@@ -592,9 +762,9 @@ with tab2:
                 daily_seg, x="date_start", y="Seguidores",
                 title="Seguidores por Dia",
                 labels={"date_start": "Data"},
-                color_discrete_sequence=["#4C9BE8"],
+                color_discrete_sequence=["#00d4ff"],
             )
-            fig1.update_layout(showlegend=False, xaxis_title="", yaxis_title="Seguidores")
+            fig1.update_layout(showlegend=False, xaxis_title="", yaxis_title="Seguidores", **_PD)
             st.plotly_chart(fig1, use_container_width=True)
 
         with col_g2:
@@ -602,9 +772,9 @@ with tab2:
                 daily_seg, x="date_start", y="CPM",
                 title="CPM por Dia (R$)",
                 labels={"date_start": "Data", "CPM": "CPM (R$)"},
-                color_discrete_sequence=["#FF6B6B"],
+                color_discrete_sequence=["#a78bfa"],
             )
-            fig2.update_layout(xaxis_title="", yaxis_title="CPM (R$)")
+            fig2.update_layout(xaxis_title="", yaxis_title="CPM (R$)", **_PD)
             st.plotly_chart(fig2, use_container_width=True)
 
         # Tabela por campanha
@@ -684,11 +854,11 @@ with tab3:
             if tipo_funil == "tricologia":
                 funil_labels_f = ["Impressões", "Cliques", "Mensagens", "Consultas"]
                 funil_values_f = [total_impressoes, total_cliques, total_msgs, total_consultas]
-                funil_colors_f = ["#5B4FCF", "#6A5ACD", "#4C9BE8", "#FFA726"]
+                funil_colors_f = ["#00d4ff", "#7B6CF6", "#00e676", "#ffd600"]
             else:
                 funil_labels_f = ["Impressões", "Cliques", "Mensagens", "Consultas", "Cirurgias"]
                 funil_values_f = [total_impressoes, total_cliques, total_msgs, total_consultas, total_cirurgias]
-                funil_colors_f = ["#5B4FCF", "#6A5ACD", "#4C9BE8", "#FFA726", "#43A047"]
+                funil_colors_f = ["#00d4ff", "#7B6CF6", "#00e676", "#ffd600", "#ff6b6b"]
 
             funil_svg_f = build_funnel_svg(funil_labels_f, funil_values_f, funil_colors_f)
             st.markdown(funil_svg_f, unsafe_allow_html=True)
