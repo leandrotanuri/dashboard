@@ -764,20 +764,36 @@ with tab1:
         # (build_funnel_svg movida para módulo — não usada aqui)
 
         # Gráficos
-        fig_contatos = px.bar(
-            daily_msg, x="date_start", y="Contatos",
-            labels={"date_start": ""},
-            color_discrete_sequence=["#00e676"],
-        )
-        fig_contatos.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+        _n_bars = len(daily_msg)
+        _bar_colors = [
+            f"rgb({int(0 + 0*i/max(_n_bars-1,1))},{int(212 - 2*i/max(_n_bars-1,1))},{int(255 - (255-118)*i/max(_n_bars-1,1))})"
+            for i in range(_n_bars)
+        ]  # gradiente cyan → verde barra a barra
 
-        fig_custo = px.line(
-            daily_msg.dropna(subset=["Custo/Contato"]),
-            x="date_start", y="Custo/Contato",
-            labels={"date_start": "", "Custo/Contato": ""},
-            color_discrete_sequence=["#ffd600"],
+        fig_contatos = go.Figure(data=[go.Bar(
+            x=daily_msg["date_start"],
+            y=daily_msg["Contatos"],
+            marker=dict(color=_bar_colors, line=dict(width=0)),
+            hovertemplate="%{x|%d/%m}<br>%{y} contatos<extra></extra>",
+        )])
+        fig_contatos.update_layout(
+            showlegend=False, xaxis_title="", yaxis_title="",
+            bargap=0.25, **_PD
         )
+        fig_contatos.update_xaxes(tickformat="%d/%m", dtick="D3")
+
+        _cpl_data = daily_msg.dropna(subset=["Custo/Contato"])
+        fig_custo = go.Figure(data=[go.Scatter(
+            x=_cpl_data["date_start"],
+            y=_cpl_data["Custo/Contato"],
+            mode="lines",
+            line=dict(color="#ffd600", width=2),
+            fill="tozeroy",
+            fillcolor="rgba(255,214,0,0.06)",
+            hovertemplate="%{x|%d/%m}<br>R$ %{y:.2f}<extra></extra>",
+        )])
         fig_custo.update_layout(xaxis_title="", yaxis_title="", **_PD)
+        fig_custo.update_xaxes(tickformat="%d/%m", dtick="D3")
 
         col_g1, col_g2 = st.columns(2)
         with col_g1:
@@ -942,13 +958,32 @@ with tab2:
         )
         daily_seg["Seguidores"] = daily_seg["Seguidores"].fillna(0)
 
-        fig1 = px.bar(daily_seg, x="date_start", y="Seguidores",
-                      labels={"date_start": ""}, color_discrete_sequence=["#00d4ff"])
-        fig1.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+        _n_seg = len(daily_seg)
+        _seg_colors = [
+            f"rgb({int(0 + 123*i/max(_n_seg-1,1))},{int(212 - 4*i/max(_n_seg-1,1))},{int(255 - 5*i/max(_n_seg-1,1))})"
+            for i in range(_n_seg)
+        ]  # gradiente cyan → ciano-azul
 
-        fig2 = px.line(daily_seg, x="date_start", y="CPM",
-                       labels={"date_start": "", "CPM": ""}, color_discrete_sequence=["#a78bfa"])
+        fig1 = go.Figure(data=[go.Bar(
+            x=daily_seg["date_start"],
+            y=daily_seg["Seguidores"],
+            marker=dict(color=_seg_colors, line=dict(width=0)),
+            hovertemplate="%{x|%d/%m}<br>%{y} seguidores<extra></extra>",
+        )])
+        fig1.update_layout(showlegend=False, xaxis_title="", yaxis_title="", bargap=0.25, **_PD)
+        fig1.update_xaxes(tickformat="%d/%m", dtick="D3")
+
+        fig2 = go.Figure(data=[go.Scatter(
+            x=daily_seg["date_start"],
+            y=daily_seg["CPM"],
+            mode="lines",
+            line=dict(color="#a78bfa", width=2),
+            fill="tozeroy",
+            fillcolor="rgba(167,139,250,0.06)",
+            hovertemplate="%{x|%d/%m}<br>R$ %{y:.2f}<extra></extra>",
+        )])
         fig2.update_layout(xaxis_title="", yaxis_title="", **_PD)
+        fig2.update_xaxes(tickformat="%d/%m", dtick="D3")
 
         col_g1, col_g2 = st.columns(2)
         with col_g1:
