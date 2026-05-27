@@ -638,8 +638,9 @@ with tab3:
         ticket_consulta   = (fat_consultas / total_consultas) if total_consultas > 0 else 0
         ticket_cirurgia   = (fat_cirurgias / total_cirurgias) if total_cirurgias > 0 else 0
 
-        # Totais das campanhas de mensagem (E2-CAP)
-        invest_liq        = df_msg["spend"].sum() if not df_msg.empty else 0
+        # Totais das campanhas — E2-CAP + E1-DIST
+        invest_liq        = (df_msg["spend"].sum() if not df_msg.empty else 0) + \
+                            (df_seg["spend"].sum() if not df_seg.empty else 0)
         invest_imp        = invest_liq * TAX_MULTIPLIER
         total_msgs        = int(df_msg["messaging_contacts"].sum()) if not df_msg.empty else 0
         total_cliques     = int(df_msg["clicks"].sum()) if not df_msg.empty else 0
