@@ -435,7 +435,7 @@ footer    { visibility: hidden; }
 .kpi-bar { height:2px; border-radius:2px; margin-top:2px; }
 
 /* ── KPI Cards variante pequena (métricas do funil) ── */
-.kpi-card.sm { padding:11px 14px; gap:5px; border-radius:10px; }
+.kpi-card.sm { padding:14px 14px; gap:0; border-radius:10px; aspect-ratio:1; justify-content:space-between; }
 .kpi-card.sm .kpi-label { font-size:9px; letter-spacing:1px; }
 .kpi-card.sm .kpi-value { font-size:19px; letter-spacing:-.5px; }
 .kpi-card.sm .kpi-sub   { font-size:10px; }
