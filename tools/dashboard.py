@@ -108,7 +108,7 @@ CLIENTS = {
     "Clínica PRC": {
         "account_id": "act_546529263459917",
         "spreadsheet_id": "1BZBBwaAN1wBy6bzDxeEN51CkMJ82He-ckhhOzYifrpY",
-        "agendamentos_id": None,
+        "agendamentos_id": "1JGL8vElaWn-dCtYSPZEPkZMk0-02xLvAaLN2cxtjKd8",
         "meta_pacientes": 20,
         "tipo": "tricologia",
     },
