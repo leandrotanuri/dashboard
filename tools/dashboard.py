@@ -1274,11 +1274,15 @@ with tab4:
     import calendar
     from datetime import date as _date
 
+    # Usa o período selecionado pelo usuário, não a data de hoje
+    _mes_ref       = date_start  # primeiro dia do período selecionado
     hoje           = _date.today()
-    primeiro_dia   = hoje.replace(day=1).strftime("%Y-%m-%d")
-    ultimo_dia     = hoje.replace(day=calendar.monthrange(hoje.year, hoje.month)[1]).strftime("%Y-%m-%d")
-    dias_no_mes    = calendar.monthrange(hoje.year, hoje.month)[1]
-    dias_passados  = hoje.day
+    primeiro_dia   = _mes_ref.replace(day=1).strftime("%Y-%m-%d")
+    ultimo_dia     = _mes_ref.replace(day=calendar.monthrange(_mes_ref.year, _mes_ref.month)[1]).strftime("%Y-%m-%d")
+    dias_no_mes    = calendar.monthrange(_mes_ref.year, _mes_ref.month)[1]
+    # dias_passados: se for o mês atual usa hoje, senão considera o mês completo
+    _mes_atual     = hoje.year == _mes_ref.year and hoje.month == _mes_ref.month
+    dias_passados  = hoje.day if _mes_atual else dias_no_mes
     dias_restantes = dias_no_mes - dias_passados
 
     tipo_cliente = client_cfg.get("tipo", "clinica_geral")
@@ -1291,7 +1295,7 @@ with tab4:
 
     st.markdown(
         f'<div style="font-size:20px;font-weight:900;color:#e0e4f0;margin-bottom:2px">'
-        f'Metas de {hoje.strftime("%B de %Y").capitalize()}</div>'
+        f'Metas de {_mes_ref.strftime("%B de %Y").capitalize()}</div>'
         f'<div style="font-size:11px;color:#3d4466;margin-bottom:16px">'
         f'Dia {dias_passados} de {dias_no_mes} · {dias_restantes} dias restantes</div>',
         unsafe_allow_html=True
