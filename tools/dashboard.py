@@ -196,15 +196,15 @@ def _read_sheets_range(spreadsheet_id: str, range_: str) -> list:
         from sheets_client import read_range
         return read_range(spreadsheet_id, range_)
 
-@st.cache_data(ttl=7200)
+@st.cache_data(ttl=7200, show_spinner=False)
 def fetch_sheets_seguidores(spreadsheet_id: str, month: int) -> pd.DataFrame:
     """Lê colunas M (investido E1-DIST) e N (seguidores)."""
     tab = MONTH_TAB[month]
     range_ = f"'{tab}'!M5:N35"
     try:
         rows = _read_sheets_range(spreadsheet_id, range_)
-    except Exception:
-        return pd.DataFrame(columns=["dia", "investido_seg", "seguidores"])
+    except Exception as e:
+        raise RuntimeError(f"Erro ao ler seguidores (aba '{tab}'): {e}") from e
 
     records = []
     for i, row in enumerate(rows):
@@ -729,8 +729,12 @@ def fetch_agendamentos(spreadsheet_id: str, date_start: str, date_end: str) -> p
     return df
 
 with st.spinner("Buscando dados..."):
-    df       = fetch_campaign_insights(str(date_start), str(date_end), account_id)
-    df_sheets = fetch_sheets_seguidores(spreadsheet_id, date_start.month)
+    df = fetch_campaign_insights(str(date_start), str(date_end), account_id)
+    try:
+        df_sheets = fetch_sheets_seguidores(spreadsheet_id, date_start.month)
+    except RuntimeError as _e:
+        st.warning(f"⚠️ {_e} — clique em **Atualizar Dados** na barra lateral para tentar novamente.")
+        df_sheets = pd.DataFrame(columns=["dia", "investido_seg", "seguidores"])
     try:
         df_agend = fetch_agendamentos(agendamentos_id, str(date_start), str(date_end)) if agendamentos_id else pd.DataFrame()
     except RuntimeError as _e:
