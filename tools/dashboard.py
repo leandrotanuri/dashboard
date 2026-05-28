@@ -1453,26 +1453,30 @@ with tab5:
     def _cmp_metrics(df, ag):
         """Calcula métricas agregadas de um mês para comparativo."""
         if df.empty:
-            return dict(spend=0, contacts=0, cpl=None, cpm=None, agend=0, custo_agend=None)
+            return dict(spend=0, spend_imp=0, contacts=0, cpl=None, cpm=None,
+                        agend=0, custo_agend=None, cirurg=0, custo_cirurg=None)
         df_m   = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=False)]
         spend  = df["spend"].sum()
         imps   = int(df["impressions"].sum())
         ctts   = int(df_m["messaging_contacts"].sum()) if not df_m.empty and "messaging_contacts" in df_m.columns else 0
-        agend  = int(ag["consultas"].sum()) if ag is not None and not ag.empty and "consultas" in ag.columns else 0
+        agend  = int(ag["consultas"].sum())  if ag is not None and not ag.empty and "consultas"  in ag.columns else 0
+        cirurg = int(ag["cirurgias"].sum())  if ag is not None and not ag.empty and "cirurgias"  in ag.columns else 0
         return dict(
-            spend       = spend,
-            spend_imp   = spend * TAX_MULTIPLIER,
-            contacts    = ctts,
-            cpl         = spend * TAX_MULTIPLIER / ctts if ctts > 0 else None,
-            cpm         = spend * TAX_MULTIPLIER / imps * 1000 if imps > 0 else None,
-            agend       = agend,
-            custo_agend = spend * TAX_MULTIPLIER / agend if agend > 0 else None,
+            spend        = spend,
+            spend_imp    = spend * TAX_MULTIPLIER,
+            contacts     = ctts,
+            cpl          = spend * TAX_MULTIPLIER / ctts   if ctts   > 0 else None,
+            cpm          = spend * TAX_MULTIPLIER / imps * 1000 if imps > 0 else None,
+            agend        = agend,
+            custo_agend  = spend * TAX_MULTIPLIER / agend  if agend  > 0 else None,
+            cirurg       = cirurg,
+            custo_cirurg = spend * TAX_MULTIPLIER / cirurg if cirurg > 0 else None,
         )
 
     ma = _cmp_metrics(_df_a, _ag_a)
     mb = _cmp_metrics(_df_b, _ag_b)
 
-    def _delta_html(va, vb, lower_is_better=False, is_brl=False):
+    def _delta_html(va, vb, lower_is_better=False):
         """Retorna HTML do badge de variação (vb vs va)."""
         if va is None or va == 0 or vb is None:
             return '<span style="color:#3d4466;font-size:11px">—</span>'
@@ -1491,22 +1495,32 @@ with tab5:
     suf_b = " <span style='font-size:9px;color:#3d4466'>(parcial)</span>" if parcial_b else ""
 
     rows_cmp = [
-        ("💰 Investido c/ imp.",    fmt_brl(ma["spend_imp"]),    fmt_brl(mb["spend_imp"]),
-         _delta_html(ma["spend_imp"], mb["spend_imp"])),
-        ("💬 Contatos",             fmt_num(ma["contacts"]),     fmt_num(mb["contacts"]),
-         _delta_html(ma["contacts"], mb["contacts"])),
-        ("📉 CPL c/ imp.",          fmt_brl(ma["cpl"]) if ma["cpl"] else "—",
-                                    fmt_brl(mb["cpl"]) if mb["cpl"] else "—",
-         _delta_html(ma["cpl"], mb["cpl"], lower_is_better=True)),
-        ("📊 CPM c/ imp.",          fmt_brl(ma["cpm"]) if ma["cpm"] else "—",
-                                    fmt_brl(mb["cpm"]) if mb["cpm"] else "—",
-         _delta_html(ma["cpm"], mb["cpm"], lower_is_better=True)),
-        ("📅 Agendamentos",         fmt_num(ma["agend"]),        fmt_num(mb["agend"]),
-         _delta_html(ma["agend"], mb["agend"])),
-        ("🏥 Custo/Agendamento",    fmt_brl(ma["custo_agend"]) if ma["custo_agend"] else "—",
-                                    fmt_brl(mb["custo_agend"]) if mb["custo_agend"] else "—",
+        ("💰 Investido c/ imp.",  fmt_brl(ma["spend_imp"]),  fmt_brl(mb["spend_imp"]),
+         _delta_html(ma["spend_imp"],  mb["spend_imp"])),
+        ("💬 Contatos",           fmt_num(ma["contacts"]),   fmt_num(mb["contacts"]),
+         _delta_html(ma["contacts"],   mb["contacts"])),
+        ("📉 CPL c/ imp.",        fmt_brl(ma["cpl"])   if ma["cpl"]   else "—",
+                                  fmt_brl(mb["cpl"])   if mb["cpl"]   else "—",
+         _delta_html(ma["cpl"],   mb["cpl"],   lower_is_better=True)),
+        ("📊 CPM c/ imp.",        fmt_brl(ma["cpm"])   if ma["cpm"]   else "—",
+                                  fmt_brl(mb["cpm"])   if mb["cpm"]   else "—",
+         _delta_html(ma["cpm"],   mb["cpm"],   lower_is_better=True)),
+        ("📅 Agendamentos",       fmt_num(ma["agend"]),      fmt_num(mb["agend"]),
+         _delta_html(ma["agend"],       mb["agend"])),
+        ("🏥 Custo/Agendamento",  fmt_brl(ma["custo_agend"]) if ma["custo_agend"] else "—",
+                                  fmt_brl(mb["custo_agend"]) if mb["custo_agend"] else "—",
          _delta_html(ma["custo_agend"], mb["custo_agend"], lower_is_better=True)),
     ]
+
+    # Adiciona cirurgias apenas para clientes com essa métrica (ex.: Dr. Vinicius)
+    if client_cfg.get("meta_cirurgias"):
+        rows_cmp += [
+            ("🔬 Cirurgias",          fmt_num(ma["cirurg"]),     fmt_num(mb["cirurg"]),
+             _delta_html(ma["cirurg"],       mb["cirurg"])),
+            ("💊 Custo/Cirurgia",     fmt_brl(ma["custo_cirurg"]) if ma["custo_cirurg"] else "—",
+                                      fmt_brl(mb["custo_cirurg"]) if mb["custo_cirurg"] else "—",
+             _delta_html(ma["custo_cirurg"], mb["custo_cirurg"], lower_is_better=True)),
+        ]
 
     table_rows = ""
     for i, (metrica, val_a, val_b, delta) in enumerate(rows_cmp):
@@ -1526,8 +1540,7 @@ with tab5:
     st.markdown(
         f'<div style="background:#0f1120;border:1px solid #1e2235;border-radius:14px;overflow:hidden;margin-top:8px">'
         f'<table style="width:100%;border-collapse:collapse">'
-        f'<thead>'
-        f'<tr style="background:#141728">'
+        f'<thead><tr style="background:#141728">'
         f'<th style="padding:14px 18px;font-size:10px;color:#3d4466;font-weight:700;'
         f'text-align:left;letter-spacing:1px;text-transform:uppercase">MÉTRICA</th>'
         f'<th style="padding:14px 18px;font-size:12px;color:#00d4ff;font-weight:800;'
@@ -1536,9 +1549,95 @@ with tab5:
         f'text-align:right">{lbl_b}{suf_b}</th>'
         f'<th style="padding:14px 18px;font-size:10px;color:#3d4466;font-weight:700;'
         f'text-align:center;letter-spacing:1px;text-transform:uppercase">VARIAÇÃO</th>'
-        f'</tr>'
-        f'</thead>'
+        f'</tr></thead>'
         f'<tbody>{table_rows}</tbody>'
         f'</table></div>',
         unsafe_allow_html=True,
     )
+
+    # ── Gráficos sobrepostos dia a dia ─────────────────────────────────────────
+    st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-size:16px;font-weight:800;color:#e0e4f0;margin-bottom:4px">Evolução Diária</div>'
+        '<div style="font-size:11px;color:#3d4466;margin-bottom:14px">'
+        'Os dois meses sobrepostos na mesma escala — dia a dia</div>',
+        unsafe_allow_html=True,
+    )
+
+    def _daily_series(df, col, agg="sum"):
+        """Agrega coluna por dia-do-mês."""
+        if df.empty or col not in df.columns:
+            return pd.Series(dtype=float)
+        tmp = df.copy()
+        tmp["dia"] = pd.to_datetime(tmp["date_start"]).dt.day
+        return tmp.groupby("dia")[col].sum()
+
+    # Investimento diário (todas campanhas)
+    _spend_a = _daily_series(_df_a, "spend")
+    _spend_b = _daily_series(_df_b, "spend")
+
+    # Contatos diários (só campanha mensagens)
+    _dfm_a = _df_a[_df_a["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=False)] if not _df_a.empty else _df_a
+    _dfm_b = _df_b[_df_b["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=False)] if not _df_b.empty else _df_b
+    _ctts_a = _daily_series(_dfm_a, "messaging_contacts")
+    _ctts_b = _daily_series(_dfm_b, "messaging_contacts")
+
+    _col_a, _col_b_chart = "#00d4ff", "#a78bfa"   # cyan = Mês A, roxo = Mês B
+
+    col_g1, col_g2 = st.columns(2)
+
+    with col_g1:
+        st.markdown(
+            f'<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Investimento Diário</p>'
+            f'<p style="font-size:11px;color:#3d4466;margin:0 0 4px">'
+            f'<span style="color:{_col_a}">━</span> {lbl_a} &nbsp;'
+            f'<span style="color:{_col_b_chart}">━</span> {lbl_b}</p>',
+            unsafe_allow_html=True)
+        fig_sp = go.Figure()
+        if not _spend_a.empty:
+            fig_sp.add_trace(go.Scatter(
+                x=_spend_a.index, y=_spend_a.values * TAX_MULTIPLIER,
+                name=lbl_a, mode="lines",
+                line=dict(color=_col_a, width=2),
+                fill="tozeroy", fillcolor="rgba(0,212,255,0.06)",
+                hovertemplate="Dia %{x}<br>R$ %{y:,.2f}<extra>" + lbl_a + "</extra>",
+            ))
+        if not _spend_b.empty:
+            fig_sp.add_trace(go.Scatter(
+                x=_spend_b.index, y=_spend_b.values * TAX_MULTIPLIER,
+                name=lbl_b, mode="lines",
+                line=dict(color=_col_b_chart, width=2),
+                fill="tozeroy", fillcolor="rgba(167,139,250,0.06)",
+                hovertemplate="Dia %{x}<br>R$ %{y:,.2f}<extra>" + lbl_b + "</extra>",
+            ))
+        fig_sp.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+        st.plotly_chart(fig_sp, use_container_width=True)
+
+    with col_g2:
+        st.markdown(
+            f'<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Contatos Diários</p>'
+            f'<p style="font-size:11px;color:#3d4466;margin:0 0 4px">'
+            f'<span style="color:{_col_a}">━</span> {lbl_a} &nbsp;'
+            f'<span style="color:{_col_b_chart}">━</span> {lbl_b}</p>',
+            unsafe_allow_html=True)
+        fig_ct = go.Figure()
+        if not _ctts_a.empty:
+            fig_ct.add_trace(go.Scatter(
+                x=_ctts_a.index, y=_ctts_a.values,
+                name=lbl_a, mode="lines+markers",
+                line=dict(color=_col_a, width=2),
+                marker=dict(size=5),
+                fill="tozeroy", fillcolor="rgba(0,212,255,0.06)",
+                hovertemplate="Dia %{x}<br>%{y} contatos<extra>" + lbl_a + "</extra>",
+            ))
+        if not _ctts_b.empty:
+            fig_ct.add_trace(go.Scatter(
+                x=_ctts_b.index, y=_ctts_b.values,
+                name=lbl_b, mode="lines+markers",
+                line=dict(color=_col_b_chart, width=2),
+                marker=dict(size=5),
+                fill="tozeroy", fillcolor="rgba(167,139,250,0.06)",
+                hovertemplate="Dia %{x}<br>%{y} contatos<extra>" + lbl_b + "</extra>",
+            ))
+        fig_ct.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+        st.plotly_chart(fig_ct, use_container_width=True)
