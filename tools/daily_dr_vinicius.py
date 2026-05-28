@@ -1,6 +1,8 @@
 """
-Atualização diária automática — Clínica PRC
+Atualização diária automática — Dr. Vinicius
 Busca insights do mês atual e preenche a aba correta da planilha.
+Preenche até o dia ANTERIOR ao de execução (dia fechado).
+Coluna N (seguidores) é preenchida manualmente — este script não toca nela.
 """
 
 import os
@@ -18,8 +20,8 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="repla
 load_dotenv()
 
 # ─── Config do cliente ────────────────────────────────────────────────────────
-ACCOUNT_ID     = "act_546529263459917"
-SPREADSHEET_ID = "1BZBBwaAN1wBy6bzDxeEN51CkMJ82He-ckhhOzYifrpY"
+ACCOUNT_ID     = "act_10205578707965893"
+SPREADSHEET_ID = "1hajaZpK-2cGY4TEpVGTfM7DljZk0M9fiLO6qylC29Gw"
 ACCESS_TOKEN   = os.getenv("META_ACCESS_TOKEN")
 API_VERSION    = "v19.0"
 BASE_URL       = f"https://graph.facebook.com/{API_VERSION}"
@@ -31,29 +33,24 @@ MONTH_TAB = {
 }
 
 CAMPAIGN_MAP = {
-    "whatsapp":          "whatsapp",
-    "wpp":               "whatsapp",
-    "mensagem":          "whatsapp",
-    "mensagens":         "whatsapp",
-    "[campanha de msg]": "whatsapp",
-    "e2-cap":            "whatsapp",
-    "e1-dist":           "seguidores",
-    "lead ads":          "lead_ads",
-    "lead_ads":          "lead_ads",
-    "formulário":        "lead_ads",
-    "formulario":        "lead_ads",
-    "seguidor":          "seguidores",
-    "tráfego":           "seguidores",
-    "trafego":           "seguidores",
-    "trfg":              "seguidores",
-    "perfil":            "seguidores",
-    "visitas ao perfil": "seguidores",
-    "landing":           "landing_page",
+    "e2-cap":   "whatsapp",
+    "e1-dist":  "seguidores",
+    "whatsapp": "whatsapp",
+    "wpp":      "whatsapp",
+    "mensagem": "whatsapp",
+    "mensagens":"whatsapp",
+    "lead ads": "lead_ads",
+    "lead_ads": "lead_ads",
+    "seguidor": "seguidores",
+    "trafego":  "seguidores",
+    "tráfego":  "seguidores",
+    "trfg":     "seguidores",
+    "landing":  "landing_page",
 }
 
 
 # ─── Meta API ─────────────────────────────────────────────────────────────────
-def fetch_insights(date_start: str, date_end: str) -> list[dict]:
+def fetch_insights(date_start: str, date_end: str) -> list:
     url = f"{BASE_URL}/{ACCOUNT_ID}/insights"
     params = {
         "access_token": ACCESS_TOKEN,
@@ -101,7 +98,7 @@ def classify_campaign(name: str, actions) -> str:
     return "landing_page"
 
 
-def aggregate_by_date(rows: list[dict]) -> dict:
+def aggregate_by_date(rows: list) -> dict:
     result = defaultdict(lambda: {
         "whatsapp":     {"spend": 0.0, "leads": 0},
         "lead_ads":     {"spend": 0.0, "leads": 0},
@@ -146,6 +143,7 @@ def fill_sheet(sheet_name: str, by_date: dict) -> bool:
              "values": [[round(d["lead_ads"]["spend"], 2), d["lead_ads"]["leads"]]]},
             {"range": f"'{sheet_name}'!J{row}:K{row}", "majorDimension": "ROWS",
              "values": [[round(d["landing_page"]["spend"], 2), d["landing_page"]["leads"]]]},
+            # Coluna M = investimento E1-DIST | Coluna N = seguidores (preenchida manualmente)
             {"range": f"'{sheet_name}'!M{row}", "majorDimension": "ROWS",
              "values": [[round(d["seguidores"]["spend"], 2)]]},
         ]
@@ -161,7 +159,7 @@ def main():
     date_end   = yesterday.strftime("%Y-%m-%d")
     sheet_name = MONTH_TAB[yesterday.month]
 
-    print(f"=== Atualização diária — Clínica PRC ===")
+    print(f"=== Atualização diária — Dr. Vinicius ===")
     print(f"Hoje: {today}  |  Preenchendo até: {date_end} (dia fechado)")
     print(f"Aba: {sheet_name}  |  Planilha: {SPREADSHEET_ID}\n")
 

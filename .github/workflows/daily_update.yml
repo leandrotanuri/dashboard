@@ -1,0 +1,39 @@
+name: Atualização Diária — Planilhas
+
+on:
+  schedule:
+    # Roda todo dia às 08:00 horário de Brasília (11:00 UTC)
+    - cron: "0 11 * * *"
+  workflow_dispatch:  # permite rodar manualmente pelo GitHub
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Instalar dependências
+        run: pip install requests python-dotenv
+
+      - name: Escrever token.json do Google
+        env:
+          GOOGLE_TOKEN_JSON: ${{ secrets.GOOGLE_TOKEN_JSON }}
+        run: echo "$GOOGLE_TOKEN_JSON" > token.json
+
+      - name: Atualizar planilha — Clínica PRC
+        env:
+          META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+        run: python tools/daily_clinica_prc.py
+
+      - name: Atualizar planilha — Dr. Vinicius
+        env:
+          META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+        run: python tools/daily_dr_vinicius.py
