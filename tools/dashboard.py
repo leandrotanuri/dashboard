@@ -675,6 +675,41 @@ if date_start > date_end:
 # ── carrega dados ──────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=7200, show_spinner=False)
+def fetch_monthly_history(account_id: str, n_months: int = 6) -> pd.DataFrame:
+    """Agrega métricas dos últimos N meses completos + mês atual parcial."""
+    import calendar as _cal
+    today_ = date.today()
+    records = []
+    for i in range(n_months - 1, -1, -1):
+        yr, mo = today_.year, today_.month - i
+        while mo <= 0:
+            mo += 12
+            yr -= 1
+        first = date(yr, mo, 1)
+        last  = today_ if i == 0 else date(yr, mo, _cal.monthrange(yr, mo)[1])
+        df_h  = fetch_campaign_insights(str(first), str(last), account_id)
+        if df_h.empty:
+            continue
+        df_m = df_h[df_h["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=False)]
+        spend    = df_h["spend"].sum()
+        contacts = int(df_m["messaging_contacts"].sum()) if not df_m.empty and "messaging_contacts" in df_m.columns else 0
+        imps     = int(df_h["impressions"].sum())
+        clicks   = int(df_h["inline_link_clicks"].sum()) if "inline_link_clicks" in df_h.columns else 0
+        records.append({
+            "mes":       first.strftime("%b/%y").capitalize(),
+            "mes_dt":    first,
+            "investido": spend,
+            "contatos":  contacts,
+            "impressoes": imps,
+            "cpl":       spend * TAX_MULTIPLIER / contacts if contacts > 0 else None,
+            "cpm":       spend / imps * 1000 if imps > 0 else None,
+            "ctr":       clicks / imps * 100 if imps > 0 else None,
+            "parcial":   i == 0,
+        })
+    return pd.DataFrame(records)
+
+
+@st.cache_data(ttl=7200, show_spinner=False)
 def fetch_agendamentos(spreadsheet_id: str, date_start: str, date_end: str) -> pd.DataFrame:
     """Lê planilha de agendamentos filtrando pelo período selecionado."""
     _empty_cols = ["data","consultas","valor_consulta","total_consultas","cirurgias","valor_cirurgia","total_cirurgias"]
@@ -754,7 +789,7 @@ df_msg = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=F
 
 TAX_MULTIPLIER = 1.1385
 
-tab1, tab2, tab3, tab4 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo", "🎯 Metas"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"])
 
 # ══ TAB 1 — MENSAGENS ═════════════════════════════════════════════════════════
 
@@ -1362,3 +1397,132 @@ with tab4:
             st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
             _meta_block("🔬 Cirurgias", cirurgias_atual, META_CIRURGIAS,
                         ritmo_cirurgias, proj_cirurgias, dias_restantes, "cirurgias")
+
+# ══ TAB 5 — EVOLUÇÃO MENSAL ════════════════════════════════════════════════════
+
+with tab5:
+    with st.spinner("Carregando histórico dos últimos 6 meses..."):
+        df_hist = fetch_monthly_history(account_id, n_months=6)
+
+    if df_hist.empty or len(df_hist) < 2:
+        st.info("Dados insuficientes para comparativo. São necessários ao menos 2 meses de campanha ativa.")
+    else:
+        cur  = df_hist.iloc[-1]   # mês atual (parcial)
+        prev = df_hist.iloc[-2]   # mês anterior (completo)
+
+        def _delta(cur_v, prev_v, lower_is_better=False):
+            """Retorna (texto_badge, classe_badge) para comparativo."""
+            if prev_v is None or prev_v == 0 or cur_v is None:
+                return "", "ok"
+            pct      = (cur_v - prev_v) / abs(prev_v) * 100
+            sign     = "+" if pct >= 0 else ""
+            improved = (pct < 0) if lower_is_better else (pct > 0)
+            return f"{sign}{pct:.1f}%", ("up" if improved else "down")
+
+        # ── Comparativo mês atual vs anterior ─────────────────────────────────
+        st.markdown(
+            f'<div style="font-size:20px;font-weight:900;color:#e0e4f0;margin-bottom:2px">Evolução Mensal</div>'
+            f'<div style="font-size:11px;color:#3d4466;margin-bottom:14px">'
+            f'Comparativo {cur["mes"]} (parcial) vs {prev["mes"]} · últimos 6 meses</div>',
+            unsafe_allow_html=True,
+        )
+
+        d_inv, c_inv = _delta(cur["investido"], prev["investido"])
+        d_ctt, c_ctt = _delta(cur["contatos"],  prev["contatos"])
+        d_cpl, c_cpl = _delta(cur["cpl"],       prev["cpl"],  lower_is_better=True)
+        d_cpm, c_cpm = _delta(cur["cpm"],       prev["cpm"],  lower_is_better=True)
+
+        st.markdown(_kpi_html([
+            {"label": "INVESTIDO",
+             "value": fmt_brl(cur["investido"]),
+             "badge": d_inv, "badge_cls": c_inv,
+             "sub": f"vs {fmt_brl(prev['investido'])} em {prev['mes']}",
+             "color": "yellow"},
+            {"label": "CONTATOS",
+             "value": fmt_num(cur["contatos"]),
+             "badge": d_ctt, "badge_cls": c_ctt,
+             "sub": f"vs {fmt_num(prev['contatos'])} em {prev['mes']}",
+             "color": "cyan"},
+            {"label": "CPL C/ IMP.",
+             "value": fmt_brl(cur["cpl"]) if cur["cpl"] else "—",
+             "badge": d_cpl, "badge_cls": c_cpl,
+             "sub": f"vs {fmt_brl(prev['cpl']) if prev['cpl'] else '—'} em {prev['mes']}",
+             "color": "purple"},
+            {"label": "CPM C/ IMP.",
+             "value": fmt_brl(cur["cpm"]) if cur["cpm"] else "—",
+             "badge": d_cpm, "badge_cls": c_cpm,
+             "sub": f"vs {fmt_brl(prev['cpm']) if prev['cpm'] else '—'} em {prev['mes']}",
+             "color": "white"},
+        ]), unsafe_allow_html=True)
+
+        st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+
+        # ── Cores: barras sólidas = meses completos, esmaecida = parcial ──────
+        _clr_cyan  = ["#00d4ff" if not r["parcial"] else "#00d4ff55" for _, r in df_hist.iterrows()]
+        _clr_yell  = ["#ffd600" if not r["parcial"] else "#ffd60055" for _, r in df_hist.iterrows()]
+
+        # ── Linha 1: Investimento + CPL ───────────────────────────────────────
+        col_e1, col_e2 = st.columns(2)
+
+        with col_e1:
+            st.markdown(
+                '<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Investimento Mensal</p>'
+                '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Total investido por mês · barra esmaecida = mês em curso</p>',
+                unsafe_allow_html=True)
+            fig_inv = go.Figure(data=[go.Bar(
+                x=df_hist["mes"], y=df_hist["investido"],
+                marker=dict(color=_clr_yell, line=dict(width=0)),
+                hovertemplate="%{x}<br>R$ %{y:,.2f}<extra></extra>",
+            )])
+            fig_inv.update_layout(bargap=0.35, showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+            st.plotly_chart(fig_inv, use_container_width=True)
+
+        with col_e2:
+            st.markdown(
+                '<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">CPL C/ Imposto</p>'
+                '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Custo por contato mensal · quanto menor, melhor</p>',
+                unsafe_allow_html=True)
+            _cpl_h = df_hist.dropna(subset=["cpl"])
+            fig_cpl = go.Figure(go.Scatter(
+                x=_cpl_h["mes"], y=_cpl_h["cpl"],
+                mode="lines+markers",
+                line=dict(color="#a78bfa", width=2),
+                marker=dict(size=8, color="#a78bfa"),
+                fill="tozeroy", fillcolor="rgba(167,139,250,0.07)",
+                hovertemplate="%{x}<br>R$ %{y:.2f}<extra></extra>",
+            ))
+            fig_cpl.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+            st.plotly_chart(fig_cpl, use_container_width=True)
+
+        # ── Linha 2: Contatos + CPM ────────────────────────────────────────────
+        col_e3, col_e4 = st.columns(2)
+
+        with col_e3:
+            st.markdown(
+                '<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Contatos por Mês</p>'
+                '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Total de mensagens iniciadas · barra esmaecida = parcial</p>',
+                unsafe_allow_html=True)
+            fig_ctt = go.Figure(data=[go.Bar(
+                x=df_hist["mes"], y=df_hist["contatos"],
+                marker=dict(color=_clr_cyan, line=dict(width=0)),
+                hovertemplate="%{x}<br>%{y} contatos<extra></extra>",
+            )])
+            fig_ctt.update_layout(bargap=0.35, showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+            st.plotly_chart(fig_ctt, use_container_width=True)
+
+        with col_e4:
+            st.markdown(
+                '<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">CPM C/ Imposto</p>'
+                '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Custo por mil impressões · eficiência de alcance</p>',
+                unsafe_allow_html=True)
+            _cpm_h = df_hist.dropna(subset=["cpm"])
+            fig_cpm = go.Figure(go.Scatter(
+                x=_cpm_h["mes"], y=_cpm_h["cpm"],
+                mode="lines+markers",
+                line=dict(color="#ffd600", width=2),
+                marker=dict(size=8, color="#ffd600"),
+                fill="tozeroy", fillcolor="rgba(255,214,0,0.07)",
+                hovertemplate="%{x}<br>R$ %{y:.2f}<extra></extra>",
+            ))
+            fig_cpm.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+            st.plotly_chart(fig_cpm, use_container_width=True)
