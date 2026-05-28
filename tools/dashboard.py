@@ -1591,23 +1591,25 @@ with tab5:
             f'<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Investimento Diário</p>'
             f'<p style="font-size:11px;color:#3d4466;margin:0 0 4px">'
             f'<span style="color:{_col_a}">█</span> {lbl_a} &nbsp;'
-            f'<span style="color:{_col_b_chart}">█</span> {lbl_b}</p>',
+            f'<span style="color:{_col_b_chart}">━●</span> {lbl_b}</p>',
             unsafe_allow_html=True)
         fig_sp = go.Figure()
         if not _spend_a.empty:
             fig_sp.add_trace(go.Bar(
                 x=_spend_a.index, y=_spend_a.values * TAX_MULTIPLIER,
                 name=lbl_a, marker_color=_col_a,
+                opacity=0.85,
                 hovertemplate="Dia %{x}<br>R$ %{y:,.2f}<extra>" + lbl_a + "</extra>",
             ))
         if not _spend_b.empty:
-            fig_sp.add_trace(go.Bar(
+            fig_sp.add_trace(go.Scatter(
                 x=_spend_b.index, y=_spend_b.values * TAX_MULTIPLIER,
-                name=lbl_b, marker_color=_col_b_chart,
+                name=lbl_b, mode="lines+markers",
+                line=dict(color=_col_b_chart, width=2),
+                marker=dict(size=5, color=_col_b_chart),
                 hovertemplate="Dia %{x}<br>R$ %{y:,.2f}<extra>" + lbl_b + "</extra>",
             ))
-        fig_sp.update_layout(barmode="group", bargap=0.15, bargroupgap=0.05,
-                             showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+        fig_sp.update_layout(bargap=0.25, showlegend=False, xaxis_title="", yaxis_title="", **_PD)
         st.plotly_chart(fig_sp, use_container_width=True)
 
     with col_g2:
@@ -1615,21 +1617,23 @@ with tab5:
             f'<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Contatos Diários</p>'
             f'<p style="font-size:11px;color:#3d4466;margin:0 0 4px">'
             f'<span style="color:{_col_a}">█</span> {lbl_a} &nbsp;'
-            f'<span style="color:{_col_b_chart}">█</span> {lbl_b}</p>',
+            f'<span style="color:{_col_b_chart}">━●</span> {lbl_b}</p>',
             unsafe_allow_html=True)
         fig_ct = go.Figure()
         if not _ctts_a.empty:
             fig_ct.add_trace(go.Bar(
                 x=_ctts_a.index, y=_ctts_a.values,
                 name=lbl_a, marker_color=_col_a,
+                opacity=0.85,
                 hovertemplate="Dia %{x}<br>%{y} contatos<extra>" + lbl_a + "</extra>",
             ))
         if not _ctts_b.empty:
-            fig_ct.add_trace(go.Bar(
+            fig_ct.add_trace(go.Scatter(
                 x=_ctts_b.index, y=_ctts_b.values,
-                name=lbl_b, marker_color=_col_b_chart,
+                name=lbl_b, mode="lines+markers",
+                line=dict(color=_col_b_chart, width=2),
+                marker=dict(size=5, color=_col_b_chart),
                 hovertemplate="Dia %{x}<br>%{y} contatos<extra>" + lbl_b + "</extra>",
             ))
-        fig_ct.update_layout(barmode="group", bargap=0.15, bargroupgap=0.05,
-                             showlegend=False, xaxis_title="", yaxis_title="", **_PD)
+        fig_ct.update_layout(bargap=0.25, showlegend=False, xaxis_title="", yaxis_title="", **_PD)
         st.plotly_chart(fig_ct, use_container_width=True)
