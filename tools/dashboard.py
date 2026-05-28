@@ -1458,8 +1458,8 @@ with tab5:
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
         # ── Cores: barras sólidas = meses completos, esmaecida = parcial ──────
-        _clr_cyan  = ["#00d4ff" if not r["parcial"] else "#00d4ff55" for _, r in df_hist.iterrows()]
-        _clr_yell  = ["#ffd600" if not r["parcial"] else "#ffd60055" for _, r in df_hist.iterrows()]
+        _clr_cyan  = ["#00d4ff" if not r["parcial"] else "rgba(0,212,255,0.3)" for _, r in df_hist.iterrows()]
+        _clr_yell  = ["#ffd600" if not r["parcial"] else "rgba(255,214,0,0.3)" for _, r in df_hist.iterrows()]
 
         # ── Linha 1: Investimento + CPL ───────────────────────────────────────
         col_e1, col_e2 = st.columns(2)
