@@ -659,14 +659,57 @@ agendamentos_id = client_cfg.get("agendamentos_id")
 
 # ── filtros de data ────────────────────────────────────────────────────────────
 
-col_a, col_b, col_c = st.columns([1, 1, 4])
-today = date.today()
+from datetime import timedelta as _td
+today     = date.today()
 first_day = today.replace(day=1)
+_pmL = first_day - _td(days=1)          # último dia do mês passado
+_pmF = _pmL.replace(day=1)              # primeiro dia do mês passado
+_wsM = today - _td(days=today.weekday())# segunda-feira desta semana
+_lwS = _wsM - _td(days=7)              # início semana passada
+_lwE = _wsM - _td(days=1)              # fim semana passada
 
-with col_a:
-    date_start = st.date_input("De", value=first_day, max_value=today)
-with col_b:
-    date_end = st.date_input("Até", value=today, max_value=today)
+_PERIODOS = {
+    "Hoje":             (today,               today),
+    "Ontem":            (today - _td(days=1), today - _td(days=1)),
+    "Esta semana":      (_wsM,                today),
+    "Semana passada":   (_lwS,                _lwE),
+    "Este mês":         (first_day,           today),
+    "Mês passado":      (_pmF,                _pmL),
+    "Últimos 7 dias":   (today - _td(days=6), today),
+    "Últimos 14 dias":  (today - _td(days=13),today),
+    "Últimos 30 dias":  (today - _td(days=29),today),
+    "Personalizado":    None,
+}
+
+_col_per, _col_de, _col_ate = st.columns([3, 2, 2])
+
+with _col_per:
+    _periodo = st.selectbox(
+        "Período", list(_PERIODOS.keys()), index=4,
+        key="periodo_sel", label_visibility="collapsed"
+    )
+
+if _PERIODOS[_periodo] is not None:
+    date_start, date_end = _PERIODOS[_periodo]
+    with _col_de:
+        st.markdown(
+            f'<div style="padding:6px 12px;background:#0f1120;border:1px solid #1e2235;'
+            f'border-radius:8px;font-size:13px;color:#8b92b8;margin-top:2px">'
+            f'📅 {date_start.strftime("%d/%m/%Y")}</div>',
+            unsafe_allow_html=True)
+    with _col_ate:
+        st.markdown(
+            f'<div style="padding:6px 12px;background:#0f1120;border:1px solid #1e2235;'
+            f'border-radius:8px;font-size:13px;color:#8b92b8;margin-top:2px">'
+            f'📅 {date_end.strftime("%d/%m/%Y")}</div>',
+            unsafe_allow_html=True)
+else:
+    with _col_de:
+        date_start = st.date_input("De", value=first_day, max_value=today,
+                                   label_visibility="collapsed")
+    with _col_ate:
+        date_end = st.date_input("Até", value=today, max_value=today,
+                                 label_visibility="collapsed")
 
 if date_start > date_end:
     st.error("A data inicial deve ser anterior à data final.")
