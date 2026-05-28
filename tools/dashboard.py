@@ -480,8 +480,7 @@ _PD = dict(
     font=dict(color="#c8cfe0", family="Inter, sans-serif"),
     xaxis=dict(gridcolor="#1e2235", linecolor="#1e2235", tickfont=dict(color="#5a607a")),
     yaxis=dict(gridcolor="#1e2235", linecolor="#1e2235", tickfont=dict(color="#5a607a")),
-    title_font=dict(color="#c8cce8", size=13),
-    margin=dict(t=36, l=8, r=8, b=8),
+    margin=dict(t=10, l=8, r=8, b=8),
 )
 
 _COL = {"cyan":"#00d4ff","green":"#00e676","yellow":"#ffd600","white":"#ffffff","red":"#ff4444","purple":"#a78bfa"}
