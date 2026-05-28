@@ -678,13 +678,14 @@ if date_start > date_end:
 @st.cache_data(ttl=7200, show_spinner=False)
 def fetch_agendamentos(spreadsheet_id: str, date_start: str, date_end: str) -> pd.DataFrame:
     """Lê planilha de agendamentos filtrando pelo período selecionado."""
+    _empty_cols = ["data","consultas","valor_consulta","total_consultas","cirurgias","valor_cirurgia","total_cirurgias"]
     try:
         rows = _read_sheets_range(spreadsheet_id, "'Planilha agendamento'!A2:G400")
-        if not rows:
-            raise ValueError("Planilha de agendamentos vazia ou sem dados no período.")
     except Exception as e:
-        # não deixa cachear resultado vazio — lança para o spinner tratar
+        # Erro de API — não cacheia, lança para o caller decidir o que exibir
         raise RuntimeError(f"Erro ao ler agendamentos: {e}") from e
+    if not rows:
+        return pd.DataFrame(columns=_empty_cols)
 
     records = []
     for row in rows:
@@ -1244,7 +1245,11 @@ with tab4:
 
     tipo_cliente = client_cfg.get("tipo", "clinica_geral")
 
-    df_metas = fetch_agendamentos(agendamentos_id, primeiro_dia, ultimo_dia) if agendamentos_id else pd.DataFrame()
+    try:
+        df_metas = fetch_agendamentos(agendamentos_id, primeiro_dia, ultimo_dia) if agendamentos_id else pd.DataFrame()
+    except RuntimeError as _e:
+        st.warning(f"⚠️ {_e} — clique em **Atualizar Dados** na barra lateral para tentar novamente.")
+        df_metas = pd.DataFrame()
 
     st.markdown(
         f'<div style="font-size:20px;font-weight:900;color:#e0e4f0;margin-bottom:2px">'
