@@ -1398,131 +1398,147 @@ with tab4:
             _meta_block("🔬 Cirurgias", cirurgias_atual, META_CIRURGIAS,
                         ritmo_cirurgias, proj_cirurgias, dias_restantes, "cirurgias")
 
-# ══ TAB 5 — EVOLUÇÃO MENSAL ════════════════════════════════════════════════════
+# ══ TAB 5 — COMPARATIVO MENSAL ════════════════════════════════════════════════
 
 with tab5:
-    with st.spinner("Carregando histórico dos últimos 6 meses..."):
-        df_hist = fetch_monthly_history(account_id, n_months=6)
+    import calendar as _cal
 
-    if df_hist.empty or len(df_hist) < 2:
-        st.info("Dados insuficientes para comparativo. São necessários ao menos 2 meses de campanha ativa.")
-    else:
-        cur  = df_hist.iloc[-1]   # mês atual (parcial)
-        prev = df_hist.iloc[-2]   # mês anterior (completo)
+    _PT_MONTHS = {1:"Janeiro",2:"Fevereiro",3:"Março",4:"Abril",5:"Maio",6:"Junho",
+                  7:"Julho",8:"Agosto",9:"Setembro",10:"Outubro",11:"Novembro",12:"Dezembro"}
 
-        def _delta(cur_v, prev_v, lower_is_better=False):
-            """Retorna (texto_badge, classe_badge) para comparativo."""
-            if prev_v is None or prev_v == 0 or cur_v is None:
-                return "", "ok"
-            pct      = (cur_v - prev_v) / abs(prev_v) * 100
-            sign     = "+" if pct >= 0 else ""
-            improved = (pct < 0) if lower_is_better else (pct > 0)
-            return f"{sign}{pct:.1f}%", ("up" if improved else "down")
+    # ── Gera lista dos últimos 13 meses (do mais antigo ao mais recente) ───────
+    _today = date.today()
+    _opts  = []
+    for _i in range(12, -1, -1):
+        _yr, _mo = _today.year, _today.month - _i
+        while _mo <= 0: _mo += 12; _yr -= 1
+        _opts.append((f"{_PT_MONTHS[_mo]} {_yr}", date(_yr, _mo, 1)))
+    _opt_labels = [o[0] for o in _opts]
+    _opt_dates  = {o[0]: o[1] for o in _opts}
 
-        # ── Comparativo mês atual vs anterior ─────────────────────────────────
-        st.markdown(
-            f'<div style="font-size:20px;font-weight:900;color:#e0e4f0;margin-bottom:2px">Evolução Mensal</div>'
-            f'<div style="font-size:11px;color:#3d4466;margin-bottom:14px">'
-            f'Comparativo {cur["mes"]} (parcial) vs {prev["mes"]} · últimos 6 meses</div>',
-            unsafe_allow_html=True,
+    st.markdown(
+        '<div style="font-size:20px;font-weight:900;color:#e0e4f0;margin-bottom:2px">Comparativo Mensal</div>'
+        '<div style="font-size:11px;color:#3d4466;margin-bottom:16px">'
+        'Selecione dois meses para comparar os resultados lado a lado</div>',
+        unsafe_allow_html=True,
+    )
+
+    col_sel1, _gap, col_sel2 = st.columns([5, 1, 5])
+    with col_sel1:
+        lbl_a = st.selectbox("Mês A (base)", _opt_labels,
+                             index=max(0, len(_opt_labels) - 2), key="cmp_a")
+    with col_sel2:
+        lbl_b = st.selectbox("Mês B (comparar)", _opt_labels,
+                             index=len(_opt_labels) - 1, key="cmp_b")
+
+    _first_a = _opt_dates[lbl_a]
+    _first_b = _opt_dates[lbl_b]
+    _last_a  = (_today if (_first_a.year == _today.year and _first_a.month == _today.month)
+                else date(_first_a.year, _first_a.month, _cal.monthrange(_first_a.year, _first_a.month)[1]))
+    _last_b  = (_today if (_first_b.year == _today.year and _first_b.month == _today.month)
+                else date(_first_b.year, _first_b.month, _cal.monthrange(_first_b.year, _first_b.month)[1]))
+
+    with st.spinner("Buscando dados dos dois meses..."):
+        _df_a = fetch_campaign_insights(str(_first_a), str(_last_a), account_id)
+        _df_b = fetch_campaign_insights(str(_first_b), str(_last_b), account_id)
+        try:
+            _ag_a = fetch_agendamentos(agendamentos_id, str(_first_a), str(_last_a)) if agendamentos_id else pd.DataFrame()
+        except RuntimeError:
+            _ag_a = pd.DataFrame()
+        try:
+            _ag_b = fetch_agendamentos(agendamentos_id, str(_first_b), str(_last_b)) if agendamentos_id else pd.DataFrame()
+        except RuntimeError:
+            _ag_b = pd.DataFrame()
+
+    def _cmp_metrics(df, ag):
+        """Calcula métricas agregadas de um mês para comparativo."""
+        if df.empty:
+            return dict(spend=0, contacts=0, cpl=None, cpm=None, agend=0, custo_agend=None)
+        df_m   = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=False)]
+        spend  = df["spend"].sum()
+        imps   = int(df["impressions"].sum())
+        ctts   = int(df_m["messaging_contacts"].sum()) if not df_m.empty and "messaging_contacts" in df_m.columns else 0
+        agend  = int(ag["consultas"].sum()) if ag is not None and not ag.empty and "consultas" in ag.columns else 0
+        return dict(
+            spend       = spend,
+            spend_imp   = spend * TAX_MULTIPLIER,
+            contacts    = ctts,
+            cpl         = spend * TAX_MULTIPLIER / ctts if ctts > 0 else None,
+            cpm         = spend * TAX_MULTIPLIER / imps * 1000 if imps > 0 else None,
+            agend       = agend,
+            custo_agend = spend * TAX_MULTIPLIER / agend if agend > 0 else None,
         )
 
-        d_inv, c_inv = _delta(cur["investido"], prev["investido"])
-        d_ctt, c_ctt = _delta(cur["contatos"],  prev["contatos"])
-        d_cpl, c_cpl = _delta(cur["cpl"],       prev["cpl"],  lower_is_better=True)
-        d_cpm, c_cpm = _delta(cur["cpm"],       prev["cpm"],  lower_is_better=True)
+    ma = _cmp_metrics(_df_a, _ag_a)
+    mb = _cmp_metrics(_df_b, _ag_b)
 
-        st.markdown(_kpi_html([
-            {"label": "INVESTIDO",
-             "value": fmt_brl(cur["investido"]),
-             "badge": d_inv, "badge_cls": c_inv,
-             "sub": f"vs {fmt_brl(prev['investido'])} em {prev['mes']}",
-             "color": "yellow"},
-            {"label": "CONTATOS",
-             "value": fmt_num(cur["contatos"]),
-             "badge": d_ctt, "badge_cls": c_ctt,
-             "sub": f"vs {fmt_num(prev['contatos'])} em {prev['mes']}",
-             "color": "cyan"},
-            {"label": "CPL C/ IMP.",
-             "value": fmt_brl(cur["cpl"]) if cur["cpl"] else "—",
-             "badge": d_cpl, "badge_cls": c_cpl,
-             "sub": f"vs {fmt_brl(prev['cpl']) if prev['cpl'] else '—'} em {prev['mes']}",
-             "color": "purple"},
-            {"label": "CPM C/ IMP.",
-             "value": fmt_brl(cur["cpm"]) if cur["cpm"] else "—",
-             "badge": d_cpm, "badge_cls": c_cpm,
-             "sub": f"vs {fmt_brl(prev['cpm']) if prev['cpm'] else '—'} em {prev['mes']}",
-             "color": "white"},
-        ]), unsafe_allow_html=True)
+    def _delta_html(va, vb, lower_is_better=False, is_brl=False):
+        """Retorna HTML do badge de variação (vb vs va)."""
+        if va is None or va == 0 or vb is None:
+            return '<span style="color:#3d4466;font-size:11px">—</span>'
+        pct      = (vb - va) / abs(va) * 100
+        sign     = "+" if pct >= 0 else ""
+        improved = (pct < 0) if lower_is_better else (pct > 0)
+        color    = "#00e676" if improved else "#ff4444"
+        arrow    = "▲" if pct >= 0 else "▼"
+        return (f'<span style="color:{color};font-size:12px;font-weight:700">'
+                f'{arrow} {sign}{pct:.1f}%</span>')
 
-        st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+    # ── Tabela comparativa ─────────────────────────────────────────────────────
+    parcial_a = _first_a.year == _today.year and _first_a.month == _today.month
+    parcial_b = _first_b.year == _today.year and _first_b.month == _today.month
+    suf_a = " <span style='font-size:9px;color:#3d4466'>(parcial)</span>" if parcial_a else ""
+    suf_b = " <span style='font-size:9px;color:#3d4466'>(parcial)</span>" if parcial_b else ""
 
-        # ── Cores: barras sólidas = meses completos, esmaecida = parcial ──────
-        _clr_cyan  = ["#00d4ff" if not r["parcial"] else "rgba(0,212,255,0.3)" for _, r in df_hist.iterrows()]
-        _clr_yell  = ["#ffd600" if not r["parcial"] else "rgba(255,214,0,0.3)" for _, r in df_hist.iterrows()]
+    rows_cmp = [
+        ("💰 Investido c/ imp.",    fmt_brl(ma["spend_imp"]),    fmt_brl(mb["spend_imp"]),
+         _delta_html(ma["spend_imp"], mb["spend_imp"])),
+        ("💬 Contatos",             fmt_num(ma["contacts"]),     fmt_num(mb["contacts"]),
+         _delta_html(ma["contacts"], mb["contacts"])),
+        ("📉 CPL c/ imp.",          fmt_brl(ma["cpl"]) if ma["cpl"] else "—",
+                                    fmt_brl(mb["cpl"]) if mb["cpl"] else "—",
+         _delta_html(ma["cpl"], mb["cpl"], lower_is_better=True)),
+        ("📊 CPM c/ imp.",          fmt_brl(ma["cpm"]) if ma["cpm"] else "—",
+                                    fmt_brl(mb["cpm"]) if mb["cpm"] else "—",
+         _delta_html(ma["cpm"], mb["cpm"], lower_is_better=True)),
+        ("📅 Agendamentos",         fmt_num(ma["agend"]),        fmt_num(mb["agend"]),
+         _delta_html(ma["agend"], mb["agend"])),
+        ("🏥 Custo/Agendamento",    fmt_brl(ma["custo_agend"]) if ma["custo_agend"] else "—",
+                                    fmt_brl(mb["custo_agend"]) if mb["custo_agend"] else "—",
+         _delta_html(ma["custo_agend"], mb["custo_agend"], lower_is_better=True)),
+    ]
 
-        # ── Linha 1: Investimento + CPL ───────────────────────────────────────
-        col_e1, col_e2 = st.columns(2)
+    table_rows = ""
+    for i, (metrica, val_a, val_b, delta) in enumerate(rows_cmp):
+        bg = "background:rgba(255,255,255,0.02)" if i % 2 == 0 else ""
+        table_rows += (
+            f'<tr style="{bg}">'
+            f'<td style="padding:14px 18px;font-size:12px;color:#8b92b8;font-weight:600;'
+            f'text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #1e2235">{metrica}</td>'
+            f'<td style="padding:14px 18px;font-size:18px;font-weight:800;color:#e0e4f0;'
+            f'text-align:right;border-bottom:1px solid #1e2235">{val_a}</td>'
+            f'<td style="padding:14px 18px;font-size:18px;font-weight:800;color:#e0e4f0;'
+            f'text-align:right;border-bottom:1px solid #1e2235">{val_b}</td>'
+            f'<td style="padding:14px 18px;text-align:center;border-bottom:1px solid #1e2235">{delta}</td>'
+            f'</tr>'
+        )
 
-        with col_e1:
-            st.markdown(
-                '<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Investimento Mensal</p>'
-                '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Total investido por mês · barra esmaecida = mês em curso</p>',
-                unsafe_allow_html=True)
-            fig_inv = go.Figure(data=[go.Bar(
-                x=df_hist["mes"], y=df_hist["investido"],
-                marker=dict(color=_clr_yell, line=dict(width=0)),
-                hovertemplate="%{x}<br>R$ %{y:,.2f}<extra></extra>",
-            )])
-            fig_inv.update_layout(bargap=0.35, showlegend=False, xaxis_title="", yaxis_title="", **_PD)
-            st.plotly_chart(fig_inv, use_container_width=True)
-
-        with col_e2:
-            st.markdown(
-                '<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">CPL C/ Imposto</p>'
-                '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Custo por contato mensal · quanto menor, melhor</p>',
-                unsafe_allow_html=True)
-            _cpl_h = df_hist.dropna(subset=["cpl"])
-            fig_cpl = go.Figure(go.Scatter(
-                x=_cpl_h["mes"], y=_cpl_h["cpl"],
-                mode="lines+markers",
-                line=dict(color="#a78bfa", width=2),
-                marker=dict(size=8, color="#a78bfa"),
-                fill="tozeroy", fillcolor="rgba(167,139,250,0.07)",
-                hovertemplate="%{x}<br>R$ %{y:.2f}<extra></extra>",
-            ))
-            fig_cpl.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
-            st.plotly_chart(fig_cpl, use_container_width=True)
-
-        # ── Linha 2: Contatos + CPM ────────────────────────────────────────────
-        col_e3, col_e4 = st.columns(2)
-
-        with col_e3:
-            st.markdown(
-                '<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Contatos por Mês</p>'
-                '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Total de mensagens iniciadas · barra esmaecida = parcial</p>',
-                unsafe_allow_html=True)
-            fig_ctt = go.Figure(data=[go.Bar(
-                x=df_hist["mes"], y=df_hist["contatos"],
-                marker=dict(color=_clr_cyan, line=dict(width=0)),
-                hovertemplate="%{x}<br>%{y} contatos<extra></extra>",
-            )])
-            fig_ctt.update_layout(bargap=0.35, showlegend=False, xaxis_title="", yaxis_title="", **_PD)
-            st.plotly_chart(fig_ctt, use_container_width=True)
-
-        with col_e4:
-            st.markdown(
-                '<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">CPM C/ Imposto</p>'
-                '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Custo por mil impressões · eficiência de alcance</p>',
-                unsafe_allow_html=True)
-            _cpm_h = df_hist.dropna(subset=["cpm"])
-            fig_cpm = go.Figure(go.Scatter(
-                x=_cpm_h["mes"], y=_cpm_h["cpm"],
-                mode="lines+markers",
-                line=dict(color="#ffd600", width=2),
-                marker=dict(size=8, color="#ffd600"),
-                fill="tozeroy", fillcolor="rgba(255,214,0,0.07)",
-                hovertemplate="%{x}<br>R$ %{y:.2f}<extra></extra>",
-            ))
-            fig_cpm.update_layout(showlegend=False, xaxis_title="", yaxis_title="", **_PD)
-            st.plotly_chart(fig_cpm, use_container_width=True)
+    st.markdown(
+        f'<div style="background:#0f1120;border:1px solid #1e2235;border-radius:14px;overflow:hidden;margin-top:8px">'
+        f'<table style="width:100%;border-collapse:collapse">'
+        f'<thead>'
+        f'<tr style="background:#141728">'
+        f'<th style="padding:14px 18px;font-size:10px;color:#3d4466;font-weight:700;'
+        f'text-align:left;letter-spacing:1px;text-transform:uppercase">MÉTRICA</th>'
+        f'<th style="padding:14px 18px;font-size:12px;color:#00d4ff;font-weight:800;'
+        f'text-align:right">{lbl_a}{suf_a}</th>'
+        f'<th style="padding:14px 18px;font-size:12px;color:#a78bfa;font-weight:800;'
+        f'text-align:right">{lbl_b}{suf_b}</th>'
+        f'<th style="padding:14px 18px;font-size:10px;color:#3d4466;font-weight:700;'
+        f'text-align:center;letter-spacing:1px;text-transform:uppercase">VARIAÇÃO</th>'
+        f'</tr>'
+        f'</thead>'
+        f'<tbody>{table_rows}</tbody>'
+        f'</table></div>',
+        unsafe_allow_html=True,
+    )
