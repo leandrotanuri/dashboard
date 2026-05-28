@@ -649,6 +649,9 @@ with st.sidebar:
         st.session_state.auth_client = None
         st.session_state.auth_admin  = False
         st.rerun()
+    if st.button("🔄 Atualizar Dados", use_container_width=True, help="Limpa o cache e rebusca todos os dados"):
+        st.cache_data.clear()
+        st.rerun()
 
 client_cfg = CLIENTS[client_name]
 account_id = client_cfg["account_id"]
@@ -672,14 +675,16 @@ if date_start > date_end:
 
 # ── carrega dados ──────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=7200)
+@st.cache_data(ttl=7200, show_spinner=False)
 def fetch_agendamentos(spreadsheet_id: str, date_start: str, date_end: str) -> pd.DataFrame:
     """Lê planilha de agendamentos filtrando pelo período selecionado."""
     try:
         rows = _read_sheets_range(spreadsheet_id, "'Planilha agendamento'!A2:G400")
+        if not rows:
+            raise ValueError("Planilha de agendamentos vazia ou sem dados no período.")
     except Exception as e:
-        st.error(f"Erro ao ler agendamentos: {e}")
-        return pd.DataFrame(columns=["data","consultas","valor_consulta","total_consultas","cirurgias","valor_cirurgia","total_cirurgias"])
+        # não deixa cachear resultado vazio — lança para o spinner tratar
+        raise RuntimeError(f"Erro ao ler agendamentos: {e}") from e
 
     records = []
     for row in rows:
@@ -723,9 +728,13 @@ def fetch_agendamentos(spreadsheet_id: str, date_start: str, date_end: str) -> p
     return df
 
 with st.spinner("Buscando dados..."):
-    df = fetch_campaign_insights(str(date_start), str(date_end), account_id)
+    df       = fetch_campaign_insights(str(date_start), str(date_end), account_id)
     df_sheets = fetch_sheets_seguidores(spreadsheet_id, date_start.month)
-    df_agend = fetch_agendamentos(agendamentos_id, str(date_start), str(date_end)) if agendamentos_id else pd.DataFrame()
+    try:
+        df_agend = fetch_agendamentos(agendamentos_id, str(date_start), str(date_end)) if agendamentos_id else pd.DataFrame()
+    except RuntimeError as _e:
+        st.warning(f"⚠️ {_e} — clique em **Atualizar Dados** na barra lateral para tentar novamente.")
+        df_agend = pd.DataFrame()
 
 st.caption(f"Última atualização: {datetime.now().strftime('%d/%m/%Y às %H:%M')} · Cache renova a cada 2h")
 
