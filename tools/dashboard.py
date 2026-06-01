@@ -1582,12 +1582,17 @@ with tab5:
         ("📊 CPM c/ imp.",        fmt_brl(ma["cpm"])   if ma["cpm"]   else "—",
                                   fmt_brl(mb["cpm"])   if mb["cpm"]   else "—",
          _delta_html(ma["cpm"],   mb["cpm"],   lower_is_better=True)),
-        ("📅 Agendamentos",       fmt_num(ma["agend"]),      fmt_num(mb["agend"]),
-         _delta_html(ma["agend"],       mb["agend"])),
-        ("🏥 Custo/Agendamento",  fmt_brl(ma["custo_agend"]) if ma["custo_agend"] else "—",
-                                  fmt_brl(mb["custo_agend"]) if mb["custo_agend"] else "—",
-         _delta_html(ma["custo_agend"], mb["custo_agend"], lower_is_better=True)),
     ]
+
+    # Adiciona agendamentos apenas para clientes com planilha de agendamentos
+    if agendamentos_id:
+        rows_cmp += [
+            ("📅 Agendamentos",       fmt_num(ma["agend"]),      fmt_num(mb["agend"]),
+             _delta_html(ma["agend"],       mb["agend"])),
+            ("🏥 Custo/Agendamento",  fmt_brl(ma["custo_agend"]) if ma["custo_agend"] else "—",
+                                      fmt_brl(mb["custo_agend"]) if mb["custo_agend"] else "—",
+             _delta_html(ma["custo_agend"], mb["custo_agend"], lower_is_better=True)),
+        ]
 
     # Adiciona cirurgias apenas para clientes com essa métrica (ex.: Dr. Vinicius)
     if client_cfg.get("meta_cirurgias"):
