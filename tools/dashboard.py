@@ -131,6 +131,8 @@ CLIENTS = {
         "spreadsheet_id": None,
         "agendamentos_id": None,
         "tipo": "mensagens_lead",
+        "msg_keywords":  ["E2-CAP", "ENGJ"],   # E2-CAP = mensagens, ENGJ = engajamento p/ msg
+        "lead_keywords": ["LEAD"],              # formulário de lead
     },
 }
 
@@ -852,6 +854,20 @@ if df.empty:
 df_seg  = df[df["campaign_name"].str.contains(FOLLOWER_KEYWORD,  case=False, na=False)].copy()
 df_msg  = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=False)].copy()
 df_lead = df[df["campaign_name"].str.contains(r"\bLEAD\b",       case=False, na=False, regex=True)].copy()
+
+# Para clientes com keywords customizados, sobrescreve df_msg e df_lead com filtros exclusivos
+if client_cfg.get("tipo") == "mensagens_lead":
+    _msg_kws  = client_cfg.get("msg_keywords",  [MESSAGING_KEYWORD])
+    _lead_kws = client_cfg.get("lead_keywords", ["LEAD"])
+    _msg_pat  = "|".join(_msg_kws)
+    _lead_pat = "|".join(_lead_kws)
+    # df_msg: contém qualquer msg_keyword MAS não contém lead_keyword (evita overlap)
+    df_msg  = df[
+        df["campaign_name"].str.contains(_msg_pat,  case=False, na=False) &
+       ~df["campaign_name"].str.contains(_lead_pat, case=False, na=False)
+    ].copy()
+    # df_lead: contém lead_keyword (exclusivo)
+    df_lead = df[df["campaign_name"].str.contains(_lead_pat, case=False, na=False)].copy()
 
 
 TAX_MULTIPLIER = 1.1385
