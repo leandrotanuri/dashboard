@@ -695,9 +695,9 @@ _PERIODOS = {
     "Semana passada":   (_lwS,                _lwE),
     "Este mês":         (first_day,           today),
     "Mês passado":      (_pmF,                _pmL),
-    "Últimos 7 dias":   (today - _td(days=6), today),
-    "Últimos 14 dias":  (today - _td(days=13),today),
-    "Últimos 30 dias":  (today - _td(days=29),today),
+    "Últimos 7 dias":   (today - _td(days=7), today - _td(days=1)),
+    "Últimos 14 dias":  (today - _td(days=14),today - _td(days=1)),
+    "Últimos 30 dias":  (today - _td(days=30),today - _td(days=1)),
     "Personalizado":    None,
 }
 
