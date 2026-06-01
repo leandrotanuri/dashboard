@@ -37,3 +37,8 @@ jobs:
         env:
           META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
         run: python tools/daily_dr_vinicius.py
+
+      - name: Atualizar planilha — Elisa Lobo
+        env:
+          META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+        run: python tools/daily_elisa_lobo.py

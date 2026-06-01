@@ -118,6 +118,14 @@ CLIENTS = {
         "agendamentos_id": None,
         "tipo": "mensagens",
     },
+    "Elisa Lobo": {
+        "account_id": "act_995746376256993",
+        "spreadsheet_id": "1S6FUTqK7kDG9ZOgmuakLdxRCSrMxRbegKIEdwCJjS68",
+        "agendamentos_id": None,
+        "meta_pacientes": 0,
+        "tipo": "tricologia",
+        "show_ltv": False,
+    },
 }
 
 DEFAULT_CLIENT = "Dr. Vinicius"
@@ -1418,41 +1426,42 @@ if tab4 is not None:
             proj  = round(ritmo * dias_no_mes)
             _meta_block("👤 Pacientes Atendidos", pacientes_atual, META_PACIENTES, ritmo, proj, dias_restantes, "pacientes")
 
-            # ── LTV Anual ─────────────────────────────────────────────────────
-            fat_m             = df_metas["total_consultas"].sum() if "total_consultas" in df_metas.columns else 0
-            ticket_m          = fat_m / pacientes_atual if pacientes_atual > 0 else 0
-            consultas_por_ano = client_cfg.get("consultas_por_ano", 4)
-            ltv_por_pac       = consultas_por_ano * ticket_m
-            ltv_atual_total   = pacientes_atual * ltv_por_pac
-            ltv_meta_m        = META_PACIENTES * ltv_por_pac
-            ltv_anual_run     = proj * 12 * ltv_por_pac
+            # ── LTV Anual (apenas para clientes com show_ltv=True) ────────────
+            if client_cfg.get("show_ltv", True):
+                fat_m             = df_metas["total_consultas"].sum() if "total_consultas" in df_metas.columns else 0
+                ticket_m          = fat_m / pacientes_atual if pacientes_atual > 0 else 0
+                consultas_por_ano = client_cfg.get("consultas_por_ano", 4)
+                ltv_por_pac       = consultas_por_ano * ticket_m
+                ltv_atual_total   = pacientes_atual * ltv_por_pac
+                ltv_meta_m        = META_PACIENTES * ltv_por_pac
+                ltv_anual_run     = proj * 12 * ltv_por_pac
 
-            st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
-            st.markdown(
-                f'<div style="font-size:20px;font-weight:900;color:#e0e4f0;margin-bottom:2px">📈 Projeção LTV Anual</div>'
-                f'<div style="font-size:11px;color:#3d4466;margin-bottom:14px">'
-                f'Cada paciente realiza até {consultas_por_ano} consultas/ano · '
-                f'Ticket médio atual: {fmt_brl(ticket_m)}</div>',
-                unsafe_allow_html=True,
-            )
-            st.markdown(_kpi_html([
-                {"label": "LTV / Paciente",
-                 "value": fmt_brl(ltv_por_pac),
-                 "color": "cyan",
-                 "sub": f"{consultas_por_ano} consultas × {fmt_brl(ticket_m)}"},
-                {"label": f"LTV Gerado ({pacientes_atual} pctes)",
-                 "value": fmt_brl(ltv_atual_total),
-                 "color": "green",
-                 "sub": f"▲ {pacientes_atual} pacientes confirmados"},
-                {"label": f"LTV Meta Mensal ({META_PACIENTES} pctes)",
-                 "value": fmt_brl(ltv_meta_m),
-                 "color": "yellow",
-                 "sub": f"Se bater {META_PACIENTES} pacientes/mês"},
-                {"label": "LTV Anual Projetado",
-                 "value": fmt_brl(ltv_anual_run),
-                 "color": "purple",
-                 "sub": f"Ritmo atual: {proj} pctes/mês × 12 meses"},
-            ]), unsafe_allow_html=True)
+                st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+                st.markdown(
+                    f'<div style="font-size:20px;font-weight:900;color:#e0e4f0;margin-bottom:2px">📈 Projeção LTV Anual</div>'
+                    f'<div style="font-size:11px;color:#3d4466;margin-bottom:14px">'
+                    f'Cada paciente realiza até {consultas_por_ano} consultas/ano · '
+                    f'Ticket médio atual: {fmt_brl(ticket_m)}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown(_kpi_html([
+                    {"label": "LTV / Paciente",
+                     "value": fmt_brl(ltv_por_pac),
+                     "color": "cyan",
+                     "sub": f"{consultas_por_ano} consultas × {fmt_brl(ticket_m)}"},
+                    {"label": f"LTV Gerado ({pacientes_atual} pctes)",
+                     "value": fmt_brl(ltv_atual_total),
+                     "color": "green",
+                     "sub": f"▲ {pacientes_atual} pacientes confirmados"},
+                    {"label": f"LTV Meta Mensal ({META_PACIENTES} pctes)",
+                     "value": fmt_brl(ltv_meta_m),
+                     "color": "yellow",
+                     "sub": f"Se bater {META_PACIENTES} pacientes/mês"},
+                    {"label": "LTV Anual Projetado",
+                     "value": fmt_brl(ltv_anual_run),
+                     "color": "purple",
+                     "sub": f"Ritmo atual: {proj} pctes/mês × 12 meses"},
+                ]), unsafe_allow_html=True)
 
     else:
         META_CONSULTAS = client_cfg.get("meta_consultas", 40)
