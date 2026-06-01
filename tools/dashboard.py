@@ -849,9 +849,15 @@ with tab1:
         avg_cpm_m = (total_spend_m / total_impressions_m * 1000) if total_impressions_m > 0 else 0
         avg_ctr_m = (total_clicks_m / total_impressions_m * 100) if total_impressions_m > 0 else 0
         custo_contato = (total_spend_m * TAX_MULTIPLIER / total_contacts) if total_contacts > 0 else None
+        custo_contato_sem_imp = (total_spend_m / total_contacts) if total_contacts > 0 else None
 
         total_link_clicks_m = df_msg["inline_link_clicks"].sum() if "inline_link_clicks" in df_msg.columns else total_clicks_m
         avg_cpc_m = (total_spend_m / total_link_clicks_m) if total_link_clicks_m > 0 else None
+
+        st.markdown(_kpi_html([
+            {"label": "Investido (sem imp.)", "value": fmt_brl(total_spend_m), "color": "cyan"},
+            {"label": "CPL (sem imp.)",       "value": fmt_brl(custo_contato_sem_imp) if custo_contato_sem_imp else "—", "color": "yellow"},
+        ], cols=2), unsafe_allow_html=True)
 
         st.markdown(_kpi_html([
             {"label": "Investimento c/ Impostos", "value": fmt_brl(total_investido_impostos_m),
@@ -1043,9 +1049,15 @@ with tab2:
         total_investido_seg = sheets_period["investido_seg"].sum()
         total_follows = int(sheets_period["seguidores"].sum())
         custo_seg = (total_investido_seg * TAX_MULTIPLIER / total_follows) if total_follows > 0 else None
+        custo_seg_sem_imp = (total_investido_seg / total_follows) if total_follows > 0 else None
 
         total_link_clicks = df_seg["inline_link_clicks"].sum() if "inline_link_clicks" in df_seg.columns else total_clicks
         avg_cpc = (total_spend_api / total_link_clicks) if total_link_clicks > 0 else None
+
+        st.markdown(_kpi_html([
+            {"label": "Investido (sem imp.)",     "value": fmt_brl(total_spend_api), "color": "cyan"},
+            {"label": "Custo/Seguidor (sem imp.)", "value": fmt_brl(custo_seg_sem_imp) if custo_seg_sem_imp else "—", "color": "yellow"},
+        ], cols=2), unsafe_allow_html=True)
 
         st.markdown(_kpi_html([
             {"label": "Investimento c/ Impostos", "value": fmt_brl(total_investido_impostos),
