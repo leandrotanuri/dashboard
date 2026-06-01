@@ -131,8 +131,8 @@ CLIENTS = {
         "spreadsheet_id": None,
         "agendamentos_id": None,
         "tipo": "mensagens_lead",
-        "msg_keywords":  ["E2-CAP", "ENGJ"],   # E2-CAP = mensagens, ENGJ = engajamento p/ msg
-        "lead_keywords": ["LEAD"],              # formulário de lead
+        "msg_keywords":  ["E2-CAP"],   # E2-CAP identifica campanhas de mensagem (ENGJ aparece em E1-DIST tbm)
+        "lead_keywords": ["LEAD"],     # formulário de lead
     },
 }
 
