@@ -126,6 +126,12 @@ CLIENTS = {
         "tipo": "tricologia",
         "show_ltv": False,
     },
+    "LC 2": {
+        "account_id": "act_1395323168272970",
+        "spreadsheet_id": None,
+        "agendamentos_id": None,
+        "tipo": "mensagens_lead",
+    },
 }
 
 DEFAULT_CLIENT = "Dr. Vinicius"
@@ -843,8 +849,9 @@ if df.empty:
 
 # ── filtra por tipo de campanha ────────────────────────────────────────────────
 
-df_seg = df[df["campaign_name"].str.contains(FOLLOWER_KEYWORD, case=False, na=False)].copy()
-df_msg = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=False)].copy()
+df_seg  = df[df["campaign_name"].str.contains(FOLLOWER_KEYWORD,  case=False, na=False)].copy()
+df_msg  = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=False)].copy()
+df_lead = df[df["campaign_name"].str.contains(r"\bLEAD\b",       case=False, na=False, regex=True)].copy()
 
 
 TAX_MULTIPLIER = 1.1385
@@ -853,9 +860,13 @@ _tipo_cliente = client_cfg.get("tipo", "clinica_geral")
 
 if _tipo_cliente == "mensagens":
     tab1, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "📈 Evolução"])
+    tab2 = tab3 = tab4 = tab_lead = None
+elif _tipo_cliente == "mensagens_lead":
+    tab1, tab_lead, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "📋 Formulários · LEAD", "📈 Evolução"])
     tab2 = tab3 = tab4 = None
 else:
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"])
+    tab_lead = None
 
 # ══ TAB 1 — MENSAGENS ═════════════════════════════════════════════════════════
 
@@ -1050,6 +1061,133 @@ with tab1:
             dt_out["Custo por Cirurgia"]    = daily_tab["custo_cirurgia"].apply(lambda v: fmt_brl(v) if pd.notna(v) else "—")
 
         st.markdown(_tabela_html(dt_out, tipo_cli), unsafe_allow_html=True)
+
+# ══ TAB LEAD — FORMULÁRIOS ════════════════════════════════════════════════════
+
+if tab_lead is not None:
+    with tab_lead:
+        if df_lead.empty:
+            st.info("Nenhuma campanha com LEAD encontrada no período.")
+        else:
+            total_spend_lead = df_lead["spend"].sum()
+            total_imp_lead   = df_lead["impressions"].sum()
+            total_clk_lead   = df_lead["clicks"].sum()
+            total_inv_imp_lead = total_spend_lead * TAX_MULTIPLIER
+            avg_cpm_lead = (total_spend_lead / total_imp_lead * 1000) if total_imp_lead > 0 else 0
+            avg_ctr_lead = (total_clk_lead / total_imp_lead * 100) if total_imp_lead > 0 else 0
+            total_lc_lead = df_lead["inline_link_clicks"].sum() if "inline_link_clicks" in df_lead.columns else total_clk_lead
+            avg_cpc_lead = (total_spend_lead / total_lc_lead) if total_lc_lead > 0 else None
+
+            # Extrai leads das actions
+            df_lead["lead_count"] = df_lead["actions"].apply(
+                lambda x: extract_action(x, "onsite_conversion.lead_grouped")
+                       or extract_action(x, "offsite_conversion.fb_pixel_lead")
+                       or extract_action(x, "lead")
+            )
+            total_leads = int(df_lead["lead_count"].sum())
+            cpl_lead_sem_imp = (total_spend_lead / total_leads) if total_leads > 0 else None
+            cpl_lead_imp     = (total_inv_imp_lead / total_leads) if total_leads > 0 else None
+
+            # Cards sem imposto (acima)
+            st.markdown(_kpi_html([
+                {"label": "Investido (sem imp.)", "value": fmt_brl(total_spend_lead),  "color": "cyan"},
+                {"label": "CPL (sem imp.)",       "value": fmt_brl(cpl_lead_sem_imp) if cpl_lead_sem_imp else "—", "color": "yellow"},
+            ], cols=2), unsafe_allow_html=True)
+
+            # Cards com imposto (abaixo)
+            st.markdown(_kpi_html([
+                {"label": "Investimento c/ Impostos", "value": fmt_brl(total_inv_imp_lead), "color": "cyan"},
+                {"label": "Total de Leads",           "value": fmt_num(total_leads) if total_leads > 0 else "—", "color": "green"},
+                {"label": "CPL Real",                 "value": fmt_brl(cpl_lead_imp) if cpl_lead_imp else "—", "color": "yellow"},
+                {"label": "CPM",  "value": fmt_brl(avg_cpm_lead), "color": "white"},
+                {"label": "CTR",  "value": fmt_pct(avg_ctr_lead), "color": "white"},
+                {"label": "CPC",  "value": fmt_brl(avg_cpc_lead) if avg_cpc_lead else "—", "color": "white"},
+            ], cols=6), unsafe_allow_html=True)
+
+            st.divider()
+
+            # Dados diários
+            daily_lead = (
+                df_lead.groupby("date_start")
+                .agg(
+                    spend=("spend", "sum"),
+                    impressions=("impressions", "sum"),
+                    clicks=("clicks", "sum"),
+                    Leads=("lead_count", "sum"),
+                )
+                .reset_index()
+            )
+            daily_lead["CPL"] = daily_lead.apply(
+                lambda r: r["spend"] * TAX_MULTIPLIER / r["Leads"] if r["Leads"] > 0 else None, axis=1
+            )
+
+            _n_lead = len(daily_lead)
+            _lead_colors = [
+                f"rgb({int(138 + (255-138)*i/max(_n_lead-1,1))},{int(43 + (100-43)*i/max(_n_lead-1,1))},{int(226 - (226-100)*i/max(_n_lead-1,1))})"
+                for i in range(_n_lead)
+            ]  # gradiente roxo → laranja
+
+            fig_leads = go.Figure(data=[go.Bar(
+                x=daily_lead["date_start"],
+                y=daily_lead["Leads"],
+                marker=dict(color=_lead_colors, line=dict(width=0)),
+                hovertemplate="%{x|%d/%m}<br>%{y} leads<extra></extra>",
+            )])
+            fig_leads.update_layout(showlegend=False, xaxis_title="", yaxis_title="", bargap=0.25, **_PD)
+            fig_leads.update_xaxes(tickformat="%d/%m", nticks=10)
+
+            _cpl_lead_data = daily_lead.dropna(subset=["CPL"])
+            fig_cpl_lead = go.Figure(data=[go.Scatter(
+                x=_cpl_lead_data["date_start"],
+                y=_cpl_lead_data["CPL"],
+                mode="lines",
+                line=dict(color="#ffd600", width=2),
+                fill="tozeroy",
+                fillcolor="rgba(255,214,0,0.06)",
+                hovertemplate="%{x|%d/%m}<br>R$ %{y:.2f}<extra></extra>",
+            )])
+            fig_cpl_lead.update_layout(xaxis_title="", yaxis_title="", **_PD)
+            fig_cpl_lead.update_xaxes(tickformat="%d/%m", nticks=10)
+
+            col_gl1, col_gl2 = st.columns(2)
+            with col_gl1:
+                st.markdown('<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">Leads por Dia</p>'
+                            '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Formulários preenchidos no período</p>',
+                            unsafe_allow_html=True)
+                st.plotly_chart(fig_leads, use_container_width=True)
+            with col_gl2:
+                st.markdown('<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 2px">CPL por Dia (R$)</p>'
+                            '<p style="font-size:11px;color:#3d4466;margin:0 0 4px">Custo por lead com imposto</p>',
+                            unsafe_allow_html=True)
+                st.plotly_chart(fig_cpl_lead, use_container_width=True)
+
+            # Tabela por campanha
+            st.markdown('<div style="font-size:18px;font-weight:800;color:#e0e4f0;margin:16px 0 8px">Por Campanha</div>', unsafe_allow_html=True)
+            camp_lead = (
+                df_lead.groupby("campaign_name")
+                .agg(
+                    Investido=("spend", "sum"),
+                    Impressões=("impressions", "sum"),
+                    Cliques=("clicks", "sum"),
+                    LinkCliques=("inline_link_clicks", "sum"),
+                    Leads=("lead_count", "sum"),
+                )
+                .reset_index()
+            )
+            camp_lead["CPM"] = camp_lead["Investido"] / camp_lead["Impressões"] * 1000
+            camp_lead["CTR"] = camp_lead["Cliques"] / camp_lead["Impressões"] * 100
+            camp_lead["CPC"] = camp_lead.apply(lambda r: r["Investido"] / r["LinkCliques"] if r["LinkCliques"] > 0 else None, axis=1)
+            camp_lead["CPL"] = camp_lead.apply(lambda r: r["Investido"] / r["Leads"] if r["Leads"] > 0 else None, axis=1)
+            camp_lead = camp_lead.rename(columns={"campaign_name": "Campanha"})
+            camp_out_l = camp_lead[["Campanha"]].copy()
+            camp_out_l["Investido"] = camp_lead["Investido"].apply(fmt_brl)
+            camp_out_l["Leads"]     = camp_lead["Leads"].apply(fmt_num)
+            camp_out_l["CPL"]       = camp_lead["CPL"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+            camp_out_l["Impressões"]= camp_lead["Impressões"].apply(fmt_num)
+            camp_out_l["CPM"]       = camp_lead["CPM"].apply(fmt_brl)
+            camp_out_l["CTR"]       = camp_lead["CTR"].apply(fmt_pct)
+            camp_out_l["CPC"]       = camp_lead["CPC"].apply(lambda v: fmt_brl(v) if v is not None else "—")
+            st.dataframe(camp_out_l, use_container_width=True, hide_index=True)
 
 # ══ TAB 2 — SEGUIDORES ════════════════════════════════════════════════════════
 
