@@ -112,6 +112,12 @@ CLIENTS = {
         "meta_pacientes": 20,
         "tipo": "tricologia",
     },
+    "Conta Casinha - Oficial": {
+        "account_id": "act_2315650968737562",
+        "spreadsheet_id": None,
+        "agendamentos_id": None,
+        "tipo": "mensagens",
+    },
 }
 
 DEFAULT_CLIENT = "Dr. Vinicius"
@@ -654,7 +660,7 @@ with st.sidebar:
 
 client_cfg = CLIENTS[client_name]
 account_id = client_cfg["account_id"]
-spreadsheet_id = client_cfg["spreadsheet_id"]
+spreadsheet_id = client_cfg.get("spreadsheet_id")
 agendamentos_id = client_cfg.get("agendamentos_id")
 
 # ── filtros de data ────────────────────────────────────────────────────────────
@@ -807,10 +813,13 @@ def fetch_agendamentos(spreadsheet_id: str, date_start: str, date_end: str) -> p
 
 with st.spinner("Buscando dados..."):
     df = fetch_campaign_insights(str(date_start), str(date_end), account_id)
-    try:
-        df_sheets = fetch_sheets_seguidores(spreadsheet_id, date_start.month)
-    except RuntimeError as _e:
-        st.warning(f"⚠️ {_e} — clique em **Atualizar Dados** na barra lateral para tentar novamente.")
+    if spreadsheet_id:
+        try:
+            df_sheets = fetch_sheets_seguidores(spreadsheet_id, date_start.month)
+        except RuntimeError as _e:
+            st.warning(f"⚠️ {_e} — clique em **Atualizar Dados** na barra lateral para tentar novamente.")
+            df_sheets = pd.DataFrame(columns=["dia", "investido_seg", "seguidores"])
+    else:
         df_sheets = pd.DataFrame(columns=["dia", "investido_seg", "seguidores"])
     try:
         df_agend = fetch_agendamentos(agendamentos_id, str(date_start), str(date_end)) if agendamentos_id else pd.DataFrame()
@@ -832,7 +841,13 @@ df_msg = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=F
 
 TAX_MULTIPLIER = 1.1385
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"])
+_tipo_cliente = client_cfg.get("tipo", "clinica_geral")
+
+if _tipo_cliente == "mensagens":
+    tab1, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "📈 Evolução"])
+    tab2 = tab3 = tab4 = None
+else:
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"])
 
 # ══ TAB 1 — MENSAGENS ═════════════════════════════════════════════════════════
 
@@ -1030,7 +1045,8 @@ with tab1:
 
 # ══ TAB 2 — SEGUIDORES ════════════════════════════════════════════════════════
 
-with tab2:
+if tab2 is not None:
+ with tab2:
     if df_seg.empty:
         st.info("Nenhuma campanha com E1-DIST encontrada no período.")
     else:
@@ -1177,7 +1193,8 @@ with tab2:
 
 # ══ TAB 3 — FUNIL COMPLETO ════════════════════════════════════════════════════
 
-with tab3:
+if tab3 is not None:
+ with tab3:
     if df_agend is None or df_agend.empty:
         st.info("Nenhum dado de agendamentos encontrado para o período.")
     else:
@@ -1325,7 +1342,8 @@ with tab3:
 
 # ══ TAB 4 — METAS ════════════════════════════════════════════════════════════
 
-with tab4:
+if tab4 is not None:
+ with tab4:
     import calendar
     from datetime import date as _date
 
