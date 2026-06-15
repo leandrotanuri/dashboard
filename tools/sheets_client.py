@@ -53,13 +53,12 @@ def _do_refresh(token: dict) -> dict:
     token["access_token"] = new["access_token"]
     token["expires_at"]   = time.time() + new.get("expires_in", 3600)
 
-    # Persiste localmente em token.json
-    if TOKEN_FILE.exists():
-        TOKEN_FILE.write_text(json.dumps(token, indent=2))
-
-    # Persiste no secrets.toml local (se existir)
-    if _SECRETS_TOML.exists():
-        _update_secrets_toml(token)
+    # Só persiste quando rodando localmente (Cloud tem filesystem read-only)
+    if _token_source == "file":
+        if TOKEN_FILE.exists():
+            TOKEN_FILE.write_text(json.dumps(token, indent=2))
+        if _SECRETS_TOML.exists():
+            _update_secrets_toml(token)
 
     return token
 
