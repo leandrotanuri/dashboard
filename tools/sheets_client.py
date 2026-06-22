@@ -5,6 +5,7 @@ Lê/renova token.json automaticamente.
 
 import json
 import time
+import urllib.parse
 from pathlib import Path
 import requests as req
 
@@ -141,7 +142,6 @@ def clear_range(spreadsheet_id: str, range_: str) -> None:
 
 def read_range(spreadsheet_id: str, range_: str) -> list:
     """Retorna lista de linhas [[v1, v2, ...], ...] para o range informado."""
-    import urllib.parse
     token = _get_access_token()
     url = f"{SHEETS_URL}/{spreadsheet_id}/values/{urllib.parse.quote(range_, safe='')}"
     r = req.get(url, headers={"Authorization": f"Bearer {token}"})
@@ -169,7 +169,6 @@ def ensure_tab(spreadsheet_id: str, tab_name: str) -> None:
 
 def write_tab(spreadsheet_id: str, tab_name: str, rows: list) -> None:
     """Sobrescreve uma aba inteira com os dados passados."""
-    import urllib.parse
     ensure_tab(spreadsheet_id, tab_name)
     clear_range(spreadsheet_id, tab_name)
     token = _get_access_token()
