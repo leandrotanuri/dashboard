@@ -122,6 +122,7 @@ CLIENTS = {
         "account_id": "act_995746376256993",
         "spreadsheet_id": "1S6FUTqK7kDG9ZOgmuakLdxRCSrMxRbegKIEdwCJjS68",
         "agendamentos_id": None,
+        "hotmart_id": "1v3m5C6n-lgDTdQfFat4ujkAnxihUqEoz6TWzbX22KXM",
         "meta_pacientes": 0,
         "tipo": "tricologia",
         "show_ltv": False,
@@ -236,6 +237,44 @@ def fetch_sheets_seguidores(spreadsheet_id: str, month: int) -> pd.DataFrame:
         records.append({"dia": dia, "investido_seg": investido, "seguidores": seguidores})
 
     return pd.DataFrame(records) if records else pd.DataFrame(columns=["dia", "investido_seg", "seguidores"])
+
+
+def fetch_hotmart_vendas(hotmart_id: str, date_start, date_end) -> pd.DataFrame:
+    """Lê sheet Hotmart e retorna vendas no período (só aprovadas/concluídas)."""
+    try:
+        rows = _read_sheets_range(hotmart_id, "Vendas!A:N")
+    except Exception as e:
+        raise RuntimeError(f"Erro ao ler Hotmart: {e}") from e
+
+    if not rows or len(rows) < 2:
+        return pd.DataFrame(columns=["data", "evento", "produto", "valor"])
+
+    headers = [h.strip() for h in rows[0]]
+    records = []
+    for row in rows[1:]:
+        if not row:
+            continue
+        d = dict(zip(headers, row + [""] * (len(headers) - len(row))))
+        evento = d.get("Evento", "").strip()
+        if evento.upper() not in ("PURCHASE_APPROVED", "PURCHASE_COMPLETE", "COMPRA_APROVADA", "COMPRA_COMPLETA"):
+            continue
+        raw_dt = d.get("Data/Hora", "").strip()
+        try:
+            dt = pd.to_datetime(raw_dt, dayfirst=True, errors="coerce")
+        except Exception:
+            continue
+        if pd.isna(dt):
+            continue
+        if not (pd.Timestamp(date_start) <= dt <= pd.Timestamp(date_end) + pd.Timedelta(days=1)):
+            continue
+        raw_val = d.get("Valor (R$)", "0").replace("R$", "").replace(".", "").replace(",", ".").strip()
+        try:
+            valor = float(raw_val) if raw_val else 0.0
+        except ValueError:
+            valor = 0.0
+        records.append({"data": dt.date(), "evento": evento, "produto": d.get("Produto", ""), "valor": valor})
+
+    return pd.DataFrame(records) if records else pd.DataFrame(columns=["data", "evento", "produto", "valor"])
 
 
 # ── layout ─────────────────────────────────────────────────────────────────────
@@ -842,6 +881,15 @@ with st.spinner("Buscando dados..."):
     except RuntimeError as _e:
         st.warning(f"⚠️ {_e} — clique em **Atualizar Dados** na barra lateral para tentar novamente.")
         df_agend = pd.DataFrame()
+    _hotmart_id = client_cfg.get("hotmart_id")
+    if _hotmart_id:
+        try:
+            df_hotmart = fetch_hotmart_vendas(_hotmart_id, date_start, date_end)
+        except RuntimeError as _e:
+            st.warning(f"⚠️ {_e} — clique em **Atualizar Dados** na barra lateral para tentar novamente.")
+            df_hotmart = pd.DataFrame(columns=["data", "evento", "produto", "valor"])
+    else:
+        df_hotmart = pd.DataFrame(columns=["data", "evento", "produto", "valor"])
 
 st.caption(f"Última atualização: {datetime.now().strftime('%d/%m/%Y às %H:%M')} · Cache renova a cada 2h")
 
@@ -854,6 +902,7 @@ if df.empty:
 df_seg  = df[df["campaign_name"].str.contains(FOLLOWER_KEYWORD,  case=False, na=False)].copy()
 df_msg  = df[df["campaign_name"].str.contains(MESSAGING_KEYWORD, case=False, na=False)].copy()
 df_lead = df[df["campaign_name"].str.contains(r"\bLEAD\b",       case=False, na=False, regex=True)].copy()
+df_vsl  = df[df["campaign_name"].str.contains("E4-VEN",          case=False, na=False)].copy()
 
 # Para clientes com keywords customizados, sobrescreve df_msg e df_lead com filtros exclusivos
 if client_cfg.get("tipo") == "mensagens_lead":
@@ -874,15 +923,20 @@ TAX_MULTIPLIER = 1.1385
 
 _tipo_cliente = client_cfg.get("tipo", "clinica_geral")
 
+_has_vsl = bool(client_cfg.get("hotmart_id"))
+
 if _tipo_cliente == "mensagens":
     tab1, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "📈 Evolução"])
-    tab2 = tab3 = tab4 = tab_lead = None
+    tab2 = tab3 = tab4 = tab_lead = tab_vsl = None
 elif _tipo_cliente == "mensagens_lead":
     tab1, tab_lead, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "📋 Formulários · LEAD", "📈 Evolução"])
-    tab2 = tab3 = tab4 = None
+    tab2 = tab3 = tab4 = tab_vsl = None
+elif _has_vsl:
+    tab1, tab2, tab_vsl, tab3, tab4, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "💰 VSL · E4-VEN", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"])
+    tab_lead = None
 else:
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"])
-    tab_lead = None
+    tab_lead = tab_vsl = None
 
 # ══ TAB 1 — MENSAGENS ═════════════════════════════════════════════════════════
 
@@ -1352,6 +1406,107 @@ if tab2 is not None:
             f'<tbody>{"".join(seg_rows)}</tbody></table></div>',
             unsafe_allow_html=True
         )
+
+# ══ TAB VSL — E4-VEN ══════════════════════════════════════════════════════════
+
+if tab_vsl is not None:
+ with tab_vsl:
+    # ── Meta Ads: campanha E4-VEN ─────────────────────────────────────────────
+    vsl_spend     = df_vsl["spend"].sum() if not df_vsl.empty else 0.0
+    vsl_spend_imp = vsl_spend * TAX_MULTIPLIER
+    vsl_impress   = int(df_vsl["impressions"].sum()) if not df_vsl.empty and "impressions" in df_vsl.columns else 0
+    vsl_clicks    = int(df_vsl["inline_link_clicks"].sum()) if not df_vsl.empty and "inline_link_clicks" in df_vsl.columns else (int(df_vsl["clicks"].sum()) if not df_vsl.empty else 0)
+    vsl_cpm       = (vsl_spend / vsl_impress * 1000) if vsl_impress > 0 else None
+    vsl_cpc       = (vsl_spend / vsl_clicks)          if vsl_clicks  > 0 else None
+    vsl_ctr       = (vsl_clicks / vsl_impress * 100)  if vsl_impress > 0 else None
+
+    # ── Hotmart ───────────────────────────────────────────────────────────────
+    total_vendas  = len(df_hotmart) if not df_hotmart.empty else 0
+    receita_total = df_hotmart["valor"].sum() if not df_hotmart.empty else 0.0
+    roas          = (receita_total / vsl_spend_imp) if vsl_spend_imp > 0 else None
+    roas_sem_imp  = (receita_total / vsl_spend)     if vsl_spend     > 0 else None
+    custo_venda   = (vsl_spend_imp / total_vendas)  if total_vendas  > 0 else None
+
+    # ── KPIs linha 1: investimento ────────────────────────────────────────────
+    st.markdown(_kpi_html([
+        {"label": "Investido (sem imp.)",     "value": fmt_brl(vsl_spend),     "color": "cyan"},
+        {"label": "Investido (c/ imp.)",      "value": fmt_brl(vsl_spend_imp), "color": "cyan"},
+        {"label": "Impressões",               "value": fmt_num(vsl_impress),   "color": "blue"},
+        {"label": "CTR",                      "value": f"{vsl_ctr:.2f}%" if vsl_ctr else "—", "color": "blue"},
+    ]), unsafe_allow_html=True)
+
+    st.markdown(_kpi_html([
+        {"label": "Vendas (Hotmart)",         "value": fmt_num(total_vendas) if total_vendas > 0 else "—", "color": "green"},
+        {"label": "Receita Total",            "value": fmt_brl(receita_total) if receita_total > 0 else "—", "color": "green"},
+        {"label": "ROAS (c/ imp.)",           "value": f"{roas:.2f}x" if roas else "—", "color": "yellow"},
+        {"label": "Custo por Venda",          "value": fmt_brl(custo_venda) if custo_venda else "—", "color": "yellow"},
+    ]), unsafe_allow_html=True)
+
+    st.divider()
+
+    # ── Métricas da campanha ──────────────────────────────────────────────────
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown(_kpi_html([
+            {"label": "CPM (sem imp.)", "value": fmt_brl(vsl_cpm) if vsl_cpm else "—", "color": "blue"},
+        ]), unsafe_allow_html=True)
+    with col2:
+        st.markdown(_kpi_html([
+            {"label": "CPC (sem imp.)", "value": fmt_brl(vsl_cpc) if vsl_cpc else "—", "color": "blue"},
+        ]), unsafe_allow_html=True)
+    with col3:
+        st.markdown(_kpi_html([
+            {"label": "Cliques no Link", "value": fmt_num(vsl_clicks) if vsl_clicks else "—", "color": "blue"},
+        ]), unsafe_allow_html=True)
+
+    st.divider()
+
+    # ── Tabela campanhas E4-VEN por dia ──────────────────────────────────────
+    if not df_vsl.empty:
+        st.markdown('<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 8px">Campanhas E4-VEN por Dia</p>', unsafe_allow_html=True)
+        daily_vsl = df_vsl.groupby("date_start").agg(
+            spend=("spend", "sum"),
+            impressions=("impressions", "sum"),
+        ).reset_index()
+        if "inline_link_clicks" in df_vsl.columns:
+            _clk = df_vsl.groupby("date_start")["inline_link_clicks"].sum().reset_index()
+            daily_vsl = daily_vsl.merge(_clk, on="date_start", how="left")
+        else:
+            daily_vsl["inline_link_clicks"] = 0
+        daily_vsl["Investido"]   = daily_vsl["spend"].apply(fmt_brl)
+        daily_vsl["Impressões"]  = daily_vsl["impressions"].apply(lambda v: fmt_num(int(v)))
+        daily_vsl["Cliques"]     = daily_vsl["inline_link_clicks"].apply(lambda v: fmt_num(int(v)) if v > 0 else "—")
+        daily_vsl["CPM"]         = daily_vsl.apply(lambda r: fmt_brl(r["spend"] / r["impressions"] * 1000) if r["impressions"] > 0 else "—", axis=1)
+        daily_vsl["CTR"]         = daily_vsl.apply(lambda r: f"{r['inline_link_clicks']/r['impressions']*100:.2f}%" if r["impressions"] > 0 else "—", axis=1)
+        vsl_thead = "".join(f"<th>{h}</th>" for h in ["DIA", "INVESTIDO", "IMPRESSÕES", "CLIQUES", "CPM", "CTR"])
+        vsl_rows  = "".join(
+            f"<tr><td>{pd.to_datetime(r['date_start']).strftime('%d/%m')}</td>"
+            f"<td>{r['Investido']}</td><td>{r['Impressões']}</td>"
+            f"<td>{r['Cliques']}</td><td>{r['CPM']}</td><td>{r['CTR']}</td></tr>"
+            for _, r in daily_vsl.iterrows()
+        )
+        st.markdown(f'<div class="custom-table"><table><thead><tr>{vsl_thead}</tr></thead><tbody>{vsl_rows}</tbody></table></div>', unsafe_allow_html=True)
+    else:
+        st.info("Nenhuma campanha E4-VEN encontrada no período.")
+
+    st.divider()
+
+    # ── Tabela de vendas Hotmart ──────────────────────────────────────────────
+    st.markdown('<p style="font-size:13px;font-weight:700;color:#c8cce8;margin:0 0 8px">Vendas Hotmart no Período</p>', unsafe_allow_html=True)
+    if not df_hotmart.empty:
+        ht_out = df_hotmart[["data", "produto", "valor"]].copy()
+        ht_out["data"]   = pd.to_datetime(ht_out["data"]).dt.strftime("%d/%m/%Y")
+        ht_out["valor"]  = ht_out["valor"].apply(fmt_brl)
+        ht_thead = "".join(f"<th>{h}</th>" for h in ["DATA", "PRODUTO", "VALOR"])
+        ht_rows  = "".join(
+            f"<tr><td>{r['data']}</td><td>{r['produto']}</td>"
+            f'<td style="color:#00e676;font-weight:700">{r["valor"]}</td></tr>'
+            for _, r in ht_out.iterrows()
+        )
+        st.markdown(f'<div class="custom-table"><table><thead><tr>{ht_thead}</tr></thead><tbody>{ht_rows}</tbody></table></div>', unsafe_allow_html=True)
+    else:
+        st.info("Nenhuma venda registrada no Hotmart para o período selecionado.")
+
 
 # ══ TAB 3 — FUNIL COMPLETO ════════════════════════════════════════════════════
 
