@@ -105,6 +105,8 @@ CAMPAIGN_MAP = {
     "lead_ads":          "lead_ads",
     "formulário":        "lead_ads",
     "formulario":        "lead_ads",
+    "e2-cap":            "whatsapp",
+    "e1-dist":           "seguidores",
     "seguidor":          "seguidores",
     "tráfego":           "seguidores",
     "trafego":           "seguidores",
