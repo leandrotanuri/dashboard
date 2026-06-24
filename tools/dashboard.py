@@ -127,14 +127,6 @@ CLIENTS = {
         "tipo": "tricologia",
         "show_ltv": False,
     },
-    "LC 2": {
-        "account_id": "act_1395323168272970",
-        "spreadsheet_id": None,
-        "agendamentos_id": None,
-        "tipo": "mensagens_lead",
-        "msg_keywords":  ["E2-CAP"],   # E2-CAP identifica campanhas de mensagem (ENGJ aparece em E1-DIST tbm)
-        "lead_keywords": ["LEAD"],     # formulário de lead
-    },
 }
 
 DEFAULT_CLIENT = "Dr. Vinicius"
