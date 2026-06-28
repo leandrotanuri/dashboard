@@ -65,6 +65,33 @@ def get_lead_details(token: str, lead_id: str, subdomain: str = "") -> dict:
         return {"nome": "", "telefone": ""}
 
 
+def get_first_message(token: str, lead_id: str, subdomain: str = "") -> str:
+    """Busca a primeira mensagem do lead via API Kommo para extrair tag do anúncio."""
+    base = f"https://{subdomain}.amocrm.com/api/v4" if subdomain else "https://api-g.kommo.com/api/v4"
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        # Busca eventos do lead (inclui mensagens recebidas)
+        r = requests.get(
+            f"{base}/events",
+            headers=headers,
+            params={"filter[entity_type]": "lead", "filter[entity_id][]": lead_id, "limit": 10}
+        )
+        log.info(f"KOMMO EVENTS status={r.status_code} body={r.text[:400]}")
+        events = r.json().get("_embedded", {}).get("events", [])
+        for event in events:
+            # Eventos de mensagem recebida
+            if event.get("type") in ("incoming_chat_message", "message_received", "chat_message"):
+                text = event.get("value_after", [{}])
+                if isinstance(text, list) and text:
+                    msg = text[0].get("message", {}).get("text", "")
+                    if msg:
+                        return msg
+        return ""
+    except Exception as e:
+        log.warning(f"Erro ao buscar mensagens lead {lead_id}: {e}")
+        return ""
+
+
 def get_stage_name(subdomain: str, token: str, status_id: str) -> str:
     """Busca o nome da etapa no Kommo pelo status_id (com cache)."""
     cache_key = f"{subdomain}:{status_id}"
@@ -245,10 +272,17 @@ async def kommo_webhook(request: Request):
     for lead_data in get_list(body, "leads", "add"):
         kommo_lead_id = str(lead_data.get("id", ""))
         nome = lead_data.get("name", "")
+        # Tenta pegar tag do payload do webhook primeiro
         primeira_msg = lead_data.get("message", "") or lead_data.get("first_message", "")
         anuncio_tag = extrair_tag_anuncio(primeira_msg)
         etapa = lead_data.get("status_name", "") or "Primeiro Atendimento"
         telefone = lead_data.get("phone", "") or ""
+
+        # Se não veio tag no webhook, busca via API de eventos do Kommo
+        if not anuncio_tag and cliente and kommo_lead_id:
+            msg_api = get_first_message(cliente["kommo_token"], kommo_lead_id, subdomain)
+            anuncio_tag = extrair_tag_anuncio(msg_api)
+            log.info(f"TAG VIA API: msg={msg_api} tag={anuncio_tag}")
 
         log.info(f"NOVO LEAD id={kommo_lead_id} nome={nome} tag={anuncio_tag} etapa={etapa} tel={telefone}")
 
