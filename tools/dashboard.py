@@ -917,17 +917,27 @@ _tipo_cliente = client_cfg.get("tipo", "clinica_geral")
 
 _has_vsl = bool(client_cfg.get("hotmart_id"))
 
+_TRACKING_TABS = ["🎯 Rastreamento"] if _is_admin else []
+
 if _tipo_cliente == "mensagens":
-    tab1, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "📈 Evolução"])
+    _tabs = st.tabs(["💬 Mensagens · E2-CAP", "📈 Evolução"] + _TRACKING_TABS)
+    tab1, tab5 = _tabs[0], _tabs[1]
+    tab_tracking = _tabs[2] if _is_admin else None
     tab2 = tab3 = tab4 = tab_lead = tab_vsl = None
 elif _tipo_cliente == "mensagens_lead":
-    tab1, tab_lead, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "📋 Formulários · LEAD", "📈 Evolução"])
+    _tabs = st.tabs(["💬 Mensagens · E2-CAP", "📋 Formulários · LEAD", "📈 Evolução"] + _TRACKING_TABS)
+    tab1, tab_lead, tab5 = _tabs[0], _tabs[1], _tabs[2]
+    tab_tracking = _tabs[3] if _is_admin else None
     tab2 = tab3 = tab4 = tab_vsl = None
 elif _has_vsl:
-    tab1, tab2, tab_vsl, tab3, tab4, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "💰 VSL · E4-VEN", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"])
+    _tabs = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "💰 VSL · E4-VEN", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"] + _TRACKING_TABS)
+    tab1, tab2, tab_vsl, tab3, tab4, tab5 = _tabs[0], _tabs[1], _tabs[2], _tabs[3], _tabs[4], _tabs[5]
+    tab_tracking = _tabs[6] if _is_admin else None
     tab_lead = None
 else:
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"])
+    _tabs = st.tabs(["💬 Mensagens · E2-CAP", "👥 Seguidores · E1-DIST", "📊 Funil Completo", "🎯 Metas", "📈 Evolução"] + _TRACKING_TABS)
+    tab1, tab2, tab3, tab4, tab5 = _tabs[0], _tabs[1], _tabs[2], _tabs[3], _tabs[4]
+    tab_tracking = _tabs[5] if _is_admin else None
     tab_lead = tab_vsl = None
 
 # ══ TAB 1 — MENSAGENS ═════════════════════════════════════════════════════════
@@ -2029,3 +2039,9 @@ with tab5:
             ))
         fig_ct.update_layout(bargap=0.25, showlegend=False, xaxis_title="", yaxis_title="", **_PD)
         st.plotly_chart(fig_ct, use_container_width=True)
+
+# == TAB RASTREAMENTO (admin only) ============================================
+if _is_admin and tab_tracking:
+    with tab_tracking:
+        from tools.tracking_view import render_tracking_tab
+        render_tracking_tab()
