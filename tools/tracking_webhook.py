@@ -35,27 +35,24 @@ SB_HEADERS = {
 
 _stage_cache: dict = {}
 
-def get_lead_details(token: str, lead_id: str) -> dict:
+def get_lead_details(token: str, lead_id: str, subdomain: str = "") -> dict:
     """Busca nome e telefone do lead via API Kommo."""
+    base = f"https://{subdomain}.kommo.com/api/v4" if subdomain else "https://api-g.kommo.com/api/v4"
+    headers = {"Authorization": f"Bearer {token}"}
     try:
-        r = requests.get(
-            f"https://api-g.kommo.com/api/v4/leads/{lead_id}",
-            headers={"Authorization": f"Bearer {token}"},
-            params={"with": "contacts"}
-        )
+        r = requests.get(f"{base}/leads/{lead_id}", headers=headers, params={"with": "contacts"})
+        log.info(f"KOMMO LEAD API status={r.status_code} body={r.text[:300]}")
         lead = r.json()
         nome = lead.get("name", "")
         telefone = ""
         contacts = lead.get("_embedded", {}).get("contacts", [])
         if contacts:
             contact_id = contacts[0].get("id")
-            rc = requests.get(
-                f"https://api-g.kommo.com/api/v4/contacts/{contact_id}",
-                headers={"Authorization": f"Bearer {token}"}
-            )
+            rc = requests.get(f"{base}/contacts/{contact_id}", headers=headers)
+            log.info(f"KOMMO CONTACT API status={rc.status_code} body={rc.text[:300]}")
             cf = rc.json().get("custom_fields_values", []) or []
             for field in cf:
-                if field.get("field_code") in ("PHONE", "phone"):
+                if field.get("field_code") in ("PHONE", "phone") or field.get("field_type") == "multitext":
                     vals = field.get("values", [])
                     if vals:
                         telefone = vals[0].get("value", "")
@@ -72,11 +69,13 @@ def get_stage_name(subdomain: str, token: str, status_id: str) -> str:
     if cache_key in _stage_cache:
         return _stage_cache[cache_key]
     try:
+        base = f"https://{subdomain}.kommo.com/api/v4" if subdomain else "https://api-g.kommo.com/api/v4"
         r = requests.get(
-            f"https://api-g.kommo.com/api/v4/leads/pipelines",
+            f"{base}/leads/pipelines",
             headers={"Authorization": f"Bearer {token}"},
             params={"with": "statuses"}
         )
+        log.info(f"KOMMO PIPELINE API status={r.status_code} body={r.text[:200]}")
         pipelines = r.json().get("_embedded", {}).get("pipelines", [])
         for pipeline in pipelines:
             for status in pipeline.get("_embedded", {}).get("statuses", []):
@@ -284,7 +283,7 @@ async def kommo_webhook(request: Request):
 
         # Busca dados completos do lead via API Kommo
         if cliente and (not telefone or not nome):
-            detalhes = get_lead_details(cliente["kommo_token"], kommo_lead_id)
+            detalhes = get_lead_details(cliente["kommo_token"], kommo_lead_id, subdomain)
             nome = nome or detalhes["nome"]
             telefone = telefone or detalhes["telefone"]
             log.info(f"KOMMO API lead={kommo_lead_id} nome={nome} tel={telefone}")
