@@ -50,7 +50,9 @@ def get_lead_details(token: str, lead_id: str, subdomain: str = "") -> dict:
             contact_id = contacts[0].get("id")
             rc = requests.get(f"{base}/contacts/{contact_id}", headers=headers)
             log.info(f"KOMMO CONTACT API status={rc.status_code} body={rc.text[:300]}")
-            cf = rc.json().get("custom_fields_values", []) or []
+            contact_data = rc.json()
+            nome = contact_data.get("name", "") or nome  # nome real do contato
+            cf = contact_data.get("custom_fields_values", []) or []
             for field in cf:
                 if field.get("field_code") in ("PHONE", "phone") or field.get("field_type") == "multitext":
                     vals = field.get("values", [])
@@ -308,7 +310,7 @@ async def kommo_webhook(request: Request):
             if lead_id and etapa_anterior != etapa_nova:
                 registrar_evento(lead_id, etapa_anterior, etapa_nova)
 
-            if (etapa_nova == cliente["etapa_conversao"]
+            if (etapa_nova.strip().upper() == cliente["etapa_conversao"].strip().upper()
                     and not (lead_existente or {}).get("evento_capi_enviado")):
                 log.info(f"CAPI SCHEDULE -> lead={kommo_lead_id} tel={telefone}")
                 enviado = enviar_capi_schedule(
