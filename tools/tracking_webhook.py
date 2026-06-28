@@ -33,6 +33,30 @@ SB_HEADERS = {
 }
 
 
+_stage_cache: dict = {}
+
+def get_stage_name(subdomain: str, token: str, status_id: str) -> str:
+    """Busca o nome da etapa no Kommo pelo status_id (com cache)."""
+    cache_key = f"{subdomain}:{status_id}"
+    if cache_key in _stage_cache:
+        return _stage_cache[cache_key]
+    try:
+        r = requests.get(
+            f"https://api-g.kommo.com/api/v4/leads/pipelines",
+            headers={"Authorization": f"Bearer {token}"},
+            params={"with": "statuses"}
+        )
+        pipelines = r.json().get("_embedded", {}).get("pipelines", [])
+        for pipeline in pipelines:
+            for status in pipeline.get("_embedded", {}).get("statuses", []):
+                key = f"{subdomain}:{status['id']}"
+                _stage_cache[key] = status["name"]
+        return _stage_cache.get(cache_key, status_id)
+    except Exception as e:
+        log.warning(f"Erro ao buscar etapas Kommo: {e}")
+        return status_id
+
+
 def get_cliente_by_subdomain(subdomain: str):
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/clientes",
@@ -209,7 +233,11 @@ async def kommo_webhook(request: Request):
     # --- Mudança de etapa ---
     for lead_data in get_list(body, "leads", "status"):
         kommo_lead_id = str(lead_data.get("id", ""))
-        etapa_nova = lead_data.get("status_name", "") or lead_data.get("pipeline_status_name", "")
+        status_id = str(lead_data.get("status_id", ""))
+        # Kommo envia status_id (número), precisa resolver para nome
+        etapa_nova = ""
+        if status_id and cliente:
+            etapa_nova = get_stage_name(subdomain, cliente["kommo_token"], status_id)
         nome = lead_data.get("name", "")
         telefone = lead_data.get("phone", "") or ""
 
