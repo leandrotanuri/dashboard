@@ -2,18 +2,23 @@
 Webhook receiver para eventos do Kommo.
 Recebe notificações de mudança de etapa e envia eventos pro Meta CAPI.
 
-Deploy: Railway
+Deploy: Render
 Run local: uvicorn tools.tracking_webhook:app --port 8001
 """
 import os
 import hashlib
 import hmac
 import time
+import logging
 import requests
 from fastapi import FastAPI, Request, HTTPException
+from urllib.parse import parse_qs
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log = logging.getLogger("tracking")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY")
@@ -123,108 +128,75 @@ def health():
     return {"status": "ok", "service": "tracking-agency"}
 
 
+def parse_kommo_body(raw: bytes) -> dict:
+    """
+    Kommo envia PHP-style nested form params:
+      leads[add][0][id]=123&leads[add][0][name]=Fulano
+    Este parser converte para dict aninhado Python.
+    """
+    flat = parse_qs(raw.decode("utf-8", errors="replace"))
+    result = {}
+    import re
+    for key, values in flat.items():
+        value = values[0] if len(values) == 1 else values
+        # Extrai partes: leads, add, 0, id
+        parts = re.findall(r'([^\[\]]+)', key)
+        node = result
+        for part in parts[:-1]:
+            if part not in node:
+                node[part] = {}
+            node = node[part]
+        node[parts[-1]] = value
+    return result
+
+
+def get_list(obj, *keys):
+    """Navega dict aninhado e garante lista."""
+    node = obj
+    for k in keys:
+        if not isinstance(node, dict):
+            return []
+        node = node.get(k, {})
+    if not node:
+        return []
+    if isinstance(node, dict):
+        return list(node.values())
+    return node
+
+
 @app.post("/webhook/kommo")
 async def kommo_webhook(request: Request):
     """Recebe eventos do Kommo via webhook."""
     raw = await request.body()
     content_type = request.headers.get("content-type", "")
-    print(f"KOMMO WEBHOOK | content-type: {content_type} | body: {raw[:500]}")
+    log.info(f"KOMMO IN | ct={content_type} | raw={raw[:300]}")
 
-    body = {}
-    try:
-        body = await request.json()
-    except Exception:
-        pass
+    body = parse_kommo_body(raw)
+    log.info(f"KOMMO PARSED | {str(body)[:400]}")
 
-    # Kommo envia dados como form-encoded
-    if not body:
-        try:
-            raw = await request.body()
-            from urllib.parse import parse_qs
-            parsed = parse_qs(raw.decode("utf-8"))
-            body = {k: v[0] if len(v) == 1 else v for k, v in parsed.items()}
-        except Exception:
-            body = {}
-
-    # Identifica o subdomínio pelo header ou query param
-    subdomain = request.query_params.get("account") or request.headers.get("X-Kommo-Domain", "")
-
-    if not subdomain:
-        # Tenta extrair do body
-        subdomain = body.get("account_subdomain", "")
+    subdomain = (
+        request.query_params.get("account")
+        or request.headers.get("X-Kommo-Domain", "")
+        or body.get("account_subdomain", "")
+    )
+    log.info(f"SUBDOMAIN={subdomain}")
 
     cliente = get_cliente_by_subdomain(subdomain) if subdomain else None
+    if not cliente:
+        log.warning(f"Cliente nao encontrado para subdomain={subdomain}")
 
-    # Processa mudança de etapa (leads)
-    leads_updated = body.get("leads", {}).get("status", []) or []
-    if isinstance(leads_updated, dict):
-        leads_updated = [leads_updated]
-
-    for lead_data in leads_updated:
-        kommo_lead_id = str(lead_data.get("id", ""))
-        etapa_nova = lead_data.get("pipeline", {}).get("status", {}).get("name", "")
-        nome = lead_data.get("name", "")
-
-        # Busca contato para pegar telefone
-        telefone = ""
-        contacts = lead_data.get("contacts", {}).get("links", [])
-        if contacts:
-            telefone = contacts[0].get("phone", "")
-
-        # Busca lead existente no Supabase
-        r = requests.get(
-            f"{SUPABASE_URL}/rest/v1/leads",
-            headers=SB_HEADERS,
-            params={"kommo_lead_id": f"eq.{kommo_lead_id}"}
-        )
-        lead_existente = r.json()[0] if r.json() else None
-        etapa_anterior = lead_existente.get("etapa_atual") if lead_existente else None
-
-        if cliente:
-            lead_result = upsert_lead(
-                cliente_id=cliente["id"],
-                kommo_lead_id=kommo_lead_id,
-                nome=nome,
-                telefone=telefone,
-                anuncio_tag=lead_existente.get("anuncio_tag") if lead_existente else None,
-                etapa=etapa_nova
-            )
-
-            lead_id = lead_result[0]["id"] if lead_result else (lead_existente.get("id") if lead_existente else None)
-
-            if lead_id and etapa_anterior != etapa_nova:
-                registrar_evento(lead_id, etapa_anterior, etapa_nova)
-
-            # Verifica se chegou na etapa de conversão
-            if (etapa_nova == cliente["etapa_conversao"]
-                    and not (lead_existente or {}).get("evento_capi_enviado")):
-                enviado = enviar_capi_schedule(
-                    pixel_id=cliente["meta_pixel_id"],
-                    token=cliente["meta_token"],
-                    telefone=telefone,
-                    nome=nome
-                )
-                if enviado and lead_id:
-                    marcar_capi_enviado(lead_id)
-
-    # Processa novo lead (primeira mensagem = tag do anúncio)
-    leads_novos = body.get("leads", {}).get("add", [])
-    if isinstance(leads_novos, dict):
-        leads_novos = [leads_novos]
-
-    for lead_data in leads_novos:
+    # --- Novo lead criado ---
+    for lead_data in get_list(body, "leads", "add"):
         kommo_lead_id = str(lead_data.get("id", ""))
         nome = lead_data.get("name", "")
-        primeira_msg = lead_data.get("first_message", "") or lead_data.get("message", "")
+        primeira_msg = lead_data.get("message", "") or lead_data.get("first_message", "")
         anuncio_tag = extrair_tag_anuncio(primeira_msg)
-        etapa = lead_data.get("pipeline", {}).get("status", {}).get("name", "Primeiro Atendimento")
+        etapa = lead_data.get("status_name", "") or "Primeiro Atendimento"
+        telefone = lead_data.get("phone", "") or ""
 
-        telefone = ""
-        contacts = lead_data.get("contacts", {}).get("links", [])
-        if contacts:
-            telefone = contacts[0].get("phone", "")
+        log.info(f"NOVO LEAD id={kommo_lead_id} nome={nome} tag={anuncio_tag} etapa={etapa} tel={telefone}")
 
-        if cliente:
+        if cliente and kommo_lead_id:
             upsert_lead(
                 cliente_id=cliente["id"],
                 kommo_lead_id=kommo_lead_id,
@@ -233,5 +205,54 @@ async def kommo_webhook(request: Request):
                 anuncio_tag=anuncio_tag,
                 etapa=etapa
             )
+
+    # --- Mudança de etapa ---
+    for lead_data in get_list(body, "leads", "status"):
+        kommo_lead_id = str(lead_data.get("id", ""))
+        etapa_nova = lead_data.get("status_name", "") or lead_data.get("pipeline_status_name", "")
+        nome = lead_data.get("name", "")
+        telefone = lead_data.get("phone", "") or ""
+
+        log.info(f"STATUS LEAD id={kommo_lead_id} etapa={etapa_nova}")
+
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/leads",
+            headers=SB_HEADERS,
+            params={"kommo_lead_id": f"eq.{kommo_lead_id}"}
+        )
+        lead_existente = r.json()[0] if r.json() else None
+        etapa_anterior = lead_existente.get("etapa_atual") if lead_existente else None
+
+        # Usa telefone salvo se não veio no webhook
+        if not telefone and lead_existente:
+            telefone = lead_existente.get("telefone", "")
+
+        if cliente and kommo_lead_id:
+            lead_result = upsert_lead(
+                cliente_id=cliente["id"],
+                kommo_lead_id=kommo_lead_id,
+                nome=nome or (lead_existente.get("nome") if lead_existente else ""),
+                telefone=telefone,
+                anuncio_tag=lead_existente.get("anuncio_tag") if lead_existente else None,
+                etapa=etapa_nova
+            )
+
+            lead_id = (lead_result[0]["id"] if lead_result else None) or (lead_existente.get("id") if lead_existente else None)
+
+            if lead_id and etapa_anterior != etapa_nova:
+                registrar_evento(lead_id, etapa_anterior, etapa_nova)
+
+            if (etapa_nova == cliente["etapa_conversao"]
+                    and not (lead_existente or {}).get("evento_capi_enviado")):
+                log.info(f"CAPI SCHEDULE -> lead={kommo_lead_id} tel={telefone}")
+                enviado = enviar_capi_schedule(
+                    pixel_id=cliente["meta_pixel_id"],
+                    token=cliente["meta_token"],
+                    telefone=telefone,
+                    nome=nome
+                )
+                log.info(f"CAPI enviado={enviado}")
+                if enviado and lead_id:
+                    marcar_capi_enviado(lead_id)
 
     return {"ok": True}
