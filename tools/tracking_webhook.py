@@ -37,7 +37,7 @@ _stage_cache: dict = {}
 
 def get_lead_details(token: str, lead_id: str, subdomain: str = "") -> dict:
     """Busca nome e telefone do lead via API Kommo."""
-    base = f"https://{subdomain}.kommo.com/api/v4" if subdomain else "https://api-g.kommo.com/api/v4"
+    base = f"https://{subdomain}.amocrm.com/api/v4" if subdomain else "https://api-g.kommo.com/api/v4"
     headers = {"Authorization": f"Bearer {token}"}
     try:
         r = requests.get(f"{base}/leads/{lead_id}", headers=headers, params={"with": "contacts"})
@@ -69,7 +69,7 @@ def get_stage_name(subdomain: str, token: str, status_id: str) -> str:
     if cache_key in _stage_cache:
         return _stage_cache[cache_key]
     try:
-        base = f"https://{subdomain}.kommo.com/api/v4" if subdomain else "https://api-g.kommo.com/api/v4"
+        base = f"https://{subdomain}.amocrm.com/api/v4" if subdomain else "https://api-g.kommo.com/api/v4"
         r = requests.get(
             f"{base}/leads/pipelines",
             headers={"Authorization": f"Bearer {token}"},
