@@ -299,7 +299,12 @@ async def kommo_webhook(request: Request):
                 etapa=etapa_nova
             )
 
-            lead_id = (lead_result[0]["id"] if lead_result else None) or (lead_existente.get("id") if lead_existente else None)
+            lead_id = None
+            if isinstance(lead_result, list) and lead_result:
+                lead_id = lead_result[0].get("id")
+            if not lead_id and lead_existente:
+                lead_id = lead_existente.get("id")
+            log.info(f"UPSERT lead_id={lead_id} result={str(lead_result)[:100]}")
 
             if lead_id and etapa_anterior != etapa_nova:
                 registrar_evento(lead_id, etapa_anterior, etapa_nova)
