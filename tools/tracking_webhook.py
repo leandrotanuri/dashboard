@@ -35,6 +35,37 @@ SB_HEADERS = {
 
 _stage_cache: dict = {}
 
+def get_lead_details(token: str, lead_id: str) -> dict:
+    """Busca nome e telefone do lead via API Kommo."""
+    try:
+        r = requests.get(
+            f"https://api-g.kommo.com/api/v4/leads/{lead_id}",
+            headers={"Authorization": f"Bearer {token}"},
+            params={"with": "contacts"}
+        )
+        lead = r.json()
+        nome = lead.get("name", "")
+        telefone = ""
+        contacts = lead.get("_embedded", {}).get("contacts", [])
+        if contacts:
+            contact_id = contacts[0].get("id")
+            rc = requests.get(
+                f"https://api-g.kommo.com/api/v4/contacts/{contact_id}",
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            cf = rc.json().get("custom_fields_values", []) or []
+            for field in cf:
+                if field.get("field_code") in ("PHONE", "phone"):
+                    vals = field.get("values", [])
+                    if vals:
+                        telefone = vals[0].get("value", "")
+                        break
+        return {"nome": nome, "telefone": telefone}
+    except Exception as e:
+        log.warning(f"Erro ao buscar lead {lead_id} no Kommo: {e}")
+        return {"nome": "", "telefone": ""}
+
+
 def get_stage_name(subdomain: str, token: str, status_id: str) -> str:
     """Busca o nome da etapa no Kommo pelo status_id (com cache)."""
     cache_key = f"{subdomain}:{status_id}"
@@ -251,9 +282,12 @@ async def kommo_webhook(request: Request):
         lead_existente = r.json()[0] if r.json() else None
         etapa_anterior = lead_existente.get("etapa_atual") if lead_existente else None
 
-        # Usa telefone salvo se não veio no webhook
-        if not telefone and lead_existente:
-            telefone = lead_existente.get("telefone", "")
+        # Busca dados completos do lead via API Kommo
+        if cliente and (not telefone or not nome):
+            detalhes = get_lead_details(cliente["kommo_token"], kommo_lead_id)
+            nome = nome or detalhes["nome"]
+            telefone = telefone or detalhes["telefone"]
+            log.info(f"KOMMO API lead={kommo_lead_id} nome={nome} tel={telefone}")
 
         if cliente and kommo_lead_id:
             lead_result = upsert_lead(
