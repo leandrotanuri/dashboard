@@ -126,15 +126,25 @@ def health():
 @app.post("/webhook/kommo")
 async def kommo_webhook(request: Request):
     """Recebe eventos do Kommo via webhook."""
+    raw = await request.body()
+    content_type = request.headers.get("content-type", "")
+    print(f"KOMMO WEBHOOK | content-type: {content_type} | body: {raw[:500]}")
+
+    body = {}
     try:
         body = await request.json()
     except Exception:
-        body = {}
+        pass
 
-    # Kommo envia dados como form ou JSON dependendo da versão
+    # Kommo envia dados como form-encoded
     if not body:
-        form = await request.form()
-        body = dict(form)
+        try:
+            raw = await request.body()
+            from urllib.parse import parse_qs
+            parsed = parse_qs(raw.decode("utf-8"))
+            body = {k: v[0] if len(v) == 1 else v for k, v in parsed.items()}
+        except Exception:
+            body = {}
 
     # Identifica o subdomínio pelo header ou query param
     subdomain = request.query_params.get("account") or request.headers.get("X-Kommo-Domain", "")
