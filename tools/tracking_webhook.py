@@ -67,25 +67,47 @@ def get_lead_details(token: str, lead_id: str, subdomain: str = "") -> dict:
 
 def get_first_message(token: str, lead_id: str, subdomain: str = "") -> str:
     """Busca a primeira mensagem do lead via API Kommo para extrair tag do anúncio."""
+    import time
     base = f"https://{subdomain}.amocrm.com/api/v4" if subdomain else "https://api-g.kommo.com/api/v4"
     headers = {"Authorization": f"Bearer {token}"}
+
+    # Aguarda 3s para o Kommo indexar a mensagem antes de buscar
+    time.sleep(3)
+
     try:
-        # Busca eventos do lead (inclui mensagens recebidas)
+        # Tenta 1: eventos do lead
         r = requests.get(
             f"{base}/events",
             headers=headers,
-            params={"filter[entity_type]": "lead", "filter[entity_id][]": lead_id, "limit": 10}
+            params={"filter[entity_type]": "lead", "filter[entity_id][]": lead_id, "limit": 20}
         )
-        log.info(f"KOMMO EVENTS status={r.status_code} body={r.text[:400]}")
+        log.info(f"KOMMO EVENTS status={r.status_code} body={r.text[:600]}")
         events = r.json().get("_embedded", {}).get("events", [])
         for event in events:
-            # Eventos de mensagem recebida
-            if event.get("type") in ("incoming_chat_message", "message_received", "chat_message"):
-                text = event.get("value_after", [{}])
-                if isinstance(text, list) and text:
-                    msg = text[0].get("message", {}).get("text", "")
+            etype = event.get("type", "")
+            log.info(f"EVENT TYPE={etype}")
+            value_after = event.get("value_after", [])
+            if isinstance(value_after, list):
+                for v in value_after:
+                    msg = v.get("message", {}).get("text", "") or v.get("text", "")
                     if msg:
+                        log.info(f"MSG ENCONTRADA via events: {msg[:100]}")
                         return msg
+
+        # Tenta 2: notas do lead
+        r2 = requests.get(
+            f"{base}/leads/{lead_id}/notes",
+            headers=headers,
+            params={"limit": 10}
+        )
+        log.info(f"KOMMO NOTES status={r2.status_code} body={r2.text[:400]}")
+        notes = r2.json().get("_embedded", {}).get("notes", [])
+        for note in notes:
+            text = note.get("params", {}).get("text", "") or note.get("text", "")
+            if text:
+                log.info(f"MSG ENCONTRADA via notes: {text[:100]}")
+                return text
+
         return ""
     except Exception as e:
         log.warning(f"Erro ao buscar mensagens lead {lead_id}: {e}")
