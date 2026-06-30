@@ -148,7 +148,7 @@ def get_cliente_by_subdomain(subdomain: str):
     return data[0] if data else None
 
 
-def upsert_lead(cliente_id: int, kommo_lead_id: str, nome: str, telefone: str, anuncio_tag: str, etapa: str):
+def upsert_lead(cliente_id: int, kommo_lead_id: str, nome: str, telefone: str, anuncio_tag: str, etapa: str, primeira_mensagem: str = None):
     payload = {
         "cliente_id": cliente_id,
         "kommo_lead_id": kommo_lead_id,
@@ -158,6 +158,8 @@ def upsert_lead(cliente_id: int, kommo_lead_id: str, nome: str, telefone: str, a
         "etapa_atual": etapa,
         "atualizado_em": "now()"
     }
+    if primeira_mensagem:
+        payload["primeira_mensagem"] = primeira_mensagem
     r = requests.post(
         f"{SUPABASE_URL}/rest/v1/leads",
         headers={**SB_HEADERS, "Prefer": "resolution=merge-duplicates,return=representation"},
@@ -300,11 +302,13 @@ async def kommo_webhook(request: Request):
         etapa = lead_data.get("status_name", "") or "Primeiro Atendimento"
         telefone = lead_data.get("phone", "") or ""
 
-        # Se não veio tag no webhook, busca via API de eventos do Kommo
-        if not anuncio_tag and cliente and kommo_lead_id:
+        # Busca mensagem via API do Kommo
+        msg_api = ""
+        if cliente and kommo_lead_id:
             msg_api = get_first_message(cliente["kommo_token"], kommo_lead_id, subdomain)
-            anuncio_tag = extrair_tag_anuncio(msg_api)
-            log.info(f"TAG VIA API: msg={msg_api} tag={anuncio_tag}")
+            if not anuncio_tag:
+                anuncio_tag = extrair_tag_anuncio(msg_api)
+            log.info(f"TAG VIA API: msg={msg_api[:100]} tag={anuncio_tag}")
 
         log.info(f"NOVO LEAD id={kommo_lead_id} nome={nome} tag={anuncio_tag} etapa={etapa} tel={telefone}")
 
@@ -315,7 +319,8 @@ async def kommo_webhook(request: Request):
                 nome=nome,
                 telefone=telefone,
                 anuncio_tag=anuncio_tag,
-                etapa=etapa
+                etapa=etapa,
+                primeira_mensagem=msg_api or primeira_msg or None
             )
 
     # --- Mudança de etapa ---
