@@ -302,9 +302,18 @@ async def kommo_webhook(request: Request):
         etapa = lead_data.get("status_name", "") or "Primeiro Atendimento"
         telefone = lead_data.get("phone", "") or ""
 
-        # Busca mensagem via API do Kommo
+        # Busca dados completos via API do Kommo (mensagem + etapa real + telefone)
         msg_api = ""
         if cliente and kommo_lead_id:
+            detalhes = get_lead_details(cliente["kommo_token"], kommo_lead_id, subdomain)
+            nome = nome or detalhes["nome"]
+            telefone = telefone or detalhes["telefone"]
+
+            # Busca etapa real pelo status_id do lead
+            status_id = str(lead_data.get("status_id", ""))
+            if status_id:
+                etapa = get_stage_name(subdomain, cliente["kommo_token"], status_id) or etapa
+
             msg_api = get_first_message(cliente["kommo_token"], kommo_lead_id, subdomain)
             if not anuncio_tag:
                 anuncio_tag = extrair_tag_anuncio(msg_api)

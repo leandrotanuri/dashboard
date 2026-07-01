@@ -84,13 +84,26 @@ with st.sidebar:
     data_ini = st.date_input("De", value=df["criado_em"].min().date())
     data_fim = st.date_input("Até", value=df["criado_em"].max().date())
 
+    st.markdown("### Buscar por nome")
+    filtro_nome = st.text_input("Nome do lead", placeholder="Ex: Ana, João...")
+
     st.markdown("### Filtrar por mensagem")
     filtro_msg = st.text_input("Palavra-chave na mensagem", placeholder="Ex: ADF01, botox...")
 
+    st.markdown("### Filtrar por etapa")
+    etapas_disponiveis = ["Todas"] + sorted(df["etapa_atual"].dropna().unique().tolist())
+    filtro_etapa = st.selectbox("Etapa", etapas_disponiveis)
+
 df = df[(df["criado_em"].dt.date >= data_ini) & (df["criado_em"].dt.date <= data_fim)]
+
+if filtro_nome:
+    df = df[df["nome"].fillna("").str.contains(filtro_nome, case=False, na=False)]
 
 if filtro_msg:
     df = df[df["primeira_mensagem"].fillna("").str.contains(filtro_msg, case=False, na=False)]
+
+if filtro_etapa != "Todas":
+    df = df[df["etapa_atual"] == filtro_etapa]
 
 # ── Métricas ───────────────────────────────────────────────────────────────────
 total_leads = len(df)
