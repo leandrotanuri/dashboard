@@ -108,16 +108,28 @@ st.markdown("---")
 tab1, tab2 = st.tabs(["👤 Leads", "📊 Por Anúncio"])
 
 with tab1:
-    st.markdown("#### Lista de Leads")
-    tabela = df[[
-        "nome", "telefone", "primeira_mensagem", "anuncio_tag", "etapa_atual", "evento_capi_enviado", "criado_em"
-    ]].copy()
-    tabela.columns = ["Nome", "Telefone", "Primeira Mensagem", "Tag Anúncio", "Etapa", "Agendou", "Data"]
-    tabela["Data"] = tabela["Data"].dt.strftime("%d/%m %H:%M")
-    tabela["Agendou"] = tabela["Agendou"].map({True: "Sim", False: "Não"})
-    tabela["Primeira Mensagem"] = tabela["Primeira Mensagem"].fillna("—")
-    tabela["Tag Anúncio"] = tabela["Tag Anúncio"].fillna("(sem tag)")
-    st.dataframe(tabela, use_container_width=True, hide_index=True)
+    def _formata(subset):
+        t = subset[["nome", "telefone", "primeira_mensagem", "anuncio_tag", "etapa_atual", "criado_em"]].copy()
+        t.columns = ["Nome", "Telefone", "Primeira Mensagem", "Tag Anúncio", "Etapa", "Data"]
+        t["Data"] = t["Data"].dt.strftime("%d/%m %H:%M")
+        t["Primeira Mensagem"] = t["Primeira Mensagem"].fillna("—")
+        t["Tag Anúncio"] = t["Tag Anúncio"].fillna("(sem tag)")
+        return t
+
+    agendaram = df[df["evento_capi_enviado"] == True]
+    nao_agendaram = df[df["evento_capi_enviado"] == False]
+
+    st.markdown(f"#### Agendaram ({len(agendaram)})")
+    if agendaram.empty:
+        st.info("Nenhum lead agendou ainda.")
+    else:
+        st.dataframe(_formata(agendaram), use_container_width=True, hide_index=True)
+
+    st.markdown(f"#### Não Agendaram ({len(nao_agendaram)})")
+    if nao_agendaram.empty:
+        st.info("Nenhum lead sem agendamento.")
+    else:
+        st.dataframe(_formata(nao_agendaram), use_container_width=True, hide_index=True)
 
 with tab2:
     st.markdown("#### Por Anúncio")
