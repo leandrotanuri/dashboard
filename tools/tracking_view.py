@@ -129,8 +129,21 @@ with tab1:
         t["Tag Anúncio"] = t["Tag Anúncio"].fillna("(sem tag)")
         return t
 
-    agendaram = df[df["evento_capi_enviado"] == True]
-    nao_agendaram = df[df["evento_capi_enviado"] == False]
+    ETAPA_ENTRADA  = "ETAPA LEADS DE ENTRADA"
+    ETAPA_AGENDADA = cliente.get("etapa_conversao", "CONSULTA AGENDADA")
+
+    entrada     = df[df["etapa_atual"].str.upper().str.strip() == ETAPA_ENTRADA.upper()]
+    agendaram   = df[df["evento_capi_enviado"] == True]
+    nao_agendaram = df[
+        (df["evento_capi_enviado"] == False) &
+        (df["etapa_atual"].str.upper().str.strip() != ETAPA_ENTRADA.upper())
+    ]
+
+    st.markdown(f"#### Leads de Entrada ({len(entrada)})")
+    if entrada.empty:
+        st.info("Nenhum lead em entrada no período.")
+    else:
+        st.dataframe(_formata(entrada), use_container_width=True, hide_index=True)
 
     st.markdown(f"#### Agendaram ({len(agendaram)})")
     if agendaram.empty:
