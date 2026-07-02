@@ -432,4 +432,48 @@ async def kommo_webhook(request: Request):
                 if enviado and lead_id:
                     marcar_capi_enviado(lead_id)
 
+    # --- Mensagem recebida (nova) ---
+    for msg_data in get_list(body, "message", "add"):
+        texto = msg_data.get("text", "") or msg_data.get("body", "") or msg_data.get("content", "")
+        kommo_lead_id = str(msg_data.get("lead_id", "") or msg_data.get("entity_id", ""))
+        origem = msg_data.get("type", "") or msg_data.get("direction", "")
+
+        log.info(f"MENSAGEM RECEBIDA lead={kommo_lead_id} tipo={origem} texto={texto[:100]}")
+
+        if not texto or not kommo_lead_id:
+            continue
+
+        # Só processa mensagens recebidas (do lead, não enviadas pela equipe)
+        if origem and origem not in ("", "in", "incoming", "received"):
+            log.info(f"Mensagem de saida ignorada: tipo={origem}")
+            continue
+
+        # Busca lead no Supabase
+        r = requests.get(f"{SUPABASE_URL}/rest/v1/leads", headers=SB_HEADERS,
+                         params={"kommo_lead_id": f"eq.{kommo_lead_id}"})
+        lead_existente = r.json()[0] if r.ok and r.json() else None
+
+        if not lead_existente:
+            log.info(f"Lead {kommo_lead_id} nao encontrado no Supabase, ignorando mensagem")
+            continue
+
+        # Só salva se ainda não tem primeira_mensagem
+        if lead_existente.get("primeira_mensagem"):
+            log.info(f"Lead {kommo_lead_id} ja tem primeira_mensagem, ignorando")
+            continue
+
+        sb_id = lead_existente["id"]
+        patch = {"primeira_mensagem": texto}
+
+        # Se ainda não tem tag, tenta extrair da mensagem
+        if not lead_existente.get("anuncio_tag"):
+            tag = extrair_tag_anuncio(texto)
+            if tag:
+                patch["anuncio_tag"] = tag
+                log.info(f"TAG EXTRAIDA da mensagem: {tag}")
+
+        requests.patch(f"{SUPABASE_URL}/rest/v1/leads", headers=SB_HEADERS,
+                       params={"id": f"eq.{sb_id}"}, json=patch)
+        log.info(f"MENSAGEM SALVA lead={kommo_lead_id} texto={texto[:60]}")
+
     return {"ok": True}
