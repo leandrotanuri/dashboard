@@ -36,14 +36,26 @@ SB_HEADERS = {
 _stage_cache: dict = {}
 
 def get_lead_details(token: str, lead_id: str, subdomain: str = "") -> dict:
-    """Busca nome e telefone do lead via API Kommo."""
+    """Busca nome, telefone e tags do lead via API Kommo."""
     base = f"https://{subdomain}.amocrm.com/api/v4" if subdomain else "https://api-g.kommo.com/api/v4"
     headers = {"Authorization": f"Bearer {token}"}
     try:
-        r = requests.get(f"{base}/leads/{lead_id}", headers=headers, params={"with": "contacts"})
+        r = requests.get(f"{base}/leads/{lead_id}", headers=headers, params={"with": "contacts,tags"})
         log.info(f"KOMMO LEAD API status={r.status_code} body={r.text[:300]}")
         lead = r.json()
         nome = lead.get("name", "")
+
+        # Lê tags do campo de tags do Kommo (adicionadas manualmente pelas atendentes)
+        tags = lead.get("_embedded", {}).get("tags", [])
+        anuncio_tag = None
+        for tag in tags:
+            tag_name = tag.get("name", "")
+            if re.search(r'AD[A-Z0-9\-_]+', tag_name, re.IGNORECASE):
+                anuncio_tag = tag_name
+                break
+        if not anuncio_tag and tags:
+            anuncio_tag = tags[0].get("name", "")  # pega primeira tag se não achou padrão AD
+
         telefone = ""
         contacts = lead.get("_embedded", {}).get("contacts", [])
         if contacts:
@@ -51,7 +63,7 @@ def get_lead_details(token: str, lead_id: str, subdomain: str = "") -> dict:
             rc = requests.get(f"{base}/contacts/{contact_id}", headers=headers)
             log.info(f"KOMMO CONTACT API status={rc.status_code} body={rc.text[:300]}")
             contact_data = rc.json()
-            nome = contact_data.get("name", "") or nome  # nome real do contato
+            nome = contact_data.get("name", "") or nome
             cf = contact_data.get("custom_fields_values", []) or []
             for field in cf:
                 if field.get("field_code") in ("PHONE", "phone") or field.get("field_type") == "multitext":
@@ -59,10 +71,11 @@ def get_lead_details(token: str, lead_id: str, subdomain: str = "") -> dict:
                     if vals:
                         telefone = vals[0].get("value", "")
                         break
-        return {"nome": nome, "telefone": telefone}
+        log.info(f"KOMMO TAGS lead={lead_id} tags={[t.get('name') for t in tags]} anuncio_tag={anuncio_tag}")
+        return {"nome": nome, "telefone": telefone, "anuncio_tag": anuncio_tag}
     except Exception as e:
         log.warning(f"Erro ao buscar lead {lead_id} no Kommo: {e}")
-        return {"nome": "", "telefone": ""}
+        return {"nome": "", "telefone": "", "anuncio_tag": None}
 
 
 def get_first_message(token: str, lead_id: str, subdomain: str = "") -> str:
@@ -302,22 +315,24 @@ async def kommo_webhook(request: Request):
         etapa = lead_data.get("status_name", "") or "Primeiro Atendimento"
         telefone = lead_data.get("phone", "") or ""
 
-        # Busca dados completos via API do Kommo (mensagem + etapa real + telefone)
+        # Busca dados completos via API do Kommo (tags, nome, telefone, etapa)
         msg_api = ""
         if cliente and kommo_lead_id:
             detalhes = get_lead_details(cliente["kommo_token"], kommo_lead_id, subdomain)
             nome = nome or detalhes["nome"]
             telefone = telefone or detalhes["telefone"]
+            anuncio_tag = detalhes.get("anuncio_tag") or anuncio_tag  # tag do campo de tags do Kommo
 
             # Busca etapa real pelo status_id do lead
             status_id = str(lead_data.get("status_id", ""))
             if status_id:
                 etapa = get_stage_name(subdomain, cliente["kommo_token"], status_id) or etapa
 
+            # Busca primeira mensagem como fallback
             msg_api = get_first_message(cliente["kommo_token"], kommo_lead_id, subdomain)
             if not anuncio_tag:
                 anuncio_tag = extrair_tag_anuncio(msg_api)
-            log.info(f"TAG VIA API: msg={msg_api[:100]} tag={anuncio_tag}")
+            log.info(f"TAG FINAL: tag={anuncio_tag}")
 
         log.info(f"NOVO LEAD id={kommo_lead_id} nome={nome} tag={anuncio_tag} etapa={etapa} tel={telefone}")
 
@@ -353,12 +368,14 @@ async def kommo_webhook(request: Request):
         lead_existente = r.json()[0] if r.json() else None
         etapa_anterior = lead_existente.get("etapa_atual") if lead_existente else None
 
-        # Busca dados completos do lead via API Kommo
-        if cliente and (not telefone or not nome):
+        # Busca dados completos do lead via API Kommo (sempre busca para pegar tag atualizada)
+        tag_atualizada = lead_existente.get("anuncio_tag") if lead_existente else None
+        if cliente:
             detalhes = get_lead_details(cliente["kommo_token"], kommo_lead_id, subdomain)
             nome = nome or detalhes["nome"]
             telefone = telefone or detalhes["telefone"]
-            log.info(f"KOMMO API lead={kommo_lead_id} nome={nome} tel={telefone}")
+            tag_atualizada = detalhes.get("anuncio_tag") or tag_atualizada
+            log.info(f"KOMMO API lead={kommo_lead_id} nome={nome} tel={telefone} tag={tag_atualizada}")
 
         if cliente and kommo_lead_id:
             lead_result = upsert_lead(
@@ -366,7 +383,7 @@ async def kommo_webhook(request: Request):
                 kommo_lead_id=kommo_lead_id,
                 nome=nome or (lead_existente.get("nome") if lead_existente else ""),
                 telefone=telefone,
-                anuncio_tag=lead_existente.get("anuncio_tag") if lead_existente else None,
+                anuncio_tag=tag_atualizada,
                 etapa=etapa_nova
             )
 
