@@ -232,13 +232,24 @@ def marcar_capi_enviado(lead_id: int):
 
 
 def extrair_tag_anuncio(primeira_msg: str) -> str:
-    """Extrai tag do anúncio da primeira mensagem. Ex: [ADF01]Olá... -> '[ADF01]'"""
+    """Extrai tag do anúncio da primeira mensagem.
+    - [ADF01]Olá... -> '[ADF01]'  (Meta Ads - anúncio específico)
+    - 'vim do Site...'     -> '[GOOGLE]'   (Google Ads)
+    - 'vim do Instagram...' -> '[INSTAGRAM-BIO]' (Bio do Instagram)
+    """
     import re
     if not primeira_msg:
         return None
+    # 1. Código de anúncio Meta: [ADF01], [ADQ02], etc.
     match = re.search(r'(\[[A-Z0-9\-_]+\])', primeira_msg, re.IGNORECASE)
     if match:
-        return match.group(1)  # retorna com colchetes: [ADF01]
+        return match.group(1)
+    # 2. Lead do Google (campanha com destino site)
+    if re.search(r'vim do site', primeira_msg, re.IGNORECASE):
+        return "[GOOGLE]"
+    # 3. Lead do Instagram (bio/link)
+    if re.search(r'vim do instagram', primeira_msg, re.IGNORECASE):
+        return "[INSTAGRAM-BIO]"
     return None
 
 
