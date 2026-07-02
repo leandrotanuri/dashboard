@@ -232,13 +232,13 @@ def marcar_capi_enviado(lead_id: int):
 
 
 def extrair_tag_anuncio(primeira_msg: str) -> str:
-    """Extrai tag do anúncio da primeira mensagem. Ex: [C1], #ADV-A, etc."""
+    """Extrai tag do anúncio da primeira mensagem. Ex: [ADF01]Olá... -> '[ADF01]'"""
     import re
     if not primeira_msg:
         return None
-    match = re.search(r'\[([A-Z0-9\-_]+)\]|#([A-Z0-9\-_]+)', primeira_msg, re.IGNORECASE)
+    match = re.search(r'(\[[A-Z0-9\-_]+\])', primeira_msg, re.IGNORECASE)
     if match:
-        return match.group(1) or match.group(2)
+        return match.group(1)  # retorna com colchetes: [ADF01]
     return None
 
 
@@ -320,18 +320,21 @@ async def kommo_webhook(request: Request):
             detalhes = get_lead_details(cliente["kommo_token"], kommo_lead_id, subdomain)
             nome = nome or detalhes["nome"]
             telefone = telefone or detalhes["telefone"]
-            anuncio_tag = detalhes.get("anuncio_tag") or anuncio_tag  # tag do campo de tags do Kommo
 
             # Busca etapa real pelo status_id do lead
             status_id = str(lead_data.get("status_id", ""))
             if status_id:
                 etapa = get_stage_name(subdomain, cliente["kommo_token"], status_id) or etapa
 
-            # Busca primeira mensagem como fallback
+            # 1. Prioridade: extrai tag da primeira mensagem (automático — vem do anúncio)
             msg_api = get_first_message(cliente["kommo_token"], kommo_lead_id, subdomain)
+            anuncio_tag = extrair_tag_anuncio(msg_api)
+
+            # 2. Fallback: tag manual adicionada no campo de tags do Kommo
             if not anuncio_tag:
-                anuncio_tag = extrair_tag_anuncio(msg_api)
-            log.info(f"TAG FINAL: tag={anuncio_tag}")
+                anuncio_tag = detalhes.get("anuncio_tag") or anuncio_tag
+
+            log.info(f"TAG FINAL: tag={anuncio_tag} (msg={msg_api[:60] if msg_api else ''})")
 
         log.info(f"NOVO LEAD id={kommo_lead_id} nome={nome} tag={anuncio_tag} etapa={etapa} tel={telefone}")
 
@@ -367,13 +370,22 @@ async def kommo_webhook(request: Request):
         lead_existente = r.json()[0] if r.json() else None
         etapa_anterior = lead_existente.get("etapa_atual") if lead_existente else None
 
-        # Busca dados completos do lead via API Kommo (sempre busca para pegar tag atualizada)
+        # Busca dados completos do lead via API Kommo
         tag_atualizada = lead_existente.get("anuncio_tag") if lead_existente else None
         if cliente:
             detalhes = get_lead_details(cliente["kommo_token"], kommo_lead_id, subdomain)
             nome = nome or detalhes["nome"]
             telefone = telefone or detalhes["telefone"]
-            tag_atualizada = detalhes.get("anuncio_tag") or tag_atualizada
+
+            # Só atualiza a tag se o lead ainda não tem uma (preserva tag já salva)
+            if not tag_atualizada:
+                # 1. Tenta extrair da primeira mensagem
+                msg_existente = get_first_message(cliente["kommo_token"], kommo_lead_id, subdomain)
+                tag_atualizada = extrair_tag_anuncio(msg_existente)
+                # 2. Fallback: tag manual do Kommo
+                if not tag_atualizada:
+                    tag_atualizada = detalhes.get("anuncio_tag")
+
             log.info(f"KOMMO API lead={kommo_lead_id} nome={nome} tel={telefone} tag={tag_atualizada}")
 
         if cliente and kommo_lead_id:
