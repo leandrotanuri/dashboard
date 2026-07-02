@@ -81,14 +81,15 @@ df["criado_em"] = pd.to_datetime(df["criado_em"], utc=True)
 # ── Filtros na sidebar ─────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### Período")
+    import datetime
     data_ini = st.date_input("De", value=df["criado_em"].min().date())
-    data_fim = st.date_input("Até", value=df["criado_em"].max().date())
+    data_fim = st.date_input("Até", value=datetime.date.today())
 
     st.markdown("### Buscar por nome")
     filtro_nome = st.text_input("Nome do lead", placeholder="Ex: Ana, João...")
 
-    st.markdown("### Filtrar por mensagem")
-    filtro_msg = st.text_input("Palavra-chave na mensagem", placeholder="Ex: ADF01, botox...")
+    st.markdown("### Buscar por anúncio / mensagem")
+    filtro_msg = st.text_input("Tag ou palavra-chave", placeholder="Ex: ADF01, [ADF01], botox...")
 
     st.markdown("### Filtrar por etapa")
     etapas_disponiveis = ["Todas"] + sorted(df["etapa_atual"].dropna().unique().tolist())
@@ -100,7 +101,10 @@ if filtro_nome:
     df = df[df["nome"].fillna("").str.contains(filtro_nome, case=False, na=False)]
 
 if filtro_msg:
-    df = df[df["primeira_mensagem"].fillna("").str.contains(filtro_msg, case=False, na=False)]
+    df = df[
+        df["primeira_mensagem"].fillna("").str.contains(filtro_msg, case=False, na=False) |
+        df["anuncio_tag"].fillna("").str.contains(filtro_msg, case=False, na=False)
+    ]
 
 if filtro_etapa != "Todas":
     df = df[df["etapa_atual"] == filtro_etapa]
