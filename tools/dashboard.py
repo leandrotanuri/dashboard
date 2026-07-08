@@ -132,7 +132,7 @@ CLIENTS = {
         "spreadsheet_id": None,   # preencher quando planilha for criada
         "agendamentos_id": None,
         "meta_pacientes": 5,
-        "tipo": "tricologia",
+        "tipo": "mensagens_lead",
     },
 }
 
