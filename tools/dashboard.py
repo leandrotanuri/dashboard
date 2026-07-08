@@ -127,6 +127,13 @@ CLIENTS = {
         "tipo": "tricologia",
         "show_ltv": False,
     },
+    "Dra Mariana Torres": {
+        "account_id": "act_888239859802098",
+        "spreadsheet_id": None,   # preencher quando planilha for criada
+        "agendamentos_id": None,
+        "meta_pacientes": 5,
+        "tipo": "tricologia",
+    },
 }
 
 DEFAULT_CLIENT = "Dr. Vinicius"

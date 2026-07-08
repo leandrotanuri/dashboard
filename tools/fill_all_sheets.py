@@ -84,6 +84,7 @@ CLIENTS = [
     {"name": "Arquitetando Paladar","account_id": "act_2315650968737562",   "spreadsheet_id": "17bXplk_19RHR-wdBLwxJJhCoaY74pjHzQZSGYNLOf9Q"},
     {"name": "Dr Vinicius",         "account_id": "act_10205578707965893",  "spreadsheet_id": "1hajaZpK-2cGY4TEpVGTfM7DljZk0M9fiLO6qylC29Gw"},
     {"name": "Elisa Lobo",          "account_id": "act_995746376256993",    "spreadsheet_id": "1S6FUTqK7kDG9ZOgmuakLdxRCSrMxRbegKIEdwCJjS68"},
+    {"name": "Dra Mariana Torres", "account_id": "act_888239859802098",    "spreadsheet_id": None},  # preencher quando planilha for criada
 ]
 
 ACCESS_TOKEN = None  # definido em main() após renovação automática

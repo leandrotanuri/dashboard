@@ -52,6 +52,12 @@ CLIENTS = [
         "account_id": "act_995746376256993",
         "cpl_targets": {"whatsapp": None, "seguidores": 3.0},
     },
+    {
+        "name": "Dra Mariana Torres",
+        "tab":  "Dra Mariana",
+        "account_id": "act_888239859802098",
+        "cpl_targets": {"whatsapp": None, "lead_ads": None},
+    },
 ]
 
 # ─── Config ───────────────────────────────────────────────────────────────────
