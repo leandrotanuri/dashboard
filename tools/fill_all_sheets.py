@@ -252,6 +252,10 @@ def main():
 
         by_date = aggregate_by_date(rows)
 
+        if not spreadsheet_id:
+            print("  Planilha: não configurada — pulando.")
+            continue
+
         ok = fill_sheet(spreadsheet_id, sheet_name, by_date)
         if ok:
             print(f"  Planilha: {len(by_date)} dias atualizados ✓")
