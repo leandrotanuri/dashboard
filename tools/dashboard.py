@@ -464,13 +464,13 @@ footer    { visibility: hidden; }
 
 /* ── Tabela customizada ── */
 .tbl-wrap { overflow-x:auto; margin-top:4px; }
-.tbl-wrap table { width:100%; border-collapse:collapse; font-size:12px; }
+.tbl-wrap table { width:100%; border-collapse:collapse; font-size:14px; }
 .tbl-wrap th {
-    color:#3d4466; font-weight:700; font-size:10px; text-transform:uppercase;
-    letter-spacing:.8px; padding:9px 12px; text-align:left;
+    color:#3d4466; font-weight:700; font-size:12px; text-transform:uppercase;
+    letter-spacing:.8px; padding:10px 14px; text-align:left;
     border-bottom:1px solid #1e2235; white-space:nowrap;
 }
-.tbl-wrap td { padding:10px 12px; border-bottom:1px solid #161829; color:#8892b0; white-space:nowrap; }
+.tbl-wrap td { padding:11px 14px; border-bottom:1px solid #161829; color:#8892b0; white-space:nowrap; }
 .tbl-wrap tr:hover td { background:#161829; }
 .tbl-wrap td.bold { color:#fff; font-weight:700; }
 .tbl-wrap td.green { color:#00e676; font-weight:700; }
@@ -489,25 +489,25 @@ footer    { visibility: hidden; }
     transition:.2s; overflow:hidden;
 }
 .kpi-card:hover { border-color:#2a2f50; transform:translateY(-1px); }
-.kpi-label { font-size:10px; font-weight:700; color:#3d4466; text-transform:uppercase; letter-spacing:1.2px; }
-.kpi-value { font-size:30px; font-weight:900; line-height:1; letter-spacing:-1px; }
-.kpi-sub { font-size:11px; color:#3d4466; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.kpi-label { font-size:12px; font-weight:700; color:#3d4466; text-transform:uppercase; letter-spacing:1.2px; }
+.kpi-value { font-size:34px; font-weight:900; line-height:1; letter-spacing:-1px; }
+.kpi-sub { font-size:13px; color:#3d4466; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .kpi-bar { height:2px; border-radius:2px; margin-top:2px; }
 
 /* ── KPI Cards variante pequena (métricas do funil) ── */
-.kpi-card.sm { padding:14px 14px; gap:0; border-radius:10px; height:115px; justify-content:space-between; }
-.kpi-card.sm .kpi-label { font-size:9px; letter-spacing:1px; }
-.kpi-card.sm .kpi-value { font-size:19px; letter-spacing:-.5px; }
-.kpi-card.sm .kpi-sub   { font-size:10px; }
+.kpi-card.sm { padding:14px 14px; gap:0; border-radius:10px; height:125px; justify-content:space-between; }
+.kpi-card.sm .kpi-label { font-size:11px; letter-spacing:1px; }
+.kpi-card.sm .kpi-value { font-size:22px; letter-spacing:-.5px; }
+.kpi-card.sm .kpi-sub   { font-size:12px; }
 .kpi-card.sm .kpi-bar   { margin-top:0; }
-.badge { padding:2px 8px; border-radius:99px; font-size:10px; font-weight:700; }
+.badge { padding:2px 8px; border-radius:99px; font-size:11px; font-weight:700; }
 .badge.ok   { background:#00d4ff22; color:#00d4ff; }
 .badge.up   { background:#00e67622; color:#00e676; }
 .badge.down { background:#ff444422; color:#ff4444; }
 .badge.warn { background:#ffd60022; color:#ffd600; }
 
 /* ── Pills (TX. Passagem) — destaque ── */
-.pill { display:inline-block; padding:4px 13px; border-radius:99px; font-size:12px; font-weight:700; letter-spacing:.4px; min-width:64px; text-align:center; }
+.pill { display:inline-block; padding:4px 13px; border-radius:99px; font-size:13px; font-weight:700; letter-spacing:.4px; min-width:64px; text-align:center; }
 .pill.ok   { background:rgba(0,230,118,.18); color:#00e676; border:1px solid rgba(0,230,118,.4); }
 .pill.warn { background:rgba(255,214,0,.18);  color:#ffd600; border:1px solid rgba(255,214,0,.4); }
 .pill.bad  { background:rgba(255,68,68,.18);  color:#ff4444; border:1px solid rgba(255,68,68,.4); }
@@ -519,8 +519,8 @@ footer    { visibility: hidden; }
     display:flex; justify-content:space-between; align-items:center;
     border:1px solid #1e2235;
 }
-.metric-row .ml { font-size:10px; color:#3d4466; font-weight:700; text-transform:uppercase; letter-spacing:.8px; }
-.metric-row .mv { font-size:16px; font-weight:800; }
+.metric-row .ml { font-size:12px; color:#3d4466; font-weight:700; text-transform:uppercase; letter-spacing:.8px; }
+.metric-row .mv { font-size:18px; font-weight:800; }
 
 /* ── Roas / visão geral cards ── */
 .vg-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:4px; }
@@ -528,8 +528,8 @@ footer    { visibility: hidden; }
     background:#0f1120; border:1px solid #1e2235; border-radius:10px;
     padding:14px 18px; display:flex; flex-direction:column; gap:4px;
 }
-.vg-label { font-size:10px; font-weight:700; color:#3d4466; text-transform:uppercase; letter-spacing:1px; }
-.vg-value { font-size:22px; font-weight:900; color:#e0e4f0; }
+.vg-label { font-size:12px; font-weight:700; color:#3d4466; text-transform:uppercase; letter-spacing:1px; }
+.vg-value { font-size:26px; font-weight:900; color:#e0e4f0; }
 </style>
 """, unsafe_allow_html=True)
 
