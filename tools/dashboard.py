@@ -300,11 +300,11 @@ _THEME_VARS = """
 }
 """
 
-st.markdown(f"""
+st.markdown(f"<style>{_THEME_VARS}</style>", unsafe_allow_html=True)
+
+st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-
-{_THEME_VARS}
 
 /* ── Base ── */
 html, body,
