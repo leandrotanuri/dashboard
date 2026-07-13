@@ -280,69 +280,91 @@ def fetch_hotmart_vendas(hotmart_id: str, date_start, date_end) -> pd.DataFrame:
 
 st.set_page_config(page_title="Dashboard de Campanhas", page_icon="📊", layout="wide")
 
-st.markdown("""
+if "theme" not in st.session_state:
+    st.session_state.theme = "dark"
+
+_is_light = st.session_state.theme == "light"
+
+_THEME_VARS = """
+:root {
+  --bg:        """ + ("#f5f7fa"  if _is_light else "#0b0d17") + """;
+  --bg2:       """ + ("#ffffff"  if _is_light else "#0f1120") + """;
+  --bg3:       """ + ("#e8ebf5"  if _is_light else "#161829") + """;
+  --border:    """ + ("#cdd2e8"  if _is_light else "#1e2235") + """;
+  --txt:       """ + ("#1a1d2e"  if _is_light else "#e0e4f0") + """;
+  --txt2:      """ + ("#4b5563"  if _is_light else "#c8cfe0") + """;
+  --muted:     """ + ("#9ca3af"  if _is_light else "#3d4466") + """;
+  --muted2:    """ + ("#6b7280"  if _is_light else "#8892b0") + """;
+  --sidebar:   """ + ("#eef0f8"  if _is_light else "#0f1120") + """;
+  --tab-inactive:""" + ("#6b7280" if _is_light else "#5a607a") + """;
+}
+"""
+
+st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+{_THEME_VARS}
 
 /* ── Base ── */
 html, body,
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"], .main,
 [data-testid="block-container"] {
-    background-color: #0b0d17 !important;
-    color: #e0e4f0 !important;
+    background-color: var(--bg) !important;
+    color: var(--txt) !important;
     font-family: 'Inter', sans-serif !important;
 }
 [data-testid="stHeader"] {
-    background: #0b0d17 !important;
-    border-bottom: 1px solid #1e2235 !important;
+    background: var(--bg) !important;
+    border-bottom: 1px solid var(--border) !important;
 }
-[data-testid="stToolbar"] { background: #0b0d17 !important; }
+[data-testid="stToolbar"] { background: var(--bg) !important; }
 
 /* ── Sidebar ── */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0f1120 0%, #0b0d17 100%) !important;
-    border-right: 1px solid #1e2235 !important;
+    background: var(--sidebar) !important;
+    border-right: 1px solid var(--border) !important;
 }
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] span {
-    color: #b0b8d0 !important;
+    color: var(--txt2) !important;
 }
 [data-testid="stSidebar"] h1,
 [data-testid="stSidebar"] h2,
 [data-testid="stSidebar"] h3 {
-    color: #e0e4f0 !important;
+    color: var(--txt) !important;
 }
 [data-testid="stSidebar"] .stButton > button {
-    background: #161829 !important;
-    color: #b0b8d0 !important;
-    border: 1px solid #1e2235 !important;
+    background: var(--bg3) !important;
+    color: var(--txt2) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 8px !important;
     transition: all .15s !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: #1e2235 !important;
+    background: var(--border) !important;
     border-color: #00d4ff !important;
     color: #00d4ff !important;
 }
 [data-testid="stSidebar"] div[data-baseweb="select"] > div {
-    background: #161829 !important;
-    color: #c8cce8 !important;
-    border: 1px solid #1e2235 !important;
+    background: var(--bg3) !important;
+    color: var(--txt) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 8px !important;
 }
 
 /* ── Metric cards ── */
 div[data-testid="metric-container"] {
-    background: #0f1120 !important;
-    border: 1px solid #1e2235 !important;
+    background: var(--bg2) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 10px !important;
     padding: 16px 20px !important;
 }
 div[data-testid="metric-container"] label,
 div[data-testid="metric-container"] [data-testid="stMetricLabel"] p {
-    color: #3d4466 !important;
+    color: var(--muted) !important;
     font-size: 0.72rem !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
@@ -363,11 +385,11 @@ div[data-testid="metric-container"] [data-testid="stMetricValue"] > div {
 [data-testid="stTabs"] [data-baseweb="tab-list"] {
     gap: 4px;
     background: transparent !important;
-    border-bottom: 1px solid #1e2235 !important;
+    border-bottom: 1px solid var(--border) !important;
 }
 [data-testid="stTabs"] button[data-baseweb="tab"] {
     background: transparent !important;
-    color: #5a607a !important;
+    color: var(--tab-inactive) !important;
     border: none !important;
     border-bottom: 2px solid transparent !important;
     padding: 8px 16px !important;
@@ -385,56 +407,56 @@ div[data-testid="metric-container"] [data-testid="stMetricValue"] > div {
 }
 
 /* ── Dividers ── */
-hr { border-color: #1e2235 !important; }
+hr { border-color: var(--border) !important; }
 
 /* ── Headings & text ── */
-h1, h2, h3, h4 { color: #e0e4f0 !important; font-family: 'Inter', sans-serif !important; }
-p { color: #c8cfe0 !important; }
+h1, h2, h3, h4 { color: var(--txt) !important; font-family: 'Inter', sans-serif !important; }
+p { color: var(--txt2) !important; }
 
 /* ── Date inputs ── */
 [data-testid="stDateInput"] input {
-    background: #0f1120 !important;
-    color: #e0e4f0 !important;
-    border: 1px solid #1e2235 !important;
+    background: var(--bg2) !important;
+    color: var(--txt) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 8px !important;
 }
-[data-testid="stDateInput"] label { color: #3d4466 !important; font-size: 0.72rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
+[data-testid="stDateInput"] label { color: var(--muted) !important; font-size: 0.72rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
 
 /* ── Selectbox ── */
 [data-testid="stSelectbox"] div[data-baseweb="select"] > div {
-    background: #0f1120 !important;
-    color: #e0e4f0 !important;
-    border: 1px solid #1e2235 !important;
+    background: var(--bg2) !important;
+    color: var(--txt) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 8px !important;
 }
-[data-testid="stSelectbox"] label { color: #3d4466 !important; font-size: 0.72rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
+[data-testid="stSelectbox"] label { color: var(--muted) !important; font-size: 0.72rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
 
 /* ── Dataframes ── */
 [data-testid="stDataFrame"] {
-    background: #0f1120 !important;
-    border: 1px solid #1e2235 !important;
+    background: var(--bg2) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 10px !important;
 }
-[data-testid="stDataFrame"] * { color: #c8cfe0 !important; }
+[data-testid="stDataFrame"] * { color: var(--txt2) !important; }
 
 /* ── Buttons ── */
 .stButton > button {
-    background: #161829 !important;
-    color: #b0b8d0 !important;
-    border: 1px solid #1e2235 !important;
+    background: var(--bg3) !important;
+    color: var(--txt2) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 8px !important;
     font-weight: 600 !important;
     transition: all .15s !important;
 }
 .stButton > button:hover {
-    background: #1e2235 !important;
+    background: var(--border) !important;
     border-color: #00d4ff !important;
     color: #00d4ff !important;
 }
 
 /* ── Progress bar ── */
 [data-testid="stProgress"] > div {
-    background: #161829 !important;
+    background: var(--bg3) !important;
     border-radius: 4px !important;
 }
 [data-testid="stProgress"] > div > div {
@@ -444,13 +466,13 @@ p { color: #c8cfe0 !important; }
 
 /* ── Alerts ── */
 [data-testid="stAlert"] {
-    background: #0f1120 !important;
-    border: 1px solid #1e2235 !important;
+    background: var(--bg2) !important;
+    border: 1px solid var(--border) !important;
 }
-[data-testid="stAlert"] p { color: #c8cfe0 !important; }
+[data-testid="stAlert"] p { color: var(--txt2) !important; }
 
 /* ── Caption ── */
-[data-testid="stCaptionContainer"] p { color: #3d4466 !important; font-size: 0.75rem !important; }
+[data-testid="stCaptionContainer"] p { color: var(--muted) !important; font-size: 0.75rem !important; }
 
 /* ── Spinner ── */
 [data-testid="stSpinner"] * { color: #00d4ff !important; }
@@ -466,32 +488,32 @@ footer    { visibility: hidden; }
 .tbl-wrap { overflow-x:auto; margin-top:4px; }
 .tbl-wrap table { width:100%; border-collapse:collapse; font-size:14px; }
 .tbl-wrap th {
-    color:#3d4466; font-weight:700; font-size:12px; text-transform:uppercase;
+    color:var(--muted); font-weight:700; font-size:12px; text-transform:uppercase;
     letter-spacing:.8px; padding:10px 14px; text-align:left;
-    border-bottom:1px solid #1e2235; white-space:nowrap;
+    border-bottom:1px solid var(--border); white-space:nowrap;
 }
-.tbl-wrap td { padding:11px 14px; border-bottom:1px solid #161829; color:#8892b0; white-space:nowrap; }
-.tbl-wrap tr:hover td { background:#161829; }
-.tbl-wrap td.bold { color:#fff; font-weight:700; }
+.tbl-wrap td { padding:11px 14px; border-bottom:1px solid var(--border); color:var(--muted2); white-space:nowrap; }
+.tbl-wrap tr:hover td { background:var(--bg3); }
+.tbl-wrap td.bold { color:var(--txt) !important; font-weight:700; }
 .tbl-wrap td.green { color:#00e676; font-weight:700; }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #0b0d17; }
-::-webkit-scrollbar-thumb { background: #1e2235; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #2a2f4a; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bg3); }
 
 /* ── KPI Cards customizados ── */
 .kpi-grid { display:grid; gap:12px; margin-bottom:8px; }
 .kpi-card {
-    background:#0f1120; border:1px solid #1e2235; border-radius:12px;
+    background:var(--bg2); border:1px solid var(--border); border-radius:12px;
     padding:18px 20px; display:flex; flex-direction:column; gap:8px;
     transition:.2s; overflow:hidden;
 }
 .kpi-card:hover { border-color:#2a2f50; transform:translateY(-1px); }
-.kpi-label { font-size:12px; font-weight:700; color:#3d4466; text-transform:uppercase; letter-spacing:1.2px; }
+.kpi-label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1.2px; }
 .kpi-value { font-size:34px; font-weight:900; line-height:1; letter-spacing:-1px; }
-.kpi-sub { font-size:13px; color:#3d4466; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.kpi-sub { font-size:13px; color:var(--muted); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .kpi-bar { height:2px; border-radius:2px; margin-top:2px; }
 
 /* ── KPI Cards variante pequena (métricas do funil) ── */
@@ -515,31 +537,36 @@ footer    { visibility: hidden; }
 /* ── Metric rows customizados ── */
 .metrics-col { display:flex; flex-direction:column; gap:7px; }
 .metric-row {
-    background:#161829; border-radius:8px; padding:12px 14px;
+    background:var(--bg3); border-radius:8px; padding:12px 14px;
     display:flex; justify-content:space-between; align-items:center;
-    border:1px solid #1e2235;
+    border:1px solid var(--border);
 }
-.metric-row .ml { font-size:12px; color:#3d4466; font-weight:700; text-transform:uppercase; letter-spacing:.8px; }
+.metric-row .ml { font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.8px; }
 .metric-row .mv { font-size:18px; font-weight:800; }
 
 /* ── Roas / visão geral cards ── */
 .vg-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:4px; }
 .vg-card {
-    background:#0f1120; border:1px solid #1e2235; border-radius:10px;
+    background:var(--bg2); border:1px solid var(--border); border-radius:10px;
     padding:14px 18px; display:flex; flex-direction:column; gap:4px;
 }
-.vg-label { font-size:12px; font-weight:700; color:#3d4466; text-transform:uppercase; letter-spacing:1px; }
-.vg-value { font-size:26px; font-weight:900; color:#e0e4f0; }
+.vg-label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+.vg-value { font-size:26px; font-weight:900; color:var(--txt); }
 </style>
 """, unsafe_allow_html=True)
 
 # template base para todos os gráficos Plotly
+_bg_plot  = "#f5f7fa" if _is_light else "#0b0d17"
+_bg_card  = "#ffffff"  if _is_light else "#0f1120"
+_grid_col = "#cdd2e8"  if _is_light else "#1e2235"
+_txt_col  = "#1a1d2e"  if _is_light else "#c8cfe0"
+_muted_col= "#9ca3af"  if _is_light else "#5a607a"
 _PD = dict(
-    paper_bgcolor="#0b0d17",
-    plot_bgcolor="#0f1120",
-    font=dict(color="#c8cfe0", family="Inter, sans-serif"),
-    xaxis=dict(gridcolor="#1e2235", linecolor="#1e2235", tickfont=dict(color="#5a607a")),
-    yaxis=dict(gridcolor="#1e2235", linecolor="#1e2235", tickfont=dict(color="#5a607a")),
+    paper_bgcolor=_bg_plot,
+    plot_bgcolor=_bg_card,
+    font=dict(color=_txt_col, family="Inter, sans-serif"),
+    xaxis=dict(gridcolor=_grid_col, linecolor=_grid_col, tickfont=dict(color=_muted_col)),
+    yaxis=dict(gridcolor=_grid_col, linecolor=_grid_col, tickfont=dict(color=_muted_col)),
     margin=dict(t=10, l=8, r=8, b=8),
 )
 
@@ -710,6 +737,10 @@ with st.sidebar:
         st.rerun()
     if st.button("🔄 Atualizar Dados", use_container_width=True, help="Limpa o cache e rebusca todos os dados"):
         st.cache_data.clear()
+        st.rerun()
+    _theme_label = "☀️ Modo Claro" if st.session_state.theme == "dark" else "🌙 Modo Escuro"
+    if st.button(_theme_label, use_container_width=True):
+        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
         st.rerun()
 
 client_cfg = CLIENTS[client_name]
