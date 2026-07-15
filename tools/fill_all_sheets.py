@@ -220,13 +220,20 @@ def fill_sheet(spreadsheet_id, sheet_name, by_date):
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--date_start", default=None)
+    parser.add_argument("--date_end",   default=None)
+    args = parser.parse_args()
+
     global ACCESS_TOKEN
     ACCESS_TOKEN = _refresh_meta_token()
 
     today      = date.today()
-    date_start = today.replace(day=1).strftime("%Y-%m-%d")
-    date_end   = (today - __import__("datetime").timedelta(days=1)).strftime("%Y-%m-%d")
-    sheet_name = MONTH_TAB[today.month]
+    date_start = args.date_start or today.replace(day=1).strftime("%Y-%m-%d")
+    date_end   = args.date_end   or (today - __import__("datetime").timedelta(days=1)).strftime("%Y-%m-%d")
+    ref_date   = datetime.strptime(date_start, "%Y-%m-%d").date()
+    sheet_name = MONTH_TAB[ref_date.month]
 
     print(f"=== Preenchendo planilhas — Todos os clientes ===")
     print(f"Período: {date_start} → {date_end}  |  Aba: {sheet_name}\n")
