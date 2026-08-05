@@ -112,12 +112,8 @@ CLIENTS = {
         "meta_pacientes": 20,
         "tipo": "tricologia",
     },
-    "Conta Casinha - Oficial": {
-        "account_id": "act_2315650968737562",
-        "spreadsheet_id": None,
-        "agendamentos_id": None,
-        "tipo": "mensagens",
-    },
+    # "Conta Casinha - Oficial" migrada pro padrão GitHub Pages (agenciascale/dash-casinha)
+    # em 05/08/2026 — aposentada do Streamlit. Ver project_dash_conta_casinha.
     "Elisa Lobo": {
         "account_id": "act_995746376256993",
         "spreadsheet_id": "1S6FUTqK7kDG9ZOgmuakLdxRCSrMxRbegKIEdwCJjS68",
