@@ -1,0 +1,36 @@
+{
+  "campaign": {
+    "name": "Campanha Exemplo - NÃO USAR SEM EDITAR",
+    "objective": "OUTCOME_LEADS",
+    "special_ad_categories": []
+  },
+  "adset": {
+    "name": "Conjunto Exemplo",
+    "daily_budget": 5000,
+    "billing_event": "IMPRESSIONS",
+    "optimization_goal": "LEAD_GENERATION",
+    "start_time": "2026-08-01T00:00:00-0300",
+    "targeting": {
+      "geo_locations": {
+        "cities": [
+          { "key": "2490299", "radius": 20, "distance_unit": "kilometer" }
+        ]
+      },
+      "age_min": 25,
+      "age_max": 65,
+      "genders": [0]
+    }
+  },
+  "creative": {
+    "name": "Criativo Exemplo",
+    "page_id": "SUBSTITUA_PELO_PAGE_ID",
+    "message": "Texto principal do anúncio.",
+    "description": "Texto secundário (opcional).",
+    "link": "https://exemplo.com/landing-page",
+    "call_to_action_type": "LEARN_MORE",
+    "picture": "https://exemplo.com/imagem.jpg"
+  },
+  "ad": {
+    "name": "Anúncio Exemplo"
+  }
+}

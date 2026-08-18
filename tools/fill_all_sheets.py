@@ -82,8 +82,9 @@ CLIENTS = [
     {"name": "Clínica PRC",         "account_id": "act_546529263459917",   "spreadsheet_id": "1BZBBwaAN1wBy6bzDxeEN51CkMJ82He-ckhhOzYifrpY"},
     {"name": "Qpharma",             "account_id": "act_2255286214998670",   "spreadsheet_id": "1smTMj2S-GUxYA_CG4Rr3sKaUERSu96_ClFtNhEI_Ao4"},
     {"name": "Arquitetando Paladar","account_id": "act_2315650968737562",   "spreadsheet_id": "17bXplk_19RHR-wdBLwxJJhCoaY74pjHzQZSGYNLOf9Q"},
-    {"name": "Dr Vinicius",         "account_id": "act_10205578707965893",  "spreadsheet_id": "1hajaZpK-2cGY4TEpVGTfM7DljZk0M9fiLO6qylC29Gw"},
+    {"name": "Dr Vinicius",         "account_id": "act_1189400572310429",   "spreadsheet_id": "1hajaZpK-2cGY4TEpVGTfM7DljZk0M9fiLO6qylC29Gw"},
     {"name": "Elisa Lobo",          "account_id": "act_995746376256993",    "spreadsheet_id": "1S6FUTqK7kDG9ZOgmuakLdxRCSrMxRbegKIEdwCJjS68"},
+    {"name": "Rubra (Lilian)",      "account_id": "act_1490434912872704",   "spreadsheet_id": "1ESPchuMZHmXrDIyl5N8Kzy9i20Et0-9EkDVXe_DhSNs"},
     {"name": "Dra Mariana Torres", "account_id": "act_888239859802098",    "spreadsheet_id": None},  # preencher quando planilha for criada
 ]
 

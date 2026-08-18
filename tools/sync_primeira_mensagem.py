@@ -94,12 +94,13 @@ for i, lead in enumerate(leads):
         requests.patch(f"{SUPABASE_URL}/rest/v1/leads", headers={**SB, "Prefer": "return=minimal"},
                        params={"id": f"eq.{sb_id}"}, json=patch)
 
-        tag_info = f" | tag extraida={tag_na_msg}" if tag_na_msg else ""
-        msg_preview = msg[:60].encode("ascii", errors="replace").decode()
-        print(f"[OK] {i+1}/{len(leads)} lead={lead_id} | {msg_preview}{tag_info}")
+        tag_info = f" | tag={tag_na_msg}" if tag_na_msg else ""
+        msg_preview = msg[:60].encode("cp1252", errors="replace").decode("cp1252")
+        print(f"[OK] {i+1}/{len(leads)} lead={lead_id}{tag_info} | {msg_preview}")
         atualizados += 1
     else:
-        print(f"[SEM MSG] {i+1}/{len(leads)} lead={lead_id} | {nome}")
+        nome_safe = (nome or "").encode("cp1252", errors="replace").decode("cp1252")
+        print(f"[SEM MSG] {i+1}/{len(leads)} lead={lead_id} | {nome_safe}")
 
     # Pausa para não sobrecarregar a API
     time.sleep(0.3)

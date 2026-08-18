@@ -1,5 +1,21 @@
 .env
 token.json
+token_google_ads.json
+credentials.json
+credentials.json.json
+google-ads.yaml
 __pycache__/
 *.pyc
 .streamlit/secrets.toml
+
+# Segredo hardcoded - viaja via HD, nao vai pro git
+tools/get_token.py
+# Entregaveis grandes (PDF/PPTX) - vao via HD/nuvem
+output/
+# Config local do Claude Code / dev container
+.claude/
+tools/clean_seguidores_tab.py
+tools/create_follower_tab.py
+tools/create_seguidores_tab.py
+tools/setup_importrange.py
+tools/update_planilha_dash.py
