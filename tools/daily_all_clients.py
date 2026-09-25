@@ -25,6 +25,7 @@ CLIENTS = [
     {"name": "Arquitetando Paladar","account_id": "act_2315650968737562"},
     {"name": "Dr Vinicius",         "account_id": "act_10205578707965893"},
     {"name": "Elisa Lobo",          "account_id": "act_995746376256993"},
+    {"name": "Dra Bacarin",         "account_id": "act_876078115252891"},
 ]
 
 # ─── Config ───────────────────────────────────────────────────────────────────
