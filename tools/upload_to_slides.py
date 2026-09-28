@@ -1,10 +1,12 @@
 import sys, json, time, requests
+from pathlib import Path
 sys.stdout.reconfigure(encoding='utf-8')
 
-PPTX_PATH = r"C:\Users\leand\Downloads\MetaAds Relatórios\output\Dr_Vinicius_Reuniao_Jun2026.pptx"
+ROOT = Path(__file__).resolve().parent.parent
+PPTX_PATH = ROOT / "output" / "Dr_Vinicius_Reuniao_Jun2026.pptx"
 
 # Token
-with open(r"C:\Users\leand\Downloads\MetaAds Relatórios\token.json") as f:
+with open(ROOT / "token.json") as f:
     t = json.load(f)
 
 r = requests.post(t['token_uri'], data={

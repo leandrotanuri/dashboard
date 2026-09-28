@@ -12,8 +12,9 @@ from reportlab.platypus import (
     HRFlowable, KeepTogether
 )
 from reportlab.lib.enums import TA_LEFT
+from pathlib import Path
 
-OUT_PATH = r"C:\Users\leand\Downloads\MetaAds Relatórios\output\dr_vinicius\Diagnostico_Dr_Vinicius_Maio_Julho_2026.pdf"
+OUT_PATH = str(Path(__file__).resolve().parent.parent / "output" / "dr_vinicius" / "Diagnostico_Dr_Vinicius_Maio_Julho_2026.pdf")
 
 NAVY = colors.HexColor("#152238")
 BLUE = colors.HexColor("#2E5AAC")
