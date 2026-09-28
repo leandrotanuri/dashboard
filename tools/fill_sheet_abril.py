@@ -31,7 +31,7 @@ load_dotenv()
 
 SPREADSHEET_ID = os.getenv("GOOGLE_SPREADSHEET_ID")
 SHEET_NAME = "📈 Abr"
-GWS_CMD = r"C:\Users\leand\AppData\Roaming\npm\gws.cmd"
+GWS_CMD = os.path.join(os.environ.get("APPDATA", ""), "npm", "gws.cmd")
 NODE_PATH = r"C:\Program Files\nodejs"
 
 # Mapeamento de campanhas conhecidas -> canal

@@ -195,7 +195,7 @@ def fetch_campaign_insights(date_start: str, date_end: str, account_id: str) -> 
     return df
 
 
-GWS_CMD   = r"C:\Users\leand\AppData\Roaming\npm\gws.cmd"
+GWS_CMD   = os.path.join(os.environ.get("APPDATA", ""), "npm", "gws.cmd")
 NODE_PATH = r"C:\Program Files\nodejs"
 
 def _read_sheets_range(spreadsheet_id: str, range_: str) -> list:

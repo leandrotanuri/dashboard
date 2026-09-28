@@ -1,7 +1,7 @@
 # Workflow: Baixar Vídeo (yt-dlp)
 
 Baixa vídeos do Instagram / YouTube via o script **`Baixar Video.bat`**
-(fica em `C:\Users\leand\OneDrive\Desktop\Baixar Video.bat`).
+(fica em `%USERPROFILE%\OneDrive\Desktop\Baixar Video.bat`).
 
 ## Objetivo
 Baixar 1 ou mais vídeos colando os links (separados por espaço) e salvar em
@@ -10,7 +10,7 @@ Baixar 1 ou mais vídeos colando os links (separados por espaço) e salvar em
 ## Como usar (dia a dia)
 1. Duplo clique em **Baixar Video.bat** na área de trabalho.
 2. Colar os links separados por espaço.
-3. Enter. Os arquivos caem em `C:\Users\leand\Videos`.
+3. Enter. Os arquivos caem em `%USERPROFILE%\Videos`.
 
 ## Ferramenta
 - Motor: **yt-dlp** rodando como módulo Python → `python -m yt_dlp`
