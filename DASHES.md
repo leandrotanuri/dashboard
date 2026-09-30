@@ -9,7 +9,7 @@ Todas leem a Meta Graph API com o secret `META_ACCESS_TOKEN` e rodam o build pel
 |---|---|---|---|---|---|
 | Clínica Master Beauty | `masterbeautyclinica` | `act_1007230201772374` | mensagem + lead + agendamentos | `CMB \|` | **Modelo padrão** do `tools/nova_dash.ps1` |
 | Instituto Master Beauty | `institutomasterbeauty` | `act_400205609739120` | mensagem + lead (formulários, lista de leads) | padrão `IMB` | |
-| Dra Roberta Esteves | `drarobertaesteves` | `act_1388498128427677` | quiz (lead do pixel) + Google Ads | campanhas com `quiz` | |
+| Dra Roberta Esteves | `drarobertaesteves` | `act_1388498128427677` | quiz (lead do pixel) + Google Ads | campanhas com `quiz` | Google Ads: `821-841-2725` (dentro da MCC, sem `--direct`) |
 | Conta Casinha | `casinha` | `act_2315650968737562` | lead + mensagem | — | |
 | Dra Bacarin | `draisabellabacarin` | `act_876078115252891` | mensagem (click to WhatsApp) | `IB \|` | Criada 28/09/2026. Agendamentos: falta planilha |
 | — | `clinicamasterbeauty` | — | — | — | Repo vazio, não usado |
