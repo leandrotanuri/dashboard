@@ -4,15 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Divine Motel | Cedral - SP</title>
-<meta name="description" content="Divine Motel em Cedral/SP, km 428 da Rod. Washington Luiz. Suítes com hidromassagem, sauna e pista de dança. Reserve pelo WhatsApp.">
+<meta name="description" content="Divine Motel em Cedral/SP, km 428 da Rod. Washington Luiz. 7 suítes com hidromassagem, sauna, pista de dança e piscina aquecida. Reserve pelo WhatsApp.">
+<link rel="icon" href="img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0d0a0c; --bg2:#161114; --card:#1d171a; --line:#2e2529;
-    --text:#f5eee9; --muted:#b9aca5;
-    --gold:#d6a85c; --gold2:#f1cf8e; --wine:#7a1730; --wine2:#a3213f;
+    --bg:#0c0a0b; --bg2:#151113; --card:#1c1719; --line:#2e2528;
+    --text:#f6f0ec; --muted:#bcaea8;
+    --red:#c8303c; --red2:#e04452; --wine:#5c1220; --gold:#e2b874;
     --green:#25d366;
     --radius:18px;
   }
@@ -21,86 +22,103 @@
   body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
   img{max-width:100%;display:block}
-  .wrap{width:min(1120px,100% - 32px);margin-inline:auto}
+  .wrap{width:min(1160px,100% - 32px);margin-inline:auto}
   h1,h2,h3{font-family:"Playfair Display",Georgia,serif;line-height:1.15}
-  .eyebrow{color:var(--gold);letter-spacing:.2em;text-transform:uppercase;font-size:.75rem;font-weight:600}
-  .gold{background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .eyebrow{color:var(--red2);letter-spacing:.2em;text-transform:uppercase;font-size:.75rem;font-weight:700}
+  .hl{color:var(--red2);font-style:italic}
 
   /* Botões */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:1rem 1.6rem;border-radius:999px;font-weight:700;font-size:1rem;transition:transform .15s,box-shadow .15s;cursor:pointer;border:0}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:1rem 1.6rem;border-radius:999px;font-weight:700;font-size:1rem;transition:transform .15s,box-shadow .15s;cursor:pointer;border:0;text-align:center}
   .btn:hover{transform:translateY(-2px)}
   .btn-wpp{background:var(--green);color:#06210f;box-shadow:0 10px 30px -10px rgba(37,211,102,.6)}
-  .btn-ghost{border:1px solid var(--gold);color:var(--gold2)}
+  .btn-red{background:var(--red);color:#fff}
+  .btn-ghost{border:1px solid rgba(255,255,255,.35);color:#fff}
   .btn svg{width:22px;height:22px;flex:none}
 
   /* Topbar */
-  header{position:sticky;top:0;z-index:50;background:rgba(13,10,12,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .logo{font-family:"Playfair Display",serif;font-size:1.5rem;font-weight:700;letter-spacing:.04em}
-  .logo span{color:var(--gold)}
-  .nav-links{display:flex;gap:1.6rem;font-size:.9rem;color:var(--muted)}
-  .nav-links a:hover{color:var(--gold2)}
-  .nav .btn{padding:.6rem 1.1rem;font-size:.9rem}
-  @media(max-width:760px){.nav-links{display:none}}
+  header{position:sticky;top:0;z-index:50;background:rgba(12,10,11,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .logo img{height:48px;width:auto}
+  .nav-links{display:flex;gap:1.6rem;font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .nav-links a:hover{color:var(--red2)}
+  .nav .btn{padding:.65rem 1.1rem;font-size:.85rem}
+  @media(max-width:860px){.nav-links{display:none}}
 
   /* Hero */
-  .hero{position:relative;min-height:calc(100svh - 64px);display:grid;place-items:center;text-align:center;overflow:hidden;
-    background:
-      radial-gradient(ellipse at 20% 10%,rgba(163,33,63,.45),transparent 55%),
-      radial-gradient(ellipse at 85% 90%,rgba(214,168,92,.22),transparent 55%),
-      var(--bg);}
-  /* Troque por foto real: background: linear-gradient(rgba(13,10,12,.65),rgba(13,10,12,.9)), url(img/hero.jpg) center/cover; */
-  .hero-inner{padding:72px 0 96px;max-width:760px}
-  .hero h1{font-size:clamp(2.4rem,6vw,4.2rem);margin:1rem 0 1.2rem}
-  .hero p{color:var(--muted);font-size:clamp(1rem,2.2vw,1.2rem);max-width:580px;margin:0 auto 2rem}
+  .hero{position:relative;min-height:calc(100svh - 68px);display:grid;place-items:center;text-align:center;
+    background:linear-gradient(180deg,rgba(12,10,11,.55) 0%,rgba(12,10,11,.75) 60%,var(--bg) 100%),url(img/apm6.jpg) center/cover;}
+  .hero-inner{padding:72px 0 96px;max-width:780px}
+  .hero h1{font-size:clamp(2.5rem,6.5vw,4.6rem);margin:1rem 0 1.2rem;text-shadow:0 4px 30px rgba(0,0,0,.6)}
+  .hero p{color:#e9dfda;font-size:clamp(1rem,2.2vw,1.2rem);max-width:600px;margin:0 auto 2rem}
   .hero-ctas{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
-  .trust{display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;margin-top:2.4rem;color:var(--muted);font-size:.9rem}
-  .trust b{color:var(--gold2)}
+  .trust{display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;margin-top:2.4rem;color:#e0d4ce;font-size:.9rem}
+  .trust b{color:#fff}
+
+  /* Faixa promo */
+  .promo{background:linear-gradient(90deg,var(--wine),var(--red));text-align:center;padding:16px 0;font-weight:600}
+  .promo a{text-decoration:underline}
 
   /* Seções */
   section{padding:88px 0}
-  .head{text-align:center;max-width:640px;margin:0 auto 48px}
+  .alt{background:var(--bg2);border-block:1px solid var(--line)}
+  .head{text-align:center;max-width:660px;margin:0 auto 48px}
   .head h2{font-size:clamp(1.9rem,4vw,2.8rem);margin:.6rem 0 .8rem}
   .head p{color:var(--muted)}
 
   /* Benefícios */
-  .benefits{background:var(--bg2);border-block:1px solid var(--line)}
-  .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+  .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
   .benefit{padding:28px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
   .benefit .ic{font-size:1.8rem;margin-bottom:.8rem}
   .benefit h3{font-size:1.2rem;margin-bottom:.4rem}
   .benefit p{color:var(--muted);font-size:.95rem}
 
   /* Suítes */
-  .suites{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+  .suites{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
   .suite{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card);display:flex;flex-direction:column}
-  .suite.featured{border-color:var(--gold);box-shadow:0 20px 50px -25px rgba(214,168,92,.5)}
-  .suite-img{aspect-ratio:4/3;position:relative;background:linear-gradient(135deg,var(--wine) 0%,#2a0d16 60%,#120a0d 100%)}
-  .suite-img img{width:100%;height:100%;object-fit:cover}
-  .suite-img .ph{position:absolute;inset:0;display:grid;place-items:center;font-family:"Playfair Display",serif;font-size:1.4rem;color:rgba(241,207,142,.5)}
-  .tag{position:absolute;top:14px;left:14px;background:var(--gold);color:#1a1206;font-size:.72rem;font-weight:700;padding:.35rem .8rem;border-radius:999px;text-transform:uppercase;letter-spacing:.06em}
-  .suite-body{padding:24px;display:flex;flex-direction:column;gap:14px;flex:1}
-  .suite-body h3{font-size:1.5rem}
+  .suite.featured{border-color:var(--red);box-shadow:0 20px 50px -25px rgba(200,48,60,.7)}
+  .gal{position:relative;aspect-ratio:4/3;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .gal::-webkit-scrollbar{display:none}
+  .gal img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start}
+  .gal-wrap{position:relative}
+  .gal-hint{position:absolute;right:12px;bottom:12px;background:rgba(0,0,0,.6);font-size:.72rem;padding:.25rem .65rem;border-radius:999px;pointer-events:none}
+  .tag{position:absolute;top:14px;left:14px;z-index:2;background:var(--red);color:#fff;font-size:.72rem;font-weight:700;padding:.35rem .8rem;border-radius:999px;text-transform:uppercase;letter-spacing:.06em}
+  .suite-body{padding:24px;display:flex;flex-direction:column;gap:12px;flex:1}
+  .suite-body h3{font-size:1.45rem}
+  .suite-body p{color:var(--muted);font-size:.95rem}
   .suite-body ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
-  .suite-body li{font-size:.82rem;color:var(--muted);border:1px solid var(--line);padding:.3rem .7rem;border-radius:999px}
+  .suite-body li{font-size:.8rem;color:#e6dad4;border:1px solid var(--line);padding:.3rem .7rem;border-radius:999px}
   .suite-body .btn{margin-top:auto;width:100%}
+
+  /* Horários */
+  .hours{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .hour{padding:32px;border-radius:var(--radius);border:1px solid var(--line);background:var(--card)}
+  .hour.best{border-color:var(--red);background:linear-gradient(160deg,rgba(200,48,60,.18),var(--card) 60%)}
+  .hour h3{font-size:1.5rem;margin:.4rem 0 .2rem}
+  .hour .when{color:var(--muted);margin-bottom:1.2rem}
+  .hour ul{list-style:none;display:grid;gap:.6rem}
+  .hour li::before{content:"✓ ";color:var(--red2);font-weight:700}
+  .hour small{display:block;color:var(--muted);margin-top:1rem}
+  .badge{display:inline-block;background:var(--red);color:#fff;font-size:.72rem;font-weight:700;padding:.3rem .7rem;border-radius:999px;text-transform:uppercase;letter-spacing:.06em}
+  @media(max-width:760px){.hours{grid-template-columns:1fr}}
+
+  /* Núpcias */
+  .pkgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+  .pkg{border-radius:var(--radius);overflow:hidden;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column}
+  .pkg img{aspect-ratio:3/2;object-fit:cover;width:100%}
+  .pkg div{padding:24px;display:flex;flex-direction:column;gap:12px;flex:1}
+  .pkg h3{font-size:1.4rem;letter-spacing:.06em}
+  .pkg p{color:var(--muted);font-size:.95rem}
+  .pkg .btn{margin-top:auto}
 
   /* Como funciona */
   .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;counter-reset:s}
-  .step{padding:28px;border-radius:var(--radius);border:1px dashed var(--line);position:relative}
-  .step::before{counter-increment:s;content:counter(s);font-family:"Playfair Display",serif;font-size:2.6rem;color:var(--gold);display:block;line-height:1;margin-bottom:.6rem}
+  .step{padding:28px;border-radius:var(--radius);border:1px dashed var(--line)}
+  .step::before{counter-increment:s;content:counter(s);font-family:"Playfair Display",serif;font-size:2.6rem;color:var(--red2);display:block;line-height:1;margin-bottom:.6rem}
   .step p{color:var(--muted);font-size:.95rem}
-
-  /* Depoimentos */
-  .reviews{background:var(--bg2);border-block:1px solid var(--line)}
-  .review{padding:28px;border-radius:var(--radius);background:var(--card);border:1px solid var(--line)}
-  .stars{color:var(--gold);letter-spacing:.15em;margin-bottom:.6rem}
-  .review p{font-style:italic;margin-bottom:.8rem}
-  .review small{color:var(--muted)}
 
   /* Localização */
   .loc{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
-  .loc iframe{width:100%;aspect-ratio:4/3;border:0;border-radius:var(--radius);filter:grayscale(.3) contrast(1.05)}
+  .loc iframe{width:100%;aspect-ratio:4/3;border:0;border-radius:var(--radius)}
   .loc ul{list-style:none;display:grid;gap:14px;margin:1.4rem 0 2rem;color:var(--muted)}
   .loc li b{color:var(--text);display:block}
   @media(max-width:860px){.loc{grid-template-columns:1fr}}
@@ -109,17 +127,18 @@
   .faq{max-width:760px;margin:0 auto;display:grid;gap:12px}
   details{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:18px 22px}
   summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:1rem}
-  summary::after{content:"+";color:var(--gold);font-size:1.3rem;line-height:1}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--red2);font-size:1.3rem;line-height:1}
   details[open] summary::after{content:"–"}
   details p{color:var(--muted);margin-top:.8rem}
 
   /* CTA final */
-  .final{text-align:center;background:radial-gradient(ellipse at center,rgba(163,33,63,.4),transparent 70%)}
+  .final{text-align:center;background:linear-gradient(rgba(12,10,11,.8),rgba(12,10,11,.85)),url(img/apm3.jpg) center/cover}
   .final h2{font-size:clamp(2rem,5vw,3.2rem);margin-bottom:1rem}
-  .final p{color:var(--muted);margin-bottom:2rem}
+  .final p{color:#e0d4ce;margin-bottom:2rem}
 
   footer{border-top:1px solid var(--line);padding:32px 0 110px;color:var(--muted);font-size:.85rem;text-align:center}
-  footer a{color:var(--gold2)}
+  footer img{height:56px;margin:0 auto 12px}
 
   /* WhatsApp flutuante + barra mobile */
   .float-wpp{position:fixed;right:20px;bottom:20px;z-index:60;width:62px;height:62px;border-radius:50%;background:var(--green);display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:pulse 2.4s infinite}
@@ -128,9 +147,10 @@
   .mbar{display:none}
   @media(max-width:640px){
     .float-wpp{display:none}
-    .mbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:60;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(13,10,12,.95);border-top:1px solid var(--line)}
+    .mbar{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:60;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(12,10,11,.95);border-top:1px solid var(--line)}
     .mbar .btn{padding:.85rem;font-size:.95rem}
     section{padding:64px 0}
+    .suites{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -138,14 +158,14 @@
 
 <header>
   <div class="wrap nav">
-    <a href="#" class="logo">DIVINE <span>MOTEL</span></a>
+    <a href="#" class="logo"><img src="img/logo.png" alt="Divine Motel"></a>
     <nav class="nav-links">
       <a href="#suites">Suítes</a>
-      <a href="#como">Como reservar</a>
-      <a href="#local">Localização</a>
-      <a href="#faq">Dúvidas</a>
+      <a href="#horarios">Horários</a>
+      <a href="#nupcias">Núpcias</a>
+      <a href="#local">Como chegar</a>
     </nav>
-    <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar uma suíte no Divine Motel." href="#">Reservar</a>
+    <a class="btn btn-red js-wpp" data-msg="Olá! Quero reservar uma suíte no Divine Motel." href="#">Chame no WhatsApp</a>
   </div>
 </header>
 
@@ -154,118 +174,220 @@
   <section class="hero">
     <div class="wrap hero-inner">
       <span class="eyebrow">Cedral · SP · Rod. Washington Luiz km 428</span>
-      <h1>Uma noite <span class="gold">divina</span> começa com uma mensagem.</h1>
-      <p>Suítes com hidromassagem, sauna e pista de dança, total discrição e garagem privativa. Reserve em segundos pelo WhatsApp.</p>
+      <h1>Prazer <span class="hl">sem limites</span>.</h1>
+      <p>7 suítes com decoração exclusiva: hidromassagem, sauna a vapor, pista de dança e até piscina aquecida com cascata. Reserve em segundos pelo WhatsApp.</p>
       <div class="hero-ctas">
         <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar uma suíte no Divine Motel." href="#">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>
           Reservar pelo WhatsApp
         </a>
-        <a class="btn btn-ghost" href="#suites">Ver suítes</a>
+        <a class="btn btn-ghost" href="#suites">Ver as suítes</a>
       </div>
       <div class="trust">
         <span><b>★ 4,6</b> no Google</span>
-        <span><b>+1.000</b> avaliações</span>
-        <span><b>24h</b> aberto</span>
+        <span><b>7</b> suítes exclusivas</span>
+        <span><b>2h</b> de período de dom. a qui.</span>
       </div>
     </div>
   </section>
 
+  <div class="promo"><div class="wrap">🔥 De domingo a quinta: período de <b>2 horas</b> e valor reduzido de tabela. <a href="#horarios">Ver horários</a></div></div>
+
   <!-- BENEFÍCIOS -->
-  <section class="benefits">
+  <section>
     <div class="wrap">
       <div class="head">
         <span class="eyebrow">Por que o Divine</span>
-        <h2>Feito pra vocês <span class="gold">não pensarem em mais nada</span></h2>
+        <h2>Feito pra vocês <span class="hl">não pensarem em mais nada</span></h2>
       </div>
       <div class="grid4">
-        <div class="benefit"><div class="ic">🔒</div><h3>Discrição total</h3><p>Garagem privativa e entrada direta na suíte. Ninguém vê, ninguém sabe.</p></div>
-        <div class="benefit"><div class="ic">🛁</div><h3>Hidromassagem</h3><p>Banheira para dois, sauna a vapor e ambiente pensado pra relaxar.</p></div>
-        <div class="benefit"><div class="ic">🍾</div><h3>Cardápio na suíte</h3><p>Petiscos, refeições e bebidas entregues sem você sair do quarto.</p></div>
-        <div class="benefit"><div class="ic">📍</div><h3>Fácil de chegar</h3><p>Na Washington Luiz, a minutos de São José do Rio Preto.</p></div>
+        <div class="benefit"><div class="ic">✨</div><h3>Decoração exclusiva</h3><p>Cada apartamento e suíte tem um ambiente único, pensado pra sedução.</p></div>
+        <div class="benefit"><div class="ic">🛁</div><h3>Hidro, sauna e piscina</h3><p>Banheira de hidromassagem, sauna a vapor e piscina aquecida com cascata.</p></div>
+        <div class="benefit"><div class="ic">🍷</div><h3>Cardápio completo</h3><p>Porções, lanches, vinhos, drinks e café da manhã servidos na suíte.</p></div>
+        <div class="benefit"><div class="ic">🧼</div><h3>Higiene de hotel</h3><p>Enxoval lavado e esterilizado em alta temperatura e cozinha sob coordenação de chef.</p></div>
       </div>
     </div>
   </section>
 
   <!-- SUÍTES -->
-  <section id="suites">
+  <section id="suites" class="alt">
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow">Nossas suítes</span>
-        <h2>Escolha a sua <span class="gold">experiência</span></h2>
-        <p>Valores por período e pernoite: consulte pelo WhatsApp e garanta a sua.</p>
+        <span class="eyebrow">Suítes e apartamentos</span>
+        <h2>Escolha a sua <span class="hl">experiência</span></h2>
+        <p>Arraste as fotos pro lado pra ver mais. Valores do dia direto no WhatsApp.</p>
       </div>
       <div class="suites">
-        <!-- TODO: trocar placeholders por fotos reais (img/suite-xxx.jpg) e confirmar nomes/comodidades -->
-        <article class="suite">
-          <div class="suite-img"><div class="ph">Suíte Standard</div></div>
+
+        <article class="suite featured">
+          <div class="gal-wrap"><span class="tag">A mais completa</span>
+            <div class="gal"><img src="img/apm7.jpg" alt="Suíte Divine Master" loading="lazy"><img src="img/apm8.jpg" alt="" loading="lazy"><img src="img/apm1.jpg" alt="" loading="lazy"><img src="img/apm2.jpg" alt="" loading="lazy"><img src="img/apm4.jpg" alt="" loading="lazy"></div>
+            <span class="gal-hint">⟷ 5 fotos</span></div>
           <div class="suite-body">
-            <h3>Suíte Standard</h3>
-            <ul><li>Ar-condicionado</li><li>Smart TV</li><li>Frigobar</li><li>Garagem privativa</li></ul>
-            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Standard. Qual o valor?" href="#">Quero essa</a>
+            <h3>Suíte Divine Master</h3>
+            <p>Nossa suíte completa e deslumbrante.</p>
+            <ul><li>Piscina aquecida com cascata</li><li>Hidromassagem</li><li>Sauna a vapor</li><li>Pista de dança</li><li>Cadeira erótica</li><li>Garagem p/ 2 carros</li></ul>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Divine Master. Qual o valor e a disponibilidade?" href="#">Quero a Divine Master</a>
           </div>
         </article>
-        <article class="suite featured">
-          <div class="suite-img"><span class="tag">Mais pedida</span><div class="ph">Suíte Premium</div></div>
+
+        <article class="suite">
+          <div class="gal-wrap">
+            <div class="gal"><img src="img/apd6.jpg" alt="Suíte Divine Premium" loading="lazy"><img src="img/apd2.jpg" alt="" loading="lazy"><img src="img/apd1.jpg" alt="" loading="lazy"><img src="img/apd3.jpg" alt="" loading="lazy"><img src="img/apd5.jpg" alt="" loading="lazy"></div>
+            <span class="gal-hint">⟷ 5 fotos</span></div>
+          <div class="suite-body">
+            <h3>Suíte Divine Premium</h3>
+            <p>Duas opções com dois ambientes apaixonantes: uma com sofá erótico, outra com cadeira erótica e sofá boca.</p>
+            <ul><li>Hidromassagem</li><li>Sauna a vapor</li><li>Pista de dança</li><li>Garagem p/ 2 carros</li></ul>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Divine Premium. Qual o valor e a disponibilidade?" href="#">Quero a Divine Premium</a>
+          </div>
+        </article>
+
+        <article class="suite">
+          <div class="gal-wrap">
+            <div class="gal"><img src="img/app6.jpg" alt="Suíte Premium" loading="lazy"><img src="img/app5.jpg" alt="" loading="lazy"><img src="img/app1.jpg" alt="" loading="lazy"><img src="img/app3.jpg" alt="" loading="lazy"><img src="img/app2.jpg" alt="" loading="lazy"></div>
+            <span class="gal-hint">⟷ 5 fotos</span></div>
           <div class="suite-body">
             <h3>Suíte Premium</h3>
+            <p>Suíte aconchegante com tudo o que vocês precisam.</p>
             <ul><li>Hidromassagem</li><li>Sauna a vapor</li><li>Pista de dança</li><li>Cadeira erótica</li></ul>
-            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Premium. Qual o valor?" href="#">Quero essa</a>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Premium. Qual o valor e a disponibilidade?" href="#">Quero a Premium</a>
           </div>
         </article>
+
         <article class="suite">
-          <div class="suite-img"><div class="ph">Suíte Luxúria</div></div>
+          <div class="gal-wrap">
+            <div class="gal"><img src="img/alx3.jpg" alt="Suíte Luxúria Erotic" loading="lazy"><img src="img/alx2.jpg" alt="" loading="lazy"><img src="img/alx5.jpg" alt="" loading="lazy"><img src="img/alx7.jpg" alt="" loading="lazy"><img src="img/alx4.jpg" alt="" loading="lazy"></div>
+            <span class="gal-hint">⟷ 5 fotos</span></div>
+          <div class="suite-body">
+            <h3>Suíte Luxúria Erotic</h3>
+            <p>Suíte luxuosa para quem quer ousar.</p>
+            <ul><li>Hidromassagem</li><li>Cadeira erótica</li></ul>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Luxúria Erotic. Qual o valor e a disponibilidade?" href="#">Quero a Luxúria Erotic</a>
+          </div>
+        </article>
+
+        <article class="suite">
+          <div class="gal-wrap">
+            <div class="gal"><img src="img/al1.jpg" alt="Suíte Luxúria" loading="lazy"><img src="img/al2.jpg" alt="" loading="lazy"><img src="img/al4.jpg" alt="" loading="lazy"><img src="img/al5.jpg" alt="" loading="lazy"><img src="img/al3.jpg" alt="" loading="lazy"></div>
+            <span class="gal-hint">⟷ 5 fotos</span></div>
           <div class="suite-body">
             <h3>Suíte Luxúria</h3>
-            <ul><li>Decoração temática</li><li>Hidromassagem</li><li>Iluminação especial</li><li>Som ambiente</li></ul>
-            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Luxúria. Qual o valor?" href="#">Quero essa</a>
+            <p>Suíte luxuosa com banheira de hidromassagem.</p>
+            <ul><li>Hidromassagem</li><li>Pista de dança</li></ul>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Luxúria. Qual o valor e a disponibilidade?" href="#">Quero a Luxúria</a>
           </div>
         </article>
+
+        <article class="suite">
+          <div class="gal-wrap">
+            <div class="gal"><img src="img/ed1.jpg" alt="Apartamento Passion Erotic Dancing" loading="lazy"><img src="img/ed3.jpg" alt="" loading="lazy"><img src="img/ed4.jpg" alt="" loading="lazy"><img src="img/ed2.jpg" alt="" loading="lazy"><img src="img/ed6.jpg" alt="" loading="lazy"></div>
+            <span class="gal-hint">⟷ 5 fotos</span></div>
+          <div class="suite-body">
+            <h3>Passion Erotic Dancing</h3>
+            <p>Um apartamento confortável com pista de dança. Dance bem.</p>
+            <ul><li>Pista de dança</li></ul>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar o Apartamento Passion Erotic Dancing. Qual o valor e a disponibilidade?" href="#">Quero o Erotic Dancing</a>
+          </div>
+        </article>
+
+        <article class="suite">
+          <div class="gal-wrap">
+            <div class="gal"><img src="img/st1.jpg" alt="Apartamento Passion" loading="lazy"><img src="img/st3.jpg" alt="" loading="lazy"><img src="img/st2.jpg" alt="" loading="lazy"><img src="img/st4.jpg" alt="" loading="lazy"></div>
+            <span class="gal-hint">⟷ 4 fotos</span></div>
+          <div class="suite-body">
+            <h3>Apartamento Passion</h3>
+            <p>Um apartamento completo, focado na paixão e na sedução. Bom gosto com ousadia.</p>
+            <ul><li>Melhor custo-benefício</li></ul>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar o Apartamento Passion. Qual o valor e a disponibilidade?" href="#">Quero o Passion</a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- HORÁRIOS -->
+  <section id="horarios">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Horários e períodos</span>
+        <h2>Durante a semana <span class="hl">vale mais</span></h2>
+        <p>De domingo a quinta vocês ficam o dobro do tempo e ainda pagam menos.</p>
+      </div>
+      <div class="hours">
+        <div class="hour best">
+          <span class="badge">Promocional</span>
+          <h3>Domingo a quinta</h3>
+          <p class="when">De domingo 7h até sexta 7h</p>
+          <ul><li>Período de <b>2 horas</b></li><li>Pernoite das <b>22h às 12h</b></li><li>Valor reduzido de tabela</li></ul>
+          <small>* Exceto feriados, vésperas de feriado e datas comemorativas.</small>
+        </div>
+        <div class="hour">
+          <span class="badge" style="background:#3a2f33">Convencional</span>
+          <h3>Fim de semana</h3>
+          <p class="when">De sexta 7h até domingo 7h</p>
+          <ul><li>Período de 1 hora</li><li>Pernoite das 2h às 12h</li><li>Valor normal de tabela</li></ul>
+          <small>* Vale também para feriados, vésperas e datas comemorativas.</small>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:32px">
+        <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero saber os valores do horário promocional." href="#">Ver valores no WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- NÚPCIAS -->
+  <section id="nupcias" class="alt">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Noite de núpcias e datas especiais</span>
+        <h2>Uma noite pra <span class="hl">nunca esquecer</span></h2>
+        <p>Pacotes com a suíte decorada antes de vocês chegarem. Perfeito para lua de mel, aniversário de namoro ou pedido de casamento.</p>
+      </div>
+      <div class="pkgs">
+        <article class="pkg"><img src="img/ex1.jpg" alt="Pacote Extravaganza" loading="lazy"><div>
+          <h3>EXTRAVAGANZA</h3>
+          <p>Pétalas de rosas colombianas, velas aromáticas, morangos com chantilly, lençóis e almofadas de seda.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero saber sobre o pacote de núpcias EXTRAVAGANZA." href="#">Quero esse pacote</a></div></article>
+        <article class="pkg"><img src="img/exo1.jpg" alt="Pacote Exotic" loading="lazy"><div>
+          <h3>EXOTIC</h3>
+          <p>Pétalas de rosas colombianas, champagne ou vinho, mix de castanhas, bombons, velas aromáticas, lençóis e almofadas de seda. Café da manhã especial.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero saber sobre o pacote de núpcias EXOTIC." href="#">Quero esse pacote</a></div></article>
+        <article class="pkg"><img src="img/se1.jpg" alt="Pacote Sensualy" loading="lazy"><div>
+          <h3>SENSUALY</h3>
+          <p>Pétalas de rosas colombianas, uvas, nectarina, pêssegos, champagne ou vinho, flores, velas aromáticas, lençóis e almofadas de seda. Café da manhã especial.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero saber sobre o pacote de núpcias SENSUALY." href="#">Quero esse pacote</a></div></article>
       </div>
     </div>
   </section>
 
   <!-- COMO FUNCIONA -->
-  <section id="como" class="benefits">
-    <div class="wrap">
-      <div class="head">
-        <span class="eyebrow">Simples assim</span>
-        <h2>Reserve em <span class="gold">3 passos</span></h2>
-      </div>
-      <div class="steps">
-        <div class="step"><h3>Chame no WhatsApp</h3><p>Diga a suíte, o dia e o horário que vocês querem.</p></div>
-        <div class="step"><h3>Confirme a reserva</h3><p>A gente responde rapidinho com valores e disponibilidade.</p></div>
-        <div class="step"><h3>É só chegar</h3><p>Entre direto pela garagem. A suíte já está pronta pra vocês.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- DEPOIMENTOS -->
   <section>
     <div class="wrap">
       <div class="head">
-        <span class="eyebrow">Quem foi, voltou</span>
-        <h2>Nota <span class="gold">4,6</span> no Google</h2>
+        <span class="eyebrow">Simples assim</span>
+        <h2>Reserve em <span class="hl">3 passos</span></h2>
       </div>
-      <!-- TODO: substituir pelos depoimentos reais do Google -->
-      <div class="grid4">
-        <div class="review"><div class="stars">★★★★★</div><p>"Suíte impecável, hidro maravilhosa e atendimento muito discreto."</p><small>Cliente Google</small></div>
-        <div class="review"><div class="stars">★★★★★</div><p>"Melhor motel da região. Limpeza nota 10 e comida ótima."</p><small>Cliente Google</small></div>
-        <div class="review"><div class="stars">★★★★★</div><p>"Reservei pelo WhatsApp em 2 minutos. Voltaremos com certeza!"</p><small>Cliente Google</small></div>
+      <div class="steps">
+        <div class="step"><h3>Chame no WhatsApp</h3><p>Diga a suíte, o dia e o horário que vocês querem.</p></div>
+        <div class="step"><h3>Confirme a reserva</h3><p>A gente responde com valores e disponibilidade.</p></div>
+        <div class="step"><h3>É só chegar</h3><p>Km 428 da Washington Luiz. A suíte já vai estar esperando por vocês.</p></div>
       </div>
     </div>
   </section>
 
   <!-- LOCALIZAÇÃO -->
-  <section id="local" class="benefits">
+  <section id="local" class="alt">
     <div class="wrap loc">
       <div>
         <span class="eyebrow">Como chegar</span>
-        <h2 style="font-size:clamp(1.9rem,4vw,2.6rem);margin:.6rem 0">Pertinho de você</h2>
+        <h2 style="font-size:clamp(1.9rem,4vw,2.6rem);margin:.6rem 0">Pertinho de Rio Preto</h2>
         <ul>
-          <li><b>Endereço</b>Av. Luiz Guareschi, 100 – Invernada, Cedral/SP</li>
-          <li><b>Referência</b>Km 428 da Rod. Washington Luiz</li>
+          <li><b>Endereço</b>Av. Luiz Guareschi, 100 – Km 428 da Rod. Washington Luiz – Cedral/SP</li>
+          <li><b>WhatsApp</b><a class="js-wpp" data-msg="Olá!" href="#">(17) 99205-5344</a></li>
           <li><b>Telefone</b><a href="tel:+551732661021">(17) 3266-1021</a></li>
+          <li><b>E-mail</b><a href="mailto:atendimento@divinemotel.com.br">atendimento@divinemotel.com.br</a></li>
         </ul>
         <div class="hero-ctas" style="justify-content:flex-start">
           <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Divine+Motel+Av.+Luiz+Guareschi+100+Cedral+SP">Abrir no Maps</a>
@@ -281,13 +403,13 @@
     <div class="wrap">
       <div class="head">
         <span class="eyebrow">Dúvidas</span>
-        <h2>Perguntas <span class="gold">frequentes</span></h2>
+        <h2>Perguntas <span class="hl">frequentes</span></h2>
       </div>
       <div class="faq">
-        <details><summary>Preciso reservar antes?</summary><p>Não é obrigatório, mas reservando pelo WhatsApp você garante a suíte que quer, principalmente em fins de semana e datas especiais.</p></details>
-        <details><summary>Quais as formas de pagamento?</summary><p>Aceitamos Pix, cartões de crédito e débito e dinheiro.</p></details>
-        <details><summary>A entrada é discreta?</summary><p>Sim. Cada suíte tem garagem privativa com acesso direto ao quarto.</p></details>
-        <details><summary>Tem pernoite?</summary><p>Sim, trabalhamos com períodos e pernoite. Chame no WhatsApp para ver os horários e valores do dia.</p></details>
+        <details><summary>Preciso reservar antes?</summary><p>Não é obrigatório, mas reservando pelo WhatsApp vocês garantem a suíte que querem, principalmente em fins de semana, feriados e datas especiais.</p></details>
+        <details><summary>Qual a diferença entre período e pernoite?</summary><p>De domingo a quinta o período é de 2h e o pernoite vai das 22h às 12h. De sexta a domingo o período é de 1h e o pernoite vai das 2h às 12h.</p></details>
+        <details><summary>Dá pra pedir comida na suíte?</summary><p>Sim! O cardápio tem porções, lanches, vinhos, doses, café da manhã e mais, tudo servido na suíte.</p></details>
+        <details><summary>Como funcionam os pacotes de núpcias?</summary><p>Vocês escolhem o pacote (Extravaganza, Exotic ou Sensualy) e a suíte, e a gente prepara a decoração antes da chegada. Combine tudo pelo WhatsApp.</p></details>
       </div>
     </div>
   </section>
@@ -295,8 +417,8 @@
   <!-- CTA FINAL -->
   <section class="final">
     <div class="wrap">
-      <h2>Hoje é dia de <span class="gold">se dar esse presente</span>.</h2>
-      <p>Chame agora e veja as suítes disponíveis.</p>
+      <h2>Hoje é dia de <span class="hl">se dar esse presente</span>.</h2>
+      <p>Chame agora e veja quais suítes estão livres.</p>
       <a class="btn btn-wpp js-wpp" data-msg="Olá! Quais suítes estão disponíveis hoje?" href="#">Ver disponibilidade no WhatsApp</a>
     </div>
   </section>
@@ -304,7 +426,8 @@
 
 <footer>
   <div class="wrap">
-    <p><strong>Divine Motel</strong> · Av. Luiz Guareschi, 100 – Cedral/SP · <a href="tel:+551732661021">(17) 3266-1021</a></p>
+    <img src="img/logo.png" alt="Divine Motel">
+    <p>Av. Luiz Guareschi, 100 – Km 428 da Rod. Washington Luiz – Cedral/SP · <a href="tel:+551732661021">(17) 3266-1021</a></p>
     <p style="margin-top:.4rem">Proibida a entrada de menores de 18 anos.</p>
   </div>
 </footer>
@@ -315,12 +438,11 @@
 
 <div class="mbar">
   <a class="btn btn-ghost" href="tel:+551732661021">Ligar</a>
-  <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar uma suíte no Divine Motel." href="#">WhatsApp</a>
+  <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar uma suíte no Divine Motel." href="#">Reservar no WhatsApp</a>
 </div>
 
 <script>
-  // TODO: confirmar o número de WhatsApp do motel (formato 55 + DDD + número)
-  const WHATSAPP = "551732661021";
+  const WHATSAPP = "5517992055344";
 
   document.querySelectorAll(".js-wpp").forEach(el => {
     const msg = el.dataset.msg || "Olá!";
