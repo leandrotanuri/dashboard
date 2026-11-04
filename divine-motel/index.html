@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Divine Motel | Pernoite na Washington Luiz km 428</title>
-<meta name="description" content="Pernoite com preço justo no km 428 da Rod. Washington Luiz, em Cedral/SP. Quarto limpo, café da manhã e saída até 12h. Reserve pelo WhatsApp.">
+<title>Divine Motel | Cedral - SP</title>
+<meta name="description" content="Suítes com hidromassagem, sauna e café da manhã no km 428 da Washington Luiz. Período e pernoite com valor reduzido de domingo a quinta. Reserve pelo WhatsApp.">
 <link rel="icon" href="img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#ffffff; --bg2:#f5f3f0; --card:#ffffff; --line:#e7e2dc;
-    --text:#1c1a19; --muted:#6b645e;
-    --brand:#b52a35; --brand-soft:#fbeeee;
-    --green:#1fb855; --green-dark:#169947;
+    --bg:#111012; --bg2:#19171a; --card:#211e21; --line:#322d31;
+    --text:#f7f3ef; --muted:#b5aca6;
+    --brand:#d23a46; --warm:#e9b980;
+    --green:#22c55e; --green-dark:#16a34a;
     --radius:16px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -23,137 +23,113 @@
   a{color:inherit;text-decoration:none}
   img{max-width:100%;display:block}
   .wrap{width:min(1120px,100% - 32px);margin-inline:auto}
-  h1,h2,h3{font-family:Manrope,Inter,sans-serif;line-height:1.15;letter-spacing:-.02em}
-  .eyebrow{color:var(--brand);font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+  h1,h2,h3{font-family:Manrope,Inter,sans-serif;line-height:1.12;letter-spacing:-.02em}
+  .eyebrow{color:var(--warm);font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
 
   /* Botões */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;padding:.95rem 1.5rem;border-radius:12px;font-weight:600;font-size:1rem;transition:background .15s,transform .15s;cursor:pointer;border:0;text-align:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;padding:1rem 1.6rem;border-radius:12px;font-weight:700;font-size:1rem;transition:background .15s,transform .15s;cursor:pointer;border:0;text-align:center}
   .btn:hover{transform:translateY(-1px)}
-  .btn-wpp{background:var(--green);color:#fff}
-  .btn-wpp:hover{background:var(--green-dark)}
-  .btn-line{border:1px solid var(--line);background:#fff}
-  .btn-line:hover{border-color:var(--text)}
+  .btn-wpp{background:var(--green);color:#052e14;box-shadow:0 10px 28px -12px rgba(34,197,94,.7)}
+  .btn-wpp:hover{background:var(--green-dark);color:#fff}
+  .btn-line{border:1px solid rgba(255,255,255,.3);color:#fff}
+  .btn-line:hover{border-color:#fff}
   .btn svg{width:20px;height:20px;flex:none;fill:currentColor}
+  .btn-lg{padding:1.15rem 2rem;font-size:1.08rem}
 
-  /* Topbar */
-  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .logo img{height:42px;width:auto;filter:invert(1)}
-  .nav-links{display:flex;gap:1.8rem;font-size:.92rem;color:var(--muted);font-weight:500}
-  .nav-links a:hover{color:var(--text)}
+  /* Topbar: só logo + CTA (LP sem menu) */
+  header{position:sticky;top:0;z-index:50;background:rgba(17,16,18,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .logo img{height:42px;width:auto}
   .nav .btn{padding:.6rem 1rem;font-size:.9rem}
-  @media(max-width:820px){.nav-links{display:none}}
 
   /* Hero */
-  .hero{padding:56px 0 72px}
-  .hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center}
-  .hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;margin:.8rem 0 1rem}
-  .hero h1 span{color:var(--brand)}
-  .hero p.lead{color:var(--muted);font-size:1.12rem;max-width:520px;margin-bottom:1.8rem}
+  .hero{min-height:min(88svh,760px);display:flex;align-items:center;
+    background:linear-gradient(90deg,rgba(17,16,18,.94) 0%,rgba(17,16,18,.75) 45%,rgba(17,16,18,.25) 100%),url(img/hero-app6.jpg) center/cover}
+  .hero-inner{max-width:600px;padding:64px 0}
+  .hero h1{font-size:clamp(2.3rem,5.6vw,3.9rem);font-weight:800;margin:.9rem 0 1rem}
+  .hero h1 span{color:var(--warm)}
+  .hero p{color:#ded5cf;font-size:1.12rem;margin-bottom:1.8rem}
   .hero-ctas{display:flex;gap:12px;flex-wrap:wrap}
-  .checks{list-style:none;display:grid;gap:.5rem;margin-top:1.8rem;color:var(--text);font-size:.95rem}
-  .checks li{display:flex;gap:.6rem;align-items:flex-start}
-  .checks li::before{content:"";flex:none;width:20px;height:20px;margin-top:2px;border-radius:50%;background:var(--brand-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b52a35' stroke-width='3'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") center/12px no-repeat}
-  .hero-img{position:relative}
-  .hero-img img{width:100%;aspect-ratio:4/3.4;object-fit:cover;border-radius:22px}
-  .hero-card{position:absolute;left:-24px;bottom:-24px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;box-shadow:0 12px 30px -12px rgba(0,0,0,.25);font-size:.88rem}
-  .hero-card b{display:block;font-family:Manrope,sans-serif;font-size:1.1rem}
-  @media(max-width:860px){
-    .hero-grid{grid-template-columns:1fr}
-    .hero-img{order:-1}
-    .hero-card{left:12px;bottom:-20px}
-    .hero{padding:24px 0 56px}
+  .trust{display:flex;gap:10px 22px;flex-wrap:wrap;margin-top:1.8rem;font-size:.9rem;color:#ded5cf}
+  .trust b{color:#fff}
+  @media(max-width:700px){
+    .hero{background:linear-gradient(180deg,rgba(17,16,18,.55) 0%,rgba(17,16,18,.9) 55%,var(--bg) 100%),url(img/hero-app6.jpg) center/cover;align-items:flex-end}
+    .hero-inner{padding:180px 0 40px}
   }
 
-  /* Faixa */
-  .strip{background:var(--bg2);border-block:1px solid var(--line);padding:22px 0}
-  .strip .wrap{display:flex;gap:16px 40px;justify-content:center;flex-wrap:wrap;font-size:.95rem;color:var(--muted)}
-  .strip b{color:var(--text)}
+  /* Faixa de oferta */
+  .offer{background:linear-gradient(90deg,#8e1f2a,var(--brand));padding:14px 0;text-align:center;font-weight:600;font-size:.98rem}
 
   /* Seções */
-  section{padding:80px 0}
-  .alt{background:var(--bg2)}
-  .head{max-width:620px;margin-bottom:40px}
-  .head.center{text-align:center;margin-inline:auto}
-  .head h2{font-size:clamp(1.8rem,3.6vw,2.5rem);font-weight:800;margin:.5rem 0 .7rem}
+  section{padding:76px 0}
+  .alt{background:var(--bg2);border-block:1px solid var(--line)}
+  .head{text-align:center;max-width:640px;margin:0 auto 40px}
+  .head h2{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;margin:.5rem 0 .6rem}
   .head p{color:var(--muted)}
 
+  /* Escolha o momento */
+  .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .mode{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card);display:flex;flex-direction:column}
+  .mode.hot{border-color:var(--warm)}
+  .mode img{aspect-ratio:16/10;object-fit:cover;width:100%}
+  .mode-body{padding:22px;display:flex;flex-direction:column;gap:10px;flex:1}
+  .mode .kicker{font-size:.76rem;font-weight:700;color:var(--warm);text-transform:uppercase;letter-spacing:.08em}
+  .mode h3{font-size:1.35rem}
+  .mode ul{list-style:none;display:grid;gap:.35rem;font-size:.94rem;color:#ddd3cd;margin-bottom:.4rem}
+  .mode li::before{content:"✓  ";color:var(--green);font-weight:700}
+  .mode .btn{margin-top:auto}
+  @media(max-width:900px){.modes{grid-template-columns:1fr}}
+
+  /* Suítes (carrossel) */
+  .rail{display:grid;grid-auto-flow:column;grid-auto-columns:min(300px,80%);gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 16px 18px;margin:0 -16px;scrollbar-width:thin}
+  .suite{scroll-snap-align:start;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card);display:flex;flex-direction:column}
+  .suite img{aspect-ratio:4/3;object-fit:cover;width:100%}
+  .suite div{padding:18px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .suite h3{font-size:1.12rem}
+  .suite p{color:var(--muted);font-size:.88rem}
+  .suite .btn{margin-top:auto;padding:.75rem 1rem;font-size:.92rem}
+  .rail-hint{text-align:center;color:var(--muted);font-size:.85rem;margin-top:6px}
+
   /* Benefícios */
-  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-  @media(max-width:900px){.grid3{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:560px){.grid3{grid-template-columns:1fr}}
-  .benefit{padding:26px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
-  .benefit .ic{width:44px;height:44px;border-radius:12px;background:var(--brand-soft);display:grid;place-items:center;font-size:1.3rem;margin-bottom:1rem}
-  .benefit h3{font-size:1.1rem;margin-bottom:.35rem}
-  .benefit p{color:var(--muted);font-size:.95rem}
+  .perks{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .perk{padding:22px;border-radius:var(--radius);background:var(--card);border:1px solid var(--line)}
+  .perk .ic{font-size:1.5rem;margin-bottom:.6rem}
+  .perk h3{font-size:1.02rem;margin-bottom:.25rem}
+  .perk p{color:var(--muted);font-size:.9rem}
+  @media(max-width:900px){.perks{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.perks{grid-template-columns:1fr}}
 
-  /* Tarifa */
-  .rates{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  .rate{padding:30px;border-radius:var(--radius);border:1px solid var(--line);background:#fff}
-  .rate.best{border:2px solid var(--brand)}
-  .pill{display:inline-block;font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:999px;background:var(--bg2);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-  .rate.best .pill{background:var(--brand);color:#fff}
-  .rate h3{font-size:1.4rem;margin:.8rem 0 .2rem}
-  .rate .when{color:var(--muted);font-size:.92rem;margin-bottom:1.2rem}
-  .rate .big{font-family:Manrope,sans-serif;font-size:2rem;font-weight:800;line-height:1}
-  .rate .big small{font-size:.95rem;font-weight:600;color:var(--muted)}
-  .rate ul{list-style:none;display:grid;gap:.5rem;margin:1.2rem 0 1.4rem;font-size:.95rem}
-  .rate li::before{content:"✓  ";color:var(--brand);font-weight:700}
-  .rate .btn{width:100%}
-  .note{font-size:.82rem;color:var(--muted);margin-top:12px}
-  @media(max-width:760px){.rates{grid-template-columns:1fr}}
+  /* Faixa CTA meio */
+  .band{background:linear-gradient(rgba(17,16,18,.78),rgba(17,16,18,.85)),url(img/hero-al1.jpg) center/cover;text-align:center}
+  .band h2{font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:800;margin-bottom:.7rem}
+  .band p{color:#ded5cf;margin-bottom:1.6rem}
 
-  /* Quartos */
-  .rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
-  .room{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff;display:flex;flex-direction:column}
-  .room img{aspect-ratio:3/2;object-fit:cover;width:100%}
-  .room div{padding:22px;display:flex;flex-direction:column;gap:10px;flex:1}
-  .room h3{font-size:1.2rem}
-  .room p{color:var(--muted);font-size:.94rem}
-  .room .for{font-size:.8rem;font-weight:600;color:var(--brand)}
-  .room .btn{margin-top:auto}
+  /* Objeções rápidas */
+  .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .q{padding:22px;border-radius:var(--radius);border:1px dashed var(--line)}
+  .q h3{font-size:1rem;margin-bottom:.3rem}
+  .q p{color:var(--muted);font-size:.92rem}
+  @media(max-width:800px){.quick{grid-template-columns:1fr}}
 
-  /* Café */
-  .cafe{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-  .cafe-box{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px}
-  .cafe-box h3{font-size:1.15rem;margin-bottom:.4rem}
-  .cafe-box p{color:var(--muted);font-size:.95rem}
-  .cafe-box + .cafe-box{margin-top:16px}
-  @media(max-width:860px){.cafe{grid-template-columns:1fr}}
+  /* Final */
+  .final{text-align:center}
+  .final h2{font-size:clamp(1.9rem,4.5vw,2.8rem);font-weight:800;margin-bottom:.6rem}
+  .final p{color:var(--muted);margin-bottom:1.6rem}
+  .addr{margin-top:1.6rem;color:var(--muted);font-size:.92rem}
+  .addr a{color:var(--warm);text-decoration:underline}
 
-  /* Localização */
-  .loc{display:grid;grid-template-columns:1fr 1.1fr;gap:36px;align-items:center}
-  .loc iframe{width:100%;aspect-ratio:4/3;border:0;border-radius:var(--radius);background:var(--bg2)}
-  .loc dl{display:grid;gap:14px;margin:1.4rem 0 1.8rem}
-  .loc dt{font-weight:600}
-  .loc dd{color:var(--muted)}
-  @media(max-width:860px){.loc{grid-template-columns:1fr}}
-
-  /* FAQ */
-  .faq{max-width:760px;margin:0 auto;display:grid;gap:10px}
-  details{border:1px solid var(--line);border-radius:12px;background:#fff;padding:18px 22px}
-  summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:1rem}
-  summary::-webkit-details-marker{display:none}
-  summary::after{content:"+";color:var(--brand);font-size:1.3rem;line-height:1}
-  details[open] summary::after{content:"–"}
-  details p{color:var(--muted);margin-top:.7rem}
-
-  /* CTA final */
-  .final{background:var(--text);color:#fff;text-align:center}
-  .final h2{font-size:clamp(1.9rem,4.5vw,2.8rem);font-weight:800;margin-bottom:.8rem}
-  .final p{color:#cfc8c2;margin-bottom:1.8rem}
-
-  footer{padding:28px 0 100px;color:var(--muted);font-size:.85rem;text-align:center;border-top:1px solid var(--line)}
+  footer{border-top:1px solid var(--line);padding:24px 0 100px;color:var(--muted);font-size:.82rem;text-align:center}
 
   /* WhatsApp flutuante + barra mobile */
-  .float-wpp{position:fixed;right:20px;bottom:20px;z-index:60;width:58px;height:58px;border-radius:50%;background:var(--green);display:grid;place-items:center;box-shadow:0 10px 25px rgba(0,0,0,.2)}
+  .float-wpp{position:fixed;right:20px;bottom:20px;z-index:60;width:60px;height:60px;border-radius:50%;background:var(--green);display:grid;place-items:center;box-shadow:0 10px 25px rgba(0,0,0,.45);animation:pulse 2.4s infinite}
   .float-wpp svg{width:30px;height:30px;fill:#fff}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 16px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
   .mbar{display:none}
   @media(max-width:640px){
     .float-wpp{display:none}
-    .mbar{display:grid;grid-template-columns:1fr 1.7fr;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:60;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line)}
+    .mbar{display:grid;grid-template-columns:1fr 1.8fr;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:60;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(17,16,18,.96);border-top:1px solid var(--line)}
     .mbar .btn{padding:.85rem}
-    section{padding:60px 0}
+    section{padding:58px 0}
   }
 </style>
 </head>
@@ -162,206 +138,170 @@
 <header>
   <div class="wrap nav">
     <a href="#" class="logo"><img src="img/logo.png" alt="Divine Motel"></a>
-    <nav class="nav-links">
-      <a href="#tarifas">Pernoite</a>
-      <a href="#quartos">Quartos</a>
-      <a href="#cafe">Café da manhã</a>
-      <a href="#local">Como chegar</a>
-    </nav>
-    <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar um pernoite." href="#">Reservar</a>
+    <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar uma suíte." href="#">Reservar agora</a>
   </div>
 </header>
 
 <main>
   <!-- HERO -->
   <section class="hero">
-    <div class="wrap hero-grid">
-      <div>
-        <span class="eyebrow">Rod. Washington Luiz · km 428 · Cedral/SP</span>
-        <h1>Pare, durma bem e <span>siga viagem.</span></h1>
-        <p class="lead">Pernoite com preço justo, na beira da rodovia. Quarto limpo, cama boa, café da manhã e saída até meio-dia.</p>
+    <div class="wrap">
+      <div class="hero-inner">
+        <span class="eyebrow">Km 428 da Washington Luiz · Cedral/SP</span>
+        <h1>Sua suíte está pronta. <span>É só chamar.</span></h1>
+        <p>Pra curtir a dois ou pra descansar da estrada: suítes com hidromassagem, sauna e café da manhã, com valor reduzido de domingo a quinta.</p>
         <div class="hero-ctas">
-          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar um pernoite. Qual o valor pra hoje?" href="#">
+          <a class="btn btn-wpp btn-lg js-wpp" data-msg="Olá! Quais suítes estão disponíveis hoje e qual o valor?" href="#">
             <svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>
-            Ver valor do pernoite
+            Ver suítes livres hoje
           </a>
-          <a class="btn btn-line" href="#local">Como chegar</a>
         </div>
-        <ul class="checks">
-          <li>Pernoite das 22h às 12h de domingo a quinta</li>
-          <li>Valor reduzido de tabela durante a semana</li>
-          <li>Limpeza e enxoval no padrão de hotel</li>
-        </ul>
-      </div>
-      <div class="hero-img">
-        <img src="img/st4.jpg" alt="Quarto do Divine Motel">
-        <div class="hero-card"><b>★ 4,6 no Google</b>Avaliação dos hóspedes</div>
+        <div class="trust">
+          <span><b>★ 4,6</b> no Google</span>
+          <span><b>7</b> suítes</span>
+          <span>Resposta rápida no <b>WhatsApp</b></span>
+        </div>
       </div>
     </div>
   </section>
 
-  <div class="strip"><div class="wrap">
-    <span>🛣️ <b>Km 428</b> da Washington Luiz</span>
-    <span>🌙 Pernoite até <b>12h</b></span>
-    <span>☕ <b>Café da manhã</b> no quarto</span>
-    <span>📍 Perto de <b>São José do Rio Preto</b></span>
-  </div></div>
+  <div class="offer"><div class="wrap">🔥 Domingo a quinta: <b>período de 2h</b> e <b>pernoite das 22h às 12h</b> com valor reduzido</div></div>
+
+  <!-- ESCOLHA O MOMENTO -->
+  <section>
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Do seu jeito</span>
+        <h2>O que você procura hoje?</h2>
+        <p>Escolha e chame no WhatsApp. A gente te manda o valor na hora.</p>
+      </div>
+      <div class="modes">
+        <article class="mode hot">
+          <img src="img/app5.jpg" alt="Suíte com hidromassagem" loading="lazy">
+          <div class="mode-body">
+            <span class="kicker">A dois</span>
+            <h3>Período</h3>
+            <ul><li>2h de domingo a quinta</li><li>Hidro, sauna e pista de dança</li><li>Privacidade total</li></ul>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar um período. Quais suítes estão livres e qual o valor?" href="#">Quero um período</a>
+          </div>
+        </article>
+        <article class="mode">
+          <img src="img/st4.jpg" alt="Quarto para pernoite" loading="lazy">
+          <div class="mode-body">
+            <span class="kicker">Pra descansar</span>
+            <h3>Pernoite</h3>
+            <ul><li>Das 22h às 12h (dom. a qui.)</li><li>Café da manhã no quarto</li><li>Na beira da rodovia</li></ul>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar um pernoite. Qual o valor?" href="#">Quero um pernoite</a>
+          </div>
+        </article>
+        <article class="mode">
+          <img src="img/ex1.jpg" alt="Decoração para data especial" loading="lazy">
+          <div class="mode-body">
+            <span class="kicker">Data especial</span>
+            <h3>Núpcias e surpresas</h3>
+            <ul><li>Pétalas, velas e espumante</li><li>Suíte decorada antes de vocês chegarem</li><li>3 pacotes pra escolher</li></ul>
+            <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero saber dos pacotes para data especial / núpcias." href="#">Quero surpreender</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUÍTES -->
+  <section class="alt">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">7 suítes</span>
+        <h2>Escolha a sua</h2>
+      </div>
+      <div class="rail">
+        <article class="suite"><img src="img/apm7.jpg" alt="Suíte Divine Master" loading="lazy"><div>
+          <h3>Divine Master</h3><p>Piscina aquecida com cascata, hidro, sauna e garagem p/ 2 carros.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Divine Master. Qual o valor?" href="#">Quero essa</a></div></article>
+        <article class="suite"><img src="img/apd6.jpg" alt="Suíte Divine Premium" loading="lazy"><div>
+          <h3>Divine Premium</h3><p>Hidro, sauna, pista de dança e garagem p/ 2 carros.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Divine Premium. Qual o valor?" href="#">Quero essa</a></div></article>
+        <article class="suite"><img src="img/app6.jpg" alt="Suíte Premium" loading="lazy"><div>
+          <h3>Premium</h3><p>Hidromassagem, sauna a vapor, pista de dança e cadeira erótica.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Premium. Qual o valor?" href="#">Quero essa</a></div></article>
+        <article class="suite"><img src="img/alx3.jpg" alt="Suíte Luxúria Erotic" loading="lazy"><div>
+          <h3>Luxúria Erotic</h3><p>Hidromassagem e cadeira erótica.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Luxúria Erotic. Qual o valor?" href="#">Quero essa</a></div></article>
+        <article class="suite"><img src="img/al1.jpg" alt="Suíte Luxúria" loading="lazy"><div>
+          <h3>Luxúria</h3><p>Suíte espaçosa com banheira de hidromassagem.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar a Suíte Luxúria. Qual o valor?" href="#">Quero essa</a></div></article>
+        <article class="suite"><img src="img/ed1.jpg" alt="Passion Erotic Dancing" loading="lazy"><div>
+          <h3>Passion Erotic Dancing</h3><p>Apartamento confortável com pista de dança.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar o Passion Erotic Dancing. Qual o valor?" href="#">Quero essa</a></div></article>
+        <article class="suite"><img src="img/st2.jpg" alt="Apartamento Passion" loading="lazy"><div>
+          <h3>Apartamento Passion</h3><p>Completo e confortável. A opção mais em conta.</p>
+          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar o Apartamento Passion. Qual o valor?" href="#">Quero essa</a></div></article>
+      </div>
+      <p class="rail-hint">⟷ Arraste pro lado pra ver todas</p>
+    </div>
+  </section>
 
   <!-- BENEFÍCIOS -->
   <section>
     <div class="wrap">
-      <div class="head center">
-        <span class="eyebrow">Pra quem está na estrada</span>
-        <h2>Tudo que você precisa pra descansar</h2>
-        <p>Sem desvio, sem burocracia. Chegou, dormiu, tomou café e seguiu.</p>
+      <div class="head">
+        <span class="eyebrow">Por que o Divine</span>
+        <h2>Conforto de hotel, privacidade de motel</h2>
       </div>
-      <div class="grid3">
-        <div class="benefit"><div class="ic">🛣️</div><h3>Na beira da rodovia</h3><p>Km 428 da Washington Luiz, em Cedral. Você não perde tempo procurando hotel na cidade.</p></div>
-        <div class="benefit"><div class="ic">💰</div><h3>Pague menos que em hotel</h3><p>De domingo a quinta o pernoite tem valor reduzido de tabela. Ideal pra quem viaja a trabalho.</p></div>
-        <div class="benefit"><div class="ic">🛏️</div><h3>Dorme até meio-dia</h3><p>Pernoite vai até 12h. Dá pra descansar de verdade antes de pegar a estrada de novo.</p></div>
-        <div class="benefit"><div class="ic">🧼</div><h3>Limpeza de hotel</h3><p>Enxoval lavado e esterilizado em alta temperatura. Produtos e equipe no padrão hoteleiro.</p></div>
-        <div class="benefit"><div class="ic">🍽️</div><h3>Comida no quarto</h3><p>Lanches, porções, refeições e bebidas. Cozinha coordenada por chef, servida no quarto.</p></div>
-        <div class="benefit"><div class="ic">🚗</div><h3>Garagem privativa</h3><p>Seu carro fica guardado na garagem do quarto. Tem opção com vaga pra 2 carros.</p></div>
+      <div class="perks">
+        <div class="perk"><div class="ic">🔒</div><h3>Privacidade total</h3><p>Chegou, entrou, ninguém viu. Simples assim.</p></div>
+        <div class="perk"><div class="ic">🧼</div><h3>Limpeza de hotel</h3><p>Enxoval lavado e esterilizado em alta temperatura.</p></div>
+        <div class="perk"><div class="ic">🍽️</div><h3>Cardápio no quarto</h3><p>Café da manhã, lanches, porções, vinhos e drinks.</p></div>
+        <div class="perk"><div class="ic">🛣️</div><h3>Fácil de chegar</h3><p>Km 428 da Washington Luiz, pertinho de Rio Preto.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- TARIFAS -->
-  <section id="tarifas" class="alt">
+  <!-- CTA MEIO -->
+  <section class="band">
     <div class="wrap">
-      <div class="head center">
-        <span class="eyebrow">Pernoite</span>
-        <h2>Durante a semana sai mais barato</h2>
-        <p>Valores do dia direto no WhatsApp. Respondemos rápido.</p>
-      </div>
-      <div class="rates">
-        <div class="rate best">
-          <span class="pill">Melhor preço</span>
-          <h3>Domingo a quinta</h3>
-          <p class="when">De domingo 7h até sexta 7h</p>
-          <div class="big">22h → 12h <small>pernoite</small></div>
-          <ul><li>Valor reduzido de tabela</li><li>14 horas de descanso</li><li>Ideal pra viagem a trabalho</li></ul>
-          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero o valor do pernoite de domingo a quinta." href="#">Ver valor</a>
-          <p class="note">* Exceto feriados, vésperas de feriado e datas comemorativas.</p>
-        </div>
-        <div class="rate">
-          <span class="pill">Fim de semana</span>
-          <h3>Sexta a domingo</h3>
-          <p class="when">De sexta 7h até domingo 7h</p>
-          <div class="big">2h → 12h <small>pernoite</small></div>
-          <ul><li>Valor normal de tabela</li><li>Vale para feriados e vésperas</li><li>Reserve antes pra garantir</li></ul>
-          <a class="btn btn-line js-wpp" data-msg="Olá! Quero o valor do pernoite no fim de semana." href="#">Ver valor</a>
-        </div>
-      </div>
+      <h2>Fim de semana e feriado? Reserve antes.</h2>
+      <p>Manda uma mensagem agora e garanta a suíte que você quer.</p>
+      <a class="btn btn-wpp btn-lg js-wpp" data-msg="Olá! Quero garantir uma suíte para o fim de semana." href="#">Garantir minha suíte</a>
     </div>
   </section>
 
-  <!-- QUARTOS -->
-  <section id="quartos">
+  <!-- OBJEÇÕES -->
+  <section>
     <div class="wrap">
-      <div class="head center">
-        <span class="eyebrow">Quartos</span>
-        <h2>Escolha o seu quarto</h2>
-        <p>Diga no WhatsApp o que precisa que a gente indica o melhor.</p>
-      </div>
-      <div class="rooms">
-        <article class="room"><img src="img/st2.jpg" alt="Apartamento Passion" loading="lazy"><div>
-          <span class="for">Mais econômico</span>
-          <h3>Apartamento Passion</h3>
-          <p>Apartamento completo e confortável. A opção certa pra quem só quer uma boa noite de sono.</p>
-          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero o valor do pernoite no Apartamento Passion." href="#">Ver valor</a></div></article>
-        <article class="room"><img src="img/al1.jpg" alt="Suíte Luxúria" loading="lazy"><div>
-          <span class="for">Pra relaxar depois da estrada</span>
-          <h3>Suíte Luxúria</h3>
-          <p>Suíte espaçosa com banheira de hidromassagem. Perfeita depois de muitas horas dirigindo.</p>
-          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero o valor do pernoite na Suíte Luxúria." href="#">Ver valor</a></div></article>
-        <article class="room"><img src="img/apd3.jpg" alt="Suíte Divine Premium" loading="lazy"><div>
-          <span class="for">Viajando em 2 carros</span>
-          <h3>Suíte Divine Premium</h3>
-          <p>Suíte ampla com hidromassagem, sauna a vapor e garagem para dois carros.</p>
-          <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero o valor do pernoite na Suíte Divine Premium." href="#">Ver valor</a></div></article>
+      <div class="quick">
+        <div class="q"><h3>Precisa reservar?</h3><p>Não é obrigatório, mas pelo WhatsApp você já chega sabendo o valor e com a suíte garantida.</p></div>
+        <div class="q"><h3>Como funciona o horário?</h3><p>Dom. a qui.: período de 2h e pernoite das 22h às 12h. Sex. a dom.: período de 1h e pernoite das 2h às 12h.</p></div>
+        <div class="q"><h3>Tem café da manhã?</h3><p>Tem: completo ou simples, servido no quarto, para 1 ou 2 pessoas.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- CAFÉ -->
-  <section id="cafe" class="alt">
-    <div class="wrap cafe">
-      <div>
-        <span class="eyebrow">Café da manhã</span>
-        <h2 style="font-size:clamp(1.8rem,3.6vw,2.5rem);font-weight:800;margin:.5rem 0 .8rem">Acorde e tome café sem sair do quarto</h2>
-        <p style="color:var(--muted);margin-bottom:1.6rem">Peça na hora e receba no quarto. Também tem lanches, porções e refeições pra quem chega tarde da estrada.</p>
-        <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar pernoite com café da manhã." href="#">Reservar com café</a>
-      </div>
-      <div>
-        <div class="cafe-box"><h3>☕ Café da manhã completo (1 ou 2 pessoas)</h3><p>Pão francês, torradas, bolachas, bolo, iogurte, mel, geleia, frutas, suco de laranja, café, leite, cappuccino, presunto e mussarela.</p></div>
-        <div class="cafe-box"><h3>🥪 Café da manhã simples (1 ou 2 pessoas)</h3><p>Pão francês, torradas, bolachas, margarina, geleia, frutas, suco de laranja, café, leite, presunto e mussarela.</p></div>
-        <div class="cafe-box"><h3>🍔 Chegou com fome?</h3><p>X-Salada, X-Tudo, Bauru de filé mignon, frango a passarinho, filé acebolado, tilápia e muito mais.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- LOCALIZAÇÃO -->
-  <section id="local">
-    <div class="wrap loc">
-      <div>
-        <span class="eyebrow">Como chegar</span>
-        <h2 style="font-size:clamp(1.8rem,3.6vw,2.5rem);font-weight:800;margin:.5rem 0">Direto da rodovia</h2>
-        <dl>
-          <div><dt>Endereço</dt><dd>Av. Luiz Guareschi, 100 – Km 428 da Rod. Washington Luiz – Cedral/SP</dd></div>
-          <div><dt>WhatsApp</dt><dd><a class="js-wpp" data-msg="Olá!" href="#">(17) 99205-5344</a></dd></div>
-          <div><dt>Telefone</dt><dd><a href="tel:+551732661021">(17) 3266-1021</a></dd></div>
-        </dl>
-        <div class="hero-ctas">
-          <a class="btn btn-line" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Divine+Motel+Av.+Luiz+Guareschi+100+Cedral+SP">Abrir no Google Maps</a>
-          <a class="btn btn-line" target="_blank" rel="noopener" href="https://waze.com/ul?q=Divine%20Motel%20Cedral%20SP&navigate=yes">Ir com Waze</a>
-        </div>
-      </div>
-      <iframe loading="lazy" title="Mapa Divine Motel" src="https://maps.google.com/maps?q=Divine%20Motel%2C%20Av.%20Luiz%20Guareschi%2C%20100%2C%20Cedral%20SP&z=13&output=embed"></iframe>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section class="alt">
+  <!-- FINAL -->
+  <section class="final alt">
     <div class="wrap">
-      <div class="head center">
-        <span class="eyebrow">Dúvidas</span>
-        <h2>Perguntas frequentes</h2>
-      </div>
-      <div class="faq">
-        <details><summary>Posso só dormir? É tranquilo?</summary><p>Claro. O quarto é seu até 12h, com total privacidade.</p></details>
-        <details><summary>Até que horas é o pernoite?</summary><p>De domingo a quinta, das 22h às 12h. De sexta a domingo, das 2h às 12h.</p></details>
-        <details><summary>Preciso reservar?</summary><p>Não é obrigatório, mas mandando mensagem antes você já chega sabendo o valor e com o quarto garantido.</p></details>
-        <details><summary>Tem café da manhã?</summary><p>Tem. Café completo ou simples, servido no quarto, para 1 ou 2 pessoas.</p></details>
-        <details><summary>Posso levar crianças?</summary><p>Não. Por lei, é proibida a entrada de menores de 18 anos.</p></details>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA FINAL -->
-  <section class="final">
-    <div class="wrap">
-      <h2>Vai passar pela Washington Luiz?</h2>
-      <p>Manda uma mensagem e já chega com o quarto garantido.</p>
-      <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar um pernoite para hoje." href="#">Reservar pernoite no WhatsApp</a>
+      <h2>Bora? Sua suíte te espera.</h2>
+      <p>Resposta rápida no WhatsApp.</p>
+      <a class="btn btn-wpp btn-lg js-wpp" data-msg="Olá! Quero reservar uma suíte." href="#">Reservar pelo WhatsApp</a>
+      <p class="addr">Av. Luiz Guareschi, 100 – Km 428 da Rod. Washington Luiz – Cedral/SP · <a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Divine+Motel+Av.+Luiz+Guareschi+100+Cedral+SP">Abrir no Maps</a> · <a target="_blank" rel="noopener" href="https://waze.com/ul?q=Divine%20Motel%20Cedral%20SP&navigate=yes">Waze</a></p>
     </div>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
-    <p><strong>Divine Motel</strong> · Av. Luiz Guareschi, 100 – Km 428 da Rod. Washington Luiz – Cedral/SP · <a href="tel:+551732661021">(17) 3266-1021</a></p>
-    <p style="margin-top:.3rem">Proibida a entrada de menores de 18 anos.</p>
+    <p>Divine Motel · <a href="tel:+551732661021">(17) 3266-1021</a> · Proibida a entrada de menores de 18 anos.</p>
+    <p style="margin-top:.3rem">* Valores reduzidos não valem em feriados, vésperas de feriado e datas comemorativas.</p>
   </div>
 </footer>
 
-<a class="float-wpp js-wpp" data-msg="Olá! Quero reservar um pernoite." href="#" aria-label="WhatsApp">
+<a class="float-wpp js-wpp" data-msg="Olá! Quero reservar uma suíte." href="#" aria-label="WhatsApp">
   <svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>
 </a>
 
 <div class="mbar">
   <a class="btn btn-line" href="tel:+551732661021">Ligar</a>
-  <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar um pernoite." href="#">Reservar pernoite</a>
+  <a class="btn btn-wpp js-wpp" data-msg="Olá! Quero reservar uma suíte." href="#">Reservar agora</a>
 </div>
 
 <script>
